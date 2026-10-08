@@ -1,0 +1,241 @@
+/**
+ * DESIGN TOKENS: LEVEL 2 (Project Tokens)
+ *
+ * Token NAMES follow the Web Blueprint contract (Level 1).
+ * VALUES are the DÉCADA OUSADA identity: red for Continente, green for
+ * Açores (the region swaps only the brand roles, see [data-region]).
+ * Additions to the Blueprint name set are recorded in DECISIONS.md.
+ */
+
+:root {
+  /* ------------------------------------------------------------ */
+  /* COLOR                                                          */
+  /* ------------------------------------------------------------ */
+
+  /* Neutral ramp: warm greys taken from the logo's black lettering */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f6f6f3;
+  --color-neutral-100: #ededea;
+  --color-neutral-200: #e4e4e0;
+  --color-neutral-300: #c9c9c4;
+  --color-neutral-400: #9a9a94;
+  --color-neutral-500: #6b7079;
+  --color-neutral-600: #3b3e44;
+  --color-neutral-700: #2a2d31;
+  --color-neutral-800: #1b1d20;
+  --color-neutral-900: #121315;
+  --color-neutral-950: #0b0c0d;
+
+  /* Semantic surface/text roles: components consume these, never the ramp above */
+  --color-background: var(--color-neutral-50);
+  --color-surface: var(--color-neutral-0);
+  --color-surface-alt: var(--color-neutral-50);
+  --color-surface-sunken: var(--color-neutral-100);
+  --color-surface-dark: var(--color-neutral-900);
+  --color-border: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+  /* Contorno de campos de formulário: 3,47:1 com branco, 3,21:1 com o fundo (WCAG 1.4.11) */
+  --color-border-control: #8a8a84;
+  --color-scrim: rgb(11 12 13 / 0.45);
+
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-neutral-500);
+  --color-text-on-primary: var(--color-neutral-0);
+  --color-text-on-dark: var(--color-neutral-0);
+
+  /* Brand roles: Continente (logo red). Açores overrides below. */
+  --color-primary: #b00000;
+  --color-primary-hover: #8c0000;
+  --color-primary-active: #730000;
+  --color-primary-surface: #fbeaea;
+  --color-secondary: var(--color-neutral-600);
+  --color-accent: var(--color-neutral-900);
+
+  --color-success: #157a3c;
+  --color-success-surface: #e6f4ea;
+  --color-warning: #9a6200;
+  --color-warning-surface: #fdf3dc;
+  /* Erro afastado do vermelho de marca (ΔE 34,6; antes 9,3): o foco, a seleção e a marca não se confundem com erro */
+  --color-error: #9f1239;
+  --color-error-surface: #fdecef;
+  --color-information: #1d4f91;
+  --color-information-surface: #e8eff9;
+
+  /* Seleção e foco neutros (asfalto), como no Blueprint: a cor de marca fica para a ação */
+  --color-selection: var(--color-neutral-900);
+  --color-selection-surface: var(--color-neutral-50);
+  --color-focus-ring: var(--color-neutral-900);
+
+  /* Vehicle illustration (used while WeGest has no photo for a model) */
+  --color-illustration-bg-top: #f4f4f1;
+  --color-illustration-bg-bottom: #e3e3df;
+  --color-illustration-bg-dark-top: #34373c;
+  --color-illustration-bg-dark-bottom: #25272b;
+  --color-illustration-outline: rgb(255 255 255 / 0.32);
+  --color-illustration-glass: #2a3038;
+  --color-illustration-glass-light: #5d6670;
+  --color-illustration-tyre: #16181b;
+  --color-illustration-rim: #b9bdc2;
+  --color-illustration-hub: #6b7079;
+  --color-illustration-light: #ffffff;
+  --color-illustration-grille: #1b1d20;
+  --color-illustration-cabin: #2a2d31;
+  --color-illustration-screen: #0f1113;
+  --color-illustration-trim: #4a4f55;
+  --color-illustration-shadow: rgb(0 0 0 / 0.12);
+
+  /* Paint colours for the illustration, keyed by name (mock data and future WeGest field) */
+  --color-paint-white: #f2f2ef;
+  --color-paint-pearl: #e8e8e6;
+  --color-paint-silver: #c9ccd1;
+  --color-paint-grey: #8a8f96;
+  --color-paint-graphite: #3c4a57;
+  --color-paint-black: #1b1c1e;
+  --color-paint-onyx: #2b2d31;
+  --color-paint-red: #b3001b;
+  --color-paint-wine: #7a1020;
+  --color-paint-blue: #1f4e8c;
+  --color-paint-green: #4d6b53;
+  --color-paint-olive: #6f7a5a;
+  --color-paint-orange: #d27a2c;
+  --color-paint-yellow: #f0c419;
+  --color-paint-sand: #e9e4d8;
+  --color-paint-default: #9aa0a6;
+
+  /* ------------------------------------------------------------ */
+  /* TYPOGRAPHY                                                     */
+  /* ------------------------------------------------------------ */
+
+  /* Loaded with next/font (self-hosted, font-display: swap) in the root layout */
+  --font-display: var(--font-anton), "Arial Narrow", sans-serif;
+  --font-body: var(--font-archivo), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --line-height-tight: 0.95;
+  --line-height-heading: 1.2;
+  --line-height-body: 1.6;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Fluid type scale: clamp(min, preferred, max) */
+  --font-size-display: clamp(3rem, 2rem + 4vw, 4.5rem);
+  --font-size-h1: clamp(2.25rem, 1.8rem + 2vw, 3.5rem);
+  --font-size-h2: clamp(1.75rem, 1.5rem + 1.2vw, 2.5rem);
+  --font-size-h3: 1.5rem;
+  --font-size-h4: 1.25rem;
+  --font-size-body-large: 1.125rem;
+  --font-size-body: 0.9375rem;
+  --font-size-body-small: 0.875rem;
+  --font-size-caption: 0.75rem;
+  --font-size-label: 0.875rem;
+
+  /* ------------------------------------------------------------ */
+  /* SPACING: 4px base scale, fluid at the larger end               */
+  /* ------------------------------------------------------------ */
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: clamp(2rem, 1.75rem + 1.25vw, 3rem);
+  --space-2xl: clamp(2.75rem, 2.25rem + 2vw, 4.5rem);
+  --space-3xl: clamp(3.5rem, 2.75rem + 3vw, 6rem);
+
+  /* ------------------------------------------------------------ */
+  /* RADIUS                                                         */
+  /* ------------------------------------------------------------ */
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ------------------------------------------------------------ */
+  /* BORDERS                                                        */
+  /* ------------------------------------------------------------ */
+
+  --border-width-thin: 1px;
+  --border-width-thick: 2px;
+
+  /* ------------------------------------------------------------ */
+  /* SHADOWS: semantic elevation levels                            */
+  /* ------------------------------------------------------------ */
+
+  --shadow-sm: 0 1px 2px rgb(11 12 13 / 0.06), 0 1px 1px rgb(11 12 13 / 0.04);
+  --shadow-md: 0 10px 30px -12px rgb(11 12 13 / 0.18);
+  --shadow-lg: 0 20px 50px -22px rgb(11 12 13 / 0.35);
+  --shadow-xl: 0 24px 48px rgb(11 12 13 / 0.18), 0 8px 16px rgb(11 12 13 / 0.1);
+
+  /* ------------------------------------------------------------ */
+  /* Z-INDEX: global scale, never invent ad-hoc values              */
+  /* ------------------------------------------------------------ */
+
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-header: 300;
+  --z-overlay: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+
+  /* ------------------------------------------------------------ */
+  /* MOTION                                                         */
+  /* ------------------------------------------------------------ */
+
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --duration-slow: 400ms;
+
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ------------------------------------------------------------ */
+  /* CONTAINERS                                                     */
+  /* ------------------------------------------------------------ */
+
+  --container-narrow: 46rem;
+  --container-standard: 80rem;
+  --container-wide: 92rem;
+  --container-gutter: clamp(1rem, 0.75rem + 1.5vw, 2rem);
+
+  --section-padding-compact: clamp(1.5rem, 1.25rem + 1.5vw, 2.75rem);
+  --section-padding-normal: clamp(2.25rem, 1.75rem + 2.5vw, 4.25rem);
+  --section-padding-spacious: clamp(3.5rem, 2.75rem + 4vw, 6.25rem);
+
+  --measure-intro: 38rem;
+  --measure-intro-wide: 50rem;
+
+  /* ------------------------------------------------------------ */
+  /* LAYOUT: recurring column widths (added, see DECISIONS.md)      */
+  /* ------------------------------------------------------------ */
+
+  --layout-nav: 13.75rem;      /* account navigation */
+  --layout-filters: 16.25rem;  /* results filters */
+  --layout-aside: 24rem;       /* checkout / vehicle sidebar */
+  --layout-label: 10.5rem;     /* label column of definition lists */
+  --layout-drawer: 22.5rem;    /* mobile filters drawer */
+  --layout-header: 4rem;       /* sticky site header, mobile */
+  --layout-header-sm: 4.5rem;  /* from the sm breakpoint */
+  --layout-header-lg: 5rem;    /* from the lg breakpoint */
+  --layout-field-short: 10rem; /* short inputs: CVV, card expiry, postal code */
+  --layout-tap: 2.75rem;       /* minimum touch target (44 px, docs/accessibility.md) */
+  --layout-action-bar: 9rem;   /* room for a fixed bottom action bar (mobile checkout) */
+  --aspect-vehicle: 5 / 3;     /* vehicle photo / illustration ratio */
+}
+
+/* Região Açores: só os papéis de marca mudam (logótipo verde) */
+[data-region="azores"] {
+  /* #0b7a00: 5,5:1 com branco (AA). O verde do logótipo (#0f9200) dava 4,1:1. */
+  --color-primary: #0b7a00;
+  --color-primary-hover: #086100;
+  --color-primary-active: #064c00;
+  --color-primary-surface: #e8f6e5;
+}

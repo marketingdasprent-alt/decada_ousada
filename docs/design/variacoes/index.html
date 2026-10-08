@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variações de direção: DÉCADA OUSADA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Mockup de aprovação (fase 1). Valores propostos, não aplicados à app. */
+  :root {
+    --asfalto: #121315;      /* preto do lettering do logótipo */
+    --papel: #ffffff;
+    --pagina: #f4f4f1;
+    --linha: #e2e2dd;
+    --texto-2: #474a50;
+    --texto-3: #686c73;
+    --vermelho: #b00000;     /* Continente: marca e ação */
+    --verde: #0b7a00;        /* Açores: proposto, AA com branco (5,3:1) */
+    --erro: #8a1c5a;         /* proposto: erro afastado do vermelho de marca */
+    --anton: "Anton", "Arial Narrow", sans-serif;
+    --archivo: "Archivo", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--archivo); color: var(--asfalto); background: var(--pagina); font-size: 15px; line-height: 1.55; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1.doc { font-family: var(--anton); font-size: 40px; text-transform: uppercase; line-height: 1; }
+  .doc-lede { color: var(--texto-2); margin: 10px 0 40px; max-width: 70ch; }
+  section.var { margin-top: 56px; }
+  .var-head { display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; border-top: 2px solid var(--asfalto); padding-top: 14px; margin-bottom: 20px; }
+  .var-head h2 { font-family: var(--anton); font-size: 26px; text-transform: uppercase; font-weight: 400; }
+  .var-head p { color: var(--texto-2); max-width: 70ch; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  @media (max-width: 900px) { .grid3, .grid2 { grid-template-columns: 1fr; } }
+
+  /* ---------- Ilustração (proposta: silhueta por carroçaria, linha do logótipo no chão) ---------- */
+  .ilu { aspect-ratio: 5 / 3; display: block; width: 100%; }
+
+  /* ---------- RAC A: total em destaque, card inteiro clicável ---------- */
+  .racA { background: var(--papel); border-radius: 16px; overflow: hidden; border: 1px solid var(--linha); text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+  .racA:hover { border-color: var(--asfalto); }
+  .racA .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .racA .flag { align-self: flex-start; }
+  .racA .name { font-weight: 700; font-size: 18px; }
+  .racA .meta { color: var(--texto-3); font-size: 13px; }
+  .racA .specs { font-size: 14px; color: var(--texto-2); }
+  .racA .price { display: flex; align-items: flex-end; justify-content: space-between; border-top: 1px solid var(--linha); padding-top: 14px; margin-top: auto; }
+  .racA .total { font-family: var(--anton); font-size: 44px; line-height: .9; }
+  .racA .per { text-align: right; color: var(--texto-2); font-size: 13px; }
+  .racA .flag { color: #9a6200; background: #fdf3dc; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; justify-self: start; }
+
+  /* ---------- RAC B: linha de comparação ---------- */
+  .racB { display: grid; grid-template-columns: 220px 1fr 220px; background: var(--papel); border: 1px solid var(--linha); border-radius: 16px; overflow: hidden; }
+  .racB + .racB { margin-top: 12px; }
+  .racB .mid { padding: 18px 22px; display: grid; align-content: center; gap: 6px; }
+  .racB .name { font-weight: 700; font-size: 18px; }
+  .racB .specs { color: var(--texto-2); font-size: 14px; }
+  .racB .incl { color: var(--texto-3); font-size: 13px; }
+  .racB .side { border-left: 1px solid var(--linha); padding: 18px 22px; display: grid; align-content: center; gap: 10px; text-align: right; }
+  .racB .total { font-family: var(--anton); font-size: 40px; line-height: .9; }
+  .racB .per { color: var(--texto-2); font-size: 13px; }
+  .btn { display: inline-flex; justify-content: center; align-items: center; height: 44px; padding: 0 18px; border-radius: 8px; font-weight: 600; text-decoration: none; }
+  .btn-brand { background: var(--vermelho); color: #fff; }
+  .btn-line { border: 1px solid var(--asfalto); color: var(--asfalto); background: transparent; }
+  @media (max-width: 900px) { .racB { grid-template-columns: 1fr; } .racB .side { border-left: 0; border-top: 1px solid var(--linha); text-align: left; } }
+
+  /* ---------- TVDE A: ficha de condições ---------- */
+  .tvA { background: var(--papel); border: 1px solid var(--linha); border-radius: 16px; overflow: hidden; }
+  .tvA .top { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 18px 20px 0; align-items: end; }
+  .tvA .name { font-weight: 700; font-size: 18px; }
+  .tvA .specs { color: var(--texto-2); font-size: 14px; grid-column: 1 / -1; }
+  .tvA .week { font-family: var(--anton); font-size: 44px; line-height: .9; text-align: right; }
+  .tvA .week small { font-family: var(--archivo); font-size: 13px; color: var(--texto-2); display: block; text-align: right; }
+  .tvA dl { display: grid; grid-template-columns: repeat(4, 1fr); margin: 16px 0 0; border-top: 1px solid var(--linha); }
+  .tvA dl div { padding: 12px 14px; border-right: 1px solid var(--linha); }
+  .tvA dl div:last-child { border-right: 0; }
+  .tvA dt { color: var(--texto-3); font-size: 12px; }
+  .tvA dd { font-weight: 700; font-size: 15px; margin: 2px 0 0; }
+  .tvA .cta { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; background: var(--pagina); border-top: 1px solid var(--linha); }
+  .tvA .cta span { color: var(--texto-2); font-size: 13px; }
+
+  /* ---------- TVDE B: recibo (o que paga agora vs por semana) ---------- */
+  .tvB { background: var(--asfalto); color: #fff; border-radius: 16px; overflow: hidden; }
+  .tvB .ilu-wrap { background: #1d1f22; }
+  .tvB .body { padding: 18px 20px 20px; display: grid; gap: 14px; }
+  .tvB .name { font-weight: 700; font-size: 18px; }
+  .tvB .specs { color: rgb(255 255 255 / .72); font-size: 14px; }
+  .tvB .pay { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgb(255 255 255 / .16); border-radius: 10px; overflow: hidden; }
+  .tvB .pay div { background: #1d1f22; padding: 12px 14px; }
+  .tvB .pay dt { color: rgb(255 255 255 / .7); font-size: 12px; }
+  .tvB .pay dd { font-family: var(--anton); font-size: 30px; line-height: 1; margin-top: 4px; }
+  .tvB .cond { color: rgb(255 255 255 / .72); font-size: 13px; }
+  .tvB .btn-light { background: #fff; color: var(--asfalto); }
+
+  /* ---------- Topos de página ---------- */
+  .topRac { background: var(--papel); border-radius: 20px; padding: 36px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: center; border: 1px solid var(--linha); }
+  .topRac h3 { font-family: var(--anton); font-size: 64px; line-height: .92; text-transform: uppercase; font-weight: 400; }
+  .topRac p { color: var(--texto-2); margin-top: 12px; max-width: 46ch; }
+  .search { background: var(--pagina); border-radius: 14px; padding: 18px; display: grid; gap: 10px; }
+  .field { background: var(--papel); border: 1px solid var(--linha); border-radius: 8px; padding: 8px 12px; }
+  .field small { color: var(--texto-3); font-size: 12px; display: block; }
+  .field b { font-weight: 600; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .topTv { background: var(--asfalto); color: #fff; border-radius: 20px; padding: 36px; position: relative; overflow: hidden; }
+  .topTv h3 { font-family: var(--anton); font-size: 64px; line-height: .92; text-transform: uppercase; font-weight: 400; max-width: 12ch; }
+  .topTv ol { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 28px; border-top: 1px solid rgb(255 255 255 / .2); }
+  .topTv li { padding: 14px 14px 0 0; }
+  .topTv li b { font-family: var(--anton); font-size: 28px; font-weight: 400; display: block; color: rgb(255 255 255 / .9); }
+  .topTv li span { color: rgb(255 255 255 / .75); font-size: 14px; }
+  .topTv .lines { position: absolute; right: -60px; top: 18px; width: 520px; opacity: .9; }
+  @media (max-width: 900px) { .topRac { grid-template-columns: 1fr; } .topRac h3, .topTv h3 { font-size: 44px; } .topTv ol { grid-template-columns: 1fr 1fr; } }
+
+  .note { margin-top: 12px; color: var(--texto-3); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="doc">Variações de direção</h1>
+  <p class="doc-lede">Mockup de aprovação da fase 1 do prompt de design. Mostra duas variações por produto para os cards de viatura e uma proposta de topo de página para cada produto. Valores e dados de demonstração; nada disto está aplicado ao site.</p>
+
+  <!-- símbolos reutilizados -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="sedan" viewBox="0 0 400 240">
+        <rect width="400" height="240" fill="#efefeb"/>
+        <path d="M30 196c90-6 250-6 340 0" stroke="#b00000" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <g transform="translate(0 40)">
+          <path d="M28 118c0-15 7-24 24-28l58-12c22-20 52-34 92-35h56c30 0 52 15 72 33l34 7c14 3 20 13 20 26v9c0 4-3 6-7 6H35c-4 0-7-2-7-6z" fill="currentColor"/>
+          <path d="M126 78c18-17 42-25 72-26v26z M210 52h48c22 1 40 11 56 26H210z" fill="#2a3038"/>
+          <circle cx="100" cy="132" r="27" fill="#16181b"/><circle cx="100" cy="132" r="13" fill="#b9bdc2"/>
+          <circle cx="300" cy="132" r="27" fill="#16181b"/><circle cx="300" cy="132" r="13" fill="#b9bdc2"/>
+        </g>
+      </symbol>
+      <symbol id="van" viewBox="0 0 400 240">
+        <rect width="400" height="240" fill="#efefeb"/>
+        <path d="M30 196c90-6 250-6 340 0" stroke="#b00000" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <g transform="translate(0 22)">
+          <path d="M40 150V62c0-10 8-18 18-18h196c12 0 22 5 30 14l46 52 18 6c8 3 12 10 12 18v16c0 4-3 6-7 6H46c-4 0-6-2-6-6z" fill="currentColor"/>
+          <path d="M262 62h18l40 48h-58z" fill="#2a3038"/>
+          <circle cx="100" cy="158" r="26" fill="#16181b"/><circle cx="100" cy="158" r="12" fill="#b9bdc2"/>
+          <circle cx="300" cy="158" r="26" fill="#16181b"/><circle cx="300" cy="158" r="12" fill="#b9bdc2"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- ===================== RENT A CAR ===================== -->
+  <section class="var">
+    <div class="var-head"><h2>Rent a Car A: o total manda</h2><p>Com datas escolhidas, o número grande é o total do período (o que o cliente paga). O preço por dia passa a nota. O card inteiro é o link: sai a barra preta de cada card. A disponibilidade só aparece quando é exceção.</p></div>
+    <div class="grid3">
+      <a class="racA" href="#"><svg class="ilu" style="color:#c9ccd1"><use href="#sedan"/></svg>
+        <div class="body"><p class="name">Peugeot 208</p><p class="meta">Económico, ou similar</p><p class="specs">Manual, gasolina, 5 lugares</p>
+          <div class="price"><p class="total">117 €</p><p class="per">3 dias<br>39 € por dia</p></div></div></a>
+      <a class="racA" href="#"><svg class="ilu" style="color:#3c4a57"><use href="#sedan"/></svg>
+        <div class="body"><p class="name">Peugeot 5008</p><p class="meta">7 lugares, ou similar</p><p class="specs">Automático, diesel, 7 lugares</p><span class="flag">Últimas unidades</span>
+          <div class="price"><p class="total">237 €</p><p class="per">3 dias<br>79 € por dia</p></div></div></a>
+      <a class="racA" href="#"><svg class="ilu" style="color:#dcdcdc"><use href="#van"/></svg>
+        <div class="body"><p class="name">Renault Trafic Furgão</p><p class="meta">Comercial médio, ou similar</p><p class="specs">Manual, diesel, 6 m³ de carga</p>
+          <div class="price"><p class="total">225 €</p><p class="per">3 dias<br>75 € por dia</p></div></div></a>
+    </div>
+    <p class="note">Também mostra a silhueta por carroçaria (comercial desenhado como furgão) e a linha do logótipo como chão.</p>
+  </section>
+
+  <section class="var">
+    <div class="var-head"><h2>Rent a Car B: lista de comparação</h2><p>Uma viatura por linha, como num comparador: especificações ao centro, total e ação à direita, sempre no mesmo eixo. Mais fácil de comparar preços em desktop; em mobile empilha.</p></div>
+    <div class="racB"><svg class="ilu" style="color:#1f4e8c"><use href="#sedan"/></svg>
+      <div class="mid"><p class="name">Renault Clio <span style="color:var(--texto-3);font-weight:400;font-size:14px">ou similar</span></p><p class="specs">Económico. Manual, gasolina, 5 lugares, 2 malas</p><p class="incl">Inclui seguro de responsabilidade civil e 300 km por dia</p></div>
+      <div class="side"><p class="total">111 €</p><p class="per">3 dias, 37 € por dia</p><a class="btn btn-brand" href="#">Escolher</a></div></div>
+    <div class="racB"><svg class="ilu" style="color:#dcdcdc"><use href="#van"/></svg>
+      <div class="mid"><p class="name">Citroën Berlingo Van <span style="color:var(--texto-3);font-weight:400;font-size:14px">ou similar</span></p><p class="specs">Comercial pequeno. Manual, diesel, 3 lugares, 3,3 m³</p><p class="incl">Inclui seguro de responsabilidade civil e 300 km por dia</p></div>
+      <div class="side"><p class="total">165 €</p><p class="per">3 dias, 55 € por dia</p><a class="btn btn-brand" href="#">Escolher</a></div></div>
+  </section>
+
+  <!-- ===================== TVDE ===================== -->
+  <section class="var">
+    <div class="var-head"><h2>TVDE A: ficha de condições</h2><p>Para um motorista, as condições pesam tanto como o preço. Preço semanal grande, e uma régua com as quatro condições com o mesmo peso. Fundo claro, como Rent a Car, mas estrutura de ficha técnica.</p></div>
+    <div class="grid2">
+      <article class="tvA"><svg class="ilu" style="color:#2b2d31"><use href="#sedan"/></svg>
+        <div class="top"><div><p class="name">Toyota Corolla Hybrid</p></div><p class="week">275 €<small>por semana</small></p><p class="specs">Automático, híbrido, 5 lugares, 950 km de autonomia</p></div>
+        <dl><div><dt>Caução</dt><dd>750 €</dd></div><div><dt>Paga agora</dt><dd>250 €</dd></div><div><dt>Km incluídos</dt><dd>6000/mês</dd></div><div><dt>Mínimo</dt><dd>4 semanas</dd></div></dl>
+        <div class="cta"><span>Leiria, Lisboa, Faro</span><a class="btn btn-line" href="#">Ver condições</a></div></article>
+      <article class="tvA"><svg class="ilu" style="color:#f2f2ef"><use href="#sedan"/></svg>
+        <div class="top"><div><p class="name">Kia Niro EV</p></div><p class="week">310 €<small>por semana</small></p><p class="specs">Automático, elétrico, 5 lugares, 460 km de autonomia</p></div>
+        <dl><div><dt>Caução</dt><dd>900 €</dd></div><div><dt>Paga agora</dt><dd>300 €</dd></div><div><dt>Km incluídos</dt><dd>8000/mês</dd></div><div><dt>Mínimo</dt><dd>4 semanas</dd></div></dl>
+        <div class="cta"><span>Lisboa, Porto</span><a class="btn btn-line" href="#">Ver condições</a></div></article>
+    </div>
+    <p class="note">Km por mês, como devolve a API do WeGest (hoje o site mostra por semana).</p>
+  </section>
+
+  <section class="var">
+    <div class="var-head"><h2>TVDE B: o recibo</h2><p>Card escuro (identidade do produto profissional) que responde à pergunta principal do motorista: quanto pago agora e quanto pago por semana. As condições ficam numa linha.</p></div>
+    <div class="grid2">
+      <article class="tvB"><div class="ilu-wrap"><svg class="ilu" style="color:#9aa0a6"><use href="#sedan"/></svg></div>
+        <div class="body"><div><p class="name">Toyota Corolla Hybrid</p><p class="specs">Automático, híbrido, 5 lugares</p></div>
+          <dl class="pay"><div><dt>Paga agora (sinal)</dt><dd>250 €</dd></div><div><dt>Por semana</dt><dd>275 €</dd></div></dl>
+          <p class="cond">Caução de 750 €, 6000 km por mês, mínimo de 4 semanas.</p>
+          <a class="btn btn-light" href="#">Ver viatura</a></div></article>
+      <article class="tvB"><div class="ilu-wrap"><svg class="ilu" style="color:#c9ccd1"><use href="#sedan"/></svg></div>
+        <div class="body"><div><p class="name">Dacia Jogger</p><p class="specs">Manual, GPL, 7 lugares</p></div>
+          <dl class="pay"><div><dt>Paga agora (sinal)</dt><dd>200 €</dd></div><div><dt>Por semana</dt><dd>235 €</dd></div></dl>
+          <p class="cond">Caução de 750 €, 6000 km por mês, mínimo de 4 semanas.</p>
+          <a class="btn btn-light" href="#">Ver viatura</a></div></article>
+    </div>
+  </section>
+
+  <!-- ===================== TOPOS ===================== -->
+  <section class="var">
+    <div class="var-head"><h2>Topo Rent a Car: a pesquisa é o protagonista</h2><p>Fundo claro (o logótipo tem versão para fundo branco). Título curto e a pesquisa ao lado, acima da dobra em desktop e logo a seguir ao título em mobile. O preto fica para o texto, não para a página.</p></div>
+    <div class="topRac">
+      <div><h3>Alugue o carro para estes dias</h3><p>Escolha onde levanta e quando devolve. Mostramos só o que está livre, com o total do período.</p></div>
+      <div class="search">
+        <div class="field"><small>Levantamento</small><b>Leiria</b></div>
+        <div class="two"><div class="field"><small>De</small><b>20 out, 10:00</b></div><div class="field"><small>Até</small><b>23 out, 10:00</b></div></div>
+        <a class="btn btn-brand" href="#">Ver carros disponíveis</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="var">
+    <div class="var-head"><h2>Topo TVDE: o processo é o protagonista</h2><p>Fundo escuro reservado ao produto profissional. Os cinco passos são uma sequência real, por isso a numeração tem função. As linhas do logótipo entram inteiras, nítidas, sem opacidade baixa.</p></div>
+    <div class="topTv">
+      <svg class="lines" viewBox="0 0 1000 460" aria-hidden="true"><path d="M630 4C380 6 150 40 70 150 10 232 30 320 130 380c90 54 190 70 260 80-90-18-210-40-290-100C10 300-4 220 60 150 150 50 390 14 630 4z" fill="#b00000"/><path d="M420 128c40-30 120-70 230-78 110-8 180 30 290 54 30 6 50 8 60 8-20 2-60 0-110-10-90-18-160-46-250-40-90 6-150 40-180 64-12 8-24 6-40 2z" fill="#b00000"/><path d="M170 182c80-36 190-52 340-56 130-4 210-6 300-10-60 10-160 20-300 26-120 4-160 12-210 26-50 14-90 16-130 14z" fill="#b00000"/></svg>
+      <h3>Comece a conduzir esta semana</h3>
+      <ol><li><b>1</b><span>Escolha a viatura</span></li><li><b>2</b><span>Faça o cadastro</span></li><li><b>3</b><span>Envie os documentos</span></li><li><b>4</b><span>Pague o sinal</span></li><li><b>5</b><span>Levante após aprovação</span></li></ol>
+    </div>
+  </section>
+</div>
+</body>
+</html>
