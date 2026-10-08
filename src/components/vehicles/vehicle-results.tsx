@@ -45,8 +45,8 @@ const uniq = <T,>(list: (T | undefined)[]) => [...new Set(list.filter((x): x is 
  * Listagem com filtros (doc §13, §41).
  * Só mostra filtros para valores que existem realmente nos resultados.
  */
-export function VehicleResults({ items, product }: { items: ResultItem[]; product: "rentacar" | "tvde" }) {
-  const [filters, setFilters] = useState<Filters>(EMPTY);
+export function VehicleResults({ items, product, initialCategory }: { items: ResultItem[]; product: "rentacar" | "tvde"; /** Categoria já escolhida (vinda da página de categorias); pode ser retirada nos filtros. */ initialCategory?: string }) {
+  const [filters, setFilters] = useState<Filters>(initialCategory ? { ...EMPTY, categories: [initialCategory] } : EMPTY);
   const [sort, setSort] = useState<"price_asc" | "price_desc" | "name">("price_asc");
   const [panelOpen, setPanelOpen] = useState(false);
   useEffect(() => {

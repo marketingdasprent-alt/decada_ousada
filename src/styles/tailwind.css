@@ -34,6 +34,8 @@
   --color-info: var(--color-information);
   --color-info-surface: var(--color-information-surface);
   --color-focus: var(--color-focus-ring);
+  --color-region-mainland: var(--color-mainland);
+  --color-region-azores: var(--color-azores);
   --color-selected: var(--color-selection);
   --color-selected-surface: var(--color-selection-surface);
   --color-transparent: transparent;
@@ -61,6 +63,7 @@
   --radius-panel: var(--radius-lg);
   --radius-feature: var(--radius-xl);
   --radius-pill: var(--radius-full);
+  --radius-button: var(--radius-action);
   --shadow-*: initial;
   --shadow-low: var(--shadow-sm);
   --shadow-raised: var(--shadow-md);
@@ -95,6 +98,9 @@
 }
 @utility grid-search {
   grid-template-columns: 1.4fr 1fr 0.75fr 1fr 0.75fr;
+}
+@utility grid-tvde-search {
+  grid-template-columns: 1.4fr 1fr 0.75fr;
 }
 @utility grid-search-bar {
   grid-template-columns: 1.4fr 1fr 0.75fr 1fr 0.75fr auto;
@@ -147,6 +153,31 @@
 /* Campos curtos (CVV, validade, código postal): não esticam à largura da coluna */
 @utility max-w-field-short {
   max-width: var(--layout-field-short);
+}
+
+/* Hero: texto à esquerda, formulário de pesquisa à direita (a partir de lg) */
+@utility grid-hero {
+  grid-template-columns: minmax(0, 1fr) var(--layout-hero-form);
+}
+
+/*
+ * Véu da hero (padrão do site da BV): mais escuro atrás do texto, à esquerda, e no
+ * fundo, onde ficam os controlos das fotos. Em ecrãs estreitos o texto ocupa a largura
+ * toda, por isso o véu é uniforme. O contraste do texto nunca depende da foto.
+ */
+@utility hero-veil {
+  background: color-mix(in srgb, var(--color-surface-dark) 78%, transparent);
+  @media (width >= 64rem) {
+    background:
+      linear-gradient(
+        100deg,
+        color-mix(in srgb, var(--color-surface-dark) 94%, transparent) 0%,
+        color-mix(in srgb, var(--color-surface-dark) 84%, transparent) 38%,
+        color-mix(in srgb, var(--color-surface-dark) 45%, transparent) 70%,
+        color-mix(in srgb, var(--color-surface-dark) 30%, transparent) 100%
+      ),
+      linear-gradient(0deg, color-mix(in srgb, var(--color-surface-dark) 70%, transparent) 0%, transparent 40%);
+  }
 }
 
 @utility z-sticky {

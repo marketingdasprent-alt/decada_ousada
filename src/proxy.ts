@@ -1,20 +1,22 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { isRegion, regionFromHost, type Region } from "@/domain/region";
+import { isLiveDomain, isRegion, regionFromHost, type Region } from "@/domain/region";
 
 /**
  * Multi-região num único deploy (doc §5, §110):
  *   www.decadaousada.pt/...      → /mainland/...
  *   acores.decadaousada.pt/...   → /azores/...
  *
- * Em desenvolvimento: acores.localhost:3000 ou ?regiao=acores (fica em cookie).
+ * Fora do domínio real (localhost, pré-visualizações *.vercel.app): acores.localhost:3000
+ * ou ?regiao=acores (fica em cookie). No domínio real a região vem só do domínio.
  * As rotas /api recebem a região no cabeçalho x-do-region.
  */
 const DEV_COOKIE = "do_region_dev";
 
 function resolveRegion(req: NextRequest): { region: Region; setDevCookie?: Region } {
-  const fromHost = regionFromHost(req.headers.get("host"));
-  if (fromHost === "azores" || process.env.NODE_ENV === "production") return { region: fromHost };
+  const host = req.headers.get("host");
+  const fromHost = regionFromHost(host);
+  if (fromHost === "azores" || isLiveDomain(host)) return { region: fromHost };
 
   const q = req.nextUrl.searchParams.get("regiao");
   if (q === "acores" || q === "continente") {

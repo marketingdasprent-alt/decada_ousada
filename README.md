@@ -67,6 +67,7 @@ Regras do projeto: [AGENTS.md](AGENTS.md). Exceções ao Blueprint: [DECISIONS.m
 
 ## Documentação
 
+- [docs/deploy-vercel.md](docs/deploy-vercel.md): pôr o site no ar na Vercel (demo e produção)
 - [docs/briefing-cliente.md](docs/briefing-cliente.md): briefing original da plataforma (estava no README do repositório)
 - [docs/wegest/integracao.md](docs/wegest/integracao.md): como ligar a API real (passo a passo)
 - [docs/wegest/analise-gaps.md](docs/wegest/analise-gaps.md): o que a API cobre e o que falta

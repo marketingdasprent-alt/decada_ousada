@@ -1,68 +1,64 @@
 import { BadgeCheck, CalendarCheck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
-import { RentACarSearchForm } from "@/components/rentacar/search-form";
-import { buttonClass, ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
+import { RegionSwitch } from "@/components/layout/region-switch";
+import { Hero } from "@/components/shared/hero";
+import { HeroSearch } from "@/components/shared/hero-search";
+import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { formatMoney } from "@/domain/pricing";
 import { getOffer } from "@/domain/vehicle";
-import { regionFromParams } from "@/lib/region";
+import type { Region } from "@/domain/region";
+import { regionFromParams, regionSwitchHref } from "@/lib/region";
+import { REGION_IMAGERY } from "@/lib/region-imagery";
 import { getStartingPrice, listLocations, listVehicles } from "@/services/wegest";
+
+/** Título da hero por região: a mesma promessa, dita para quem está em cada região. */
+const HOME_COPY: Record<Region, { title: string; description: string }> = {
+  mainland: {
+    title: "Encontre a viatura certa para si.",
+    description: "Rent a Car ao dia e viaturas TVDE à semana em Portugal Continental.",
+  },
+  azores: {
+    title: "Explore os Açores ao volante.",
+    description: "Rent a Car ao dia e viaturas TVDE à semana nos Açores.",
+  },
+};
 
 export default async function HomePage({ params }: PageProps<"/[region]">) {
   const region = await regionFromParams(params);
-  const [locations, tvdeFrom, racFrom, vehicles] = await Promise.all([
+  const [locations, tvdeLocations, tvdeFrom, racFrom, vehicles] = await Promise.all([
     listLocations(region, "rentacar"),
+    listLocations(region, "tvde"),
     getStartingPrice(region, "tvde"),
     getStartingPrice(region, "rentacar"),
     listVehicles(region),
   ]);
   const featured = vehicles.filter((v) => getOffer(v, "rentacar")).slice(0, 3);
   const featuredTvde = vehicles.filter((v) => getOffer(v, "tvde")).slice(0, 3);
+  const regionHrefs: Record<Region, string> = { mainland: regionSwitchHref("mainland"), azores: regionSwitchHref("azores") };
 
   return (
     <>
-      {/* Hero: os dois serviços com o mesmo peso (doc §7). Fundo claro; o escuro é do TVDE. */}
-      <Section className="border-b border-line bg-panel">
-        <Container>
-          <h1 className="display max-w-3xl text-display">Encontre a viatura certa para si.</h1>
-          <p className="mt-5 max-w-xl text-body-large text-copy-secondary">
-            Aluguer ao dia para turismo e empresas, ou viaturas à semana preparadas para motoristas TVDE.
-          </p>
-
-          {/* Mobile: a pesquisa sobe para logo a seguir ao título; a ordem no DOM (e no Tab) é a do desktop */}
-          <div className="mt-8 flex flex-col gap-10 md:mt-10">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Link href="/rent-a-car" className="flex flex-col rounded-panel border border-line bg-panel-alt p-6 transition-colors hover:border-copy sm:p-8">
-              <h2 className="display text-h2">Rent a Car</h2>
-              <p className="mt-3 max-w-sm text-copy-secondary">Aluguer de viaturas para turismo, empresas e utilização profissional.</p>
-              {racFrom !== null && (
-                <p className="mt-6 text-body-small text-copy-secondary">
-                  Desde <span className="display text-h3 text-copy tabular">{formatMoney(racFrom)}</span> por dia
-                </p>
-              )}
-              <span className={buttonClass("primary", "md", "mt-6 self-start")}>Pesquisar viaturas</span>
-            </Link>
-            <Link href="/tvde" className="flex flex-col rounded-panel bg-panel-dark p-6 text-on-dark transition-shadow hover:ring-2 hover:ring-brand sm:p-8">
-              <h2 className="display text-h2">TVDE</h2>
-              <p className="mt-3 max-w-sm text-on-dark/75">Viaturas preparadas para motoristas profissionais, com preço semanal, caução e condições visíveis antes de se candidatar.</p>
-              {tvdeFrom !== null && (
-                <p className="mt-6 text-body-small text-on-dark/75">
-                  Desde <span className="display text-h3 text-on-dark tabular">{formatMoney(tvdeFrom)}</span> por semana
-                </p>
-              )}
-              <span className={buttonClass("light", "md", "mt-6 self-start")}>Ver viaturas TVDE</span>
-            </Link>
-          </div>
-
-          {/* Pesquisa Rent a Car */}
-          <div className="max-md:order-first">
-            <h2 className="mb-4 text-h4 font-bold">Pesquisar disponibilidade</h2>
-            <RentACarSearchForm locations={locations} />
-          </div>
-          </div>
-        </Container>
-      </Section>
+      {/* Hero: foto da região, a pesquisa com um separador por serviço (doc §7: os dois com o mesmo peso) */}
+      <Hero
+        region={region}
+        images={[REGION_IMAGERY[region].home, REGION_IMAGERY[region].rentacar, REGION_IMAGERY[region].tvde]}
+        title={HOME_COPY[region].title}
+        description={HOME_COPY[region].description}
+        above={<RegionSwitch current={region} hrefs={regionHrefs} className="w-fit sm:hidden" />}
+        side={<HeroSearch racLocations={locations} tvdeLocations={tvdeLocations} />}
+      >
+        {/* Os dois serviços ditos explicitamente, com a cor de cada um */}
+        <ul className="flex flex-wrap gap-3 text-body-small">
+          <li className="rounded-button bg-brand px-4 py-2 font-semibold text-on-brand">
+            Rent a Car{racFrom !== null && <> desde {formatMoney(racFrom)} por dia</>}
+          </li>
+          <li className="rounded-button border border-on-dark/40 bg-panel-dark px-4 py-2 font-semibold text-on-dark">
+            TVDE{tvdeFrom !== null && <> desde {formatMoney(tvdeFrom)} por semana</>}
+          </li>
+        </ul>
+      </Hero>
 
       {/* Frota em destaque */}
       {featured.length > 0 && (

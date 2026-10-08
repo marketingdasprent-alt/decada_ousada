@@ -12,7 +12,9 @@ import { formatMoney } from "@/domain/pricing";
 import { isRegion, REGIONS } from "@/domain/region";
 import { formatMileage } from "@/domain/offer";
 import { getOffer } from "@/domain/vehicle";
+import type { Location } from "@/domain/location";
 import { attempt } from "@/lib/attempt";
+import { firstParam } from "@/lib/search";
 import { getApplicationForm, getVehicleBySlug, listLocations, listVehicles } from "@/services/wegest";
 
 export async function generateStaticParams({ params }: { params: { region: string } }) {
@@ -30,15 +32,23 @@ export async function generateMetadata({ params }: PageProps<"/[region]/tvde/via
 }
 
 
-export default function Page({ params }: { params: Promise<{ region: string; slug: string }> }) {
+type SP = Record<string, string | string[] | undefined>;
+
+export default function Page({ params, searchParams }: { params: Promise<{ region: string; slug: string }>; searchParams: Promise<SP> }) {
   return (
     <Suspense fallback={<PageSkeleton tone="dark" />}>
-      <TvdeVehicle params={params} />
+      <TvdeVehicle params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function TvdeVehicle({ params }: { params: Promise<{ region: string; slug: string }> }) {
+/** Seletor de levantamento com o local e a data vindos da pesquisa TVDE (?local=&inicio=). */
+async function PickupFromSearch({ searchParams, vehicleId, locations }: { searchParams: Promise<SP>; vehicleId: string; locations: Location[] }) {
+  const sp = await searchParams;
+  return <PickupSelector vehicleId={vehicleId} locations={locations} initialLocationId={firstParam(sp.local)} initialPickupAt={firstParam(sp.inicio)} />;
+}
+
+async function TvdeVehicle({ params, searchParams }: { params: Promise<{ region: string; slug: string }>; searchParams: Promise<SP> }) {
   const { region, slug } = await params;
   if (!isRegion(region)) notFound();
   const vehicle = await getVehicleBySlug(region, slug);
@@ -76,7 +86,11 @@ async function TvdeVehicle({ params }: { params: Promise<{ region: string; slug:
                 <p className="mt-3 text-caption text-copy-muted">O restante da caução ({formatMoney(offer.deposit - reservation)}) é pago no levantamento.</p>
               )}
               <hr className="my-6 border-line" />
-              {locations.length ? <PickupSelector vehicleId={vehicle.id} locations={locations} /> : <p className="text-body-small text-copy-secondary">Sem pontos de levantamento TVDE disponíveis.</p>}
+              {locations.length ? (
+                <Suspense fallback={<PickupSelector vehicleId={vehicle.id} locations={locations} />}>
+                  <PickupFromSearch searchParams={searchParams} vehicleId={vehicle.id} locations={locations} />
+                </Suspense>
+              ) : <p className="text-body-small text-copy-secondary">Sem pontos de levantamento TVDE disponíveis.</p>}
             </Card>
             {form.ok && <ApplicationChecklist form={form.data} reservationAmount={reservation || undefined} />}
             </div>

@@ -20,14 +20,25 @@ import { buttonClass, disabledButtonClass } from "../shared/ui";
  * Escolha de data, hora e local de levantamento TVDE (doc §47–48).
  * Cada alteração dispara nova consulta de disponibilidade ao WeGest.
  */
-export function PickupSelector({ vehicleId, locations }: { vehicleId: string; locations: Location[] }) {
+export function PickupSelector({
+  vehicleId,
+  locations,
+  initialLocationId,
+  initialPickupAt,
+}: {
+  vehicleId: string;
+  locations: Location[];
+  /** Levantamento escolhido na pesquisa TVDE (local e "AAAA-MM-DDTHH:mm"). */
+  initialLocationId?: string;
+  initialPickupAt?: string;
+}) {
   const pickupLocations = locations.filter((l) => l.pickupAvailable);
   const today = useToday();
   const minDate = today ? addDays(today, 1) : "";
-  const [pickedDate, setDate] = useState("");
+  const [pickedDate, setDate] = useState(initialPickupAt?.slice(0, 10) ?? "");
   const date = pickedDate || (today ? addDays(today, 2) : "");
-  const [time, setTime] = useState("10:00");
-  const [locationId, setLocationId] = useState(pickupLocations[0]?.id ?? "");
+  const [time, setTime] = useState(initialPickupAt && TIME_SLOTS.includes(initialPickupAt.slice(11, 16)) ? initialPickupAt.slice(11, 16) : "10:00");
+  const [locationId, setLocationId] = useState(pickupLocations.some((l) => l.id === initialLocationId) ? initialLocationId! : (pickupLocations[0]?.id ?? ""));
   // Resultado associado à consulta que o gerou: "loading" é derivado, não guardado
   const [result, setResult] = useState<{ key: string; availability?: Availability; error?: string } | null>(null);
   const key = date && locationId ? `${date}T${time}|${locationId}` : "";

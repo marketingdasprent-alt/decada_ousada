@@ -41,15 +41,21 @@ export function RentACarSearchForm({
   action = "/rent-a-car/viaturas",
   extraParams,
   collapsible,
+  submitLabel = "Pesquisar",
 }: {
   locations: Location[];
   initial?: Partial<SearchValues>;
-  /** `card` (página), `bar` (faixa à largura da página) ou `stack` (coluna estreita, ex.: painel lateral). */
-  variant?: "card" | "bar" | "stack";
+  /**
+   * `card` (cartão próprio), `embedded` (mesma grelha, dentro de outro cartão, ex.: separadores da hero),
+   * `bar` (faixa à largura da página) ou `stack` (coluna estreita, ex.: painel lateral).
+   */
+  variant?: "card" | "embedded" | "bar" | "stack";
   action?: string;
   extraParams?: Record<string, string>;
   /** Em mobile, mostra só um botão "Alterar pesquisa" até ser aberto. */
   collapsible?: boolean;
+  /** Texto do botão (ex.: "Ver viaturas Rent a Car" na hero). */
+  submitLabel?: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const router = useRouter();
@@ -97,6 +103,7 @@ export function RentACarSearchForm({
 
   const bar = variant === "bar";
   const stack = variant === "stack";
+  const cardLike = variant === "card" || variant === "embedded";
 
   const toggle = collapsible && !expanded && (
     <Button type="button" variant="outline" className="w-full md:hidden" onClick={() => setExpanded(true)}>
@@ -139,12 +146,12 @@ export function RentACarSearchForm({
         </div>
         {bar && (
           <Button type="submit" className="w-full sm:col-span-2 lg:col-span-1 lg:w-auto">
-            <Search className="size-4" aria-hidden /> Pesquisar
+            <Search className="size-4" aria-hidden /> {submitLabel}
           </Button>
         )}
       </div>
 
-      <div className={cn("mt-4 flex flex-col gap-4", variant === "card" && "sm:flex-row sm:items-end sm:justify-between")}>
+      <div className={cn("mt-4 flex flex-col gap-4", cardLike && "sm:flex-row sm:items-end sm:justify-between")}>
         <div className={cn("flex flex-col gap-3", !stack && "sm:flex-row sm:items-center sm:gap-6")}>
           <Checkbox label="Devolver no mesmo local" checked={sameReturn} onChange={(e) => setSameReturn(e.target.checked)} />
           {!sameReturn && (
@@ -160,7 +167,7 @@ export function RentACarSearchForm({
         </div>
         {!bar && (
           <Button type="submit" size="lg" className={cn("w-full", !stack && "sm:w-auto")}>
-            <Search className="size-4" aria-hidden /> Pesquisar
+            <Search className="size-4" aria-hidden /> {submitLabel}
           </Button>
         )}
       </div>
