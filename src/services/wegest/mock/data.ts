@@ -102,37 +102,41 @@ const RAW: V[] = [
 /**
  * Fotografias de demonstração: Unsplash (licença Unsplash, uso comercial gratuito),
  * uma por modelo, verificadas uma a uma como sendo o modelo anunciado. Ligação direta
- * ao CDN, que entrega a largura pedida (até 3840 px). Sem foto do modelo exato
- * (Renault Trafic, Renault Kangoo): fica a ilustração, como quando o WeGest devolve
- * imagem_url = null. Em produção as fotos vêm do WeGest.
+ * ao CDN, que entrega a largura pedida (até 3840 px) já recortada em 5:3 (a proporção de
+ * todos os enquadramentos de viatura) à volta do ponto focal (x, y) do carro, para nenhuma
+ * foto ficar cortada. Ficam com a ilustração, como quando o WeGest devolve
+ * imagem_url = null: modelos sem foto gratuita do modelo exato (Renault Trafic, Renault
+ * Kangoo) e fotos em que o carro já vem cortado no original (Toyota Yaris Hybrid,
+ * Peugeot 5008, Citroën SpaceTourer). Em produção as fotos vêm do WeGest.
  */
-const DEMO_PHOTOS: Record<string, string> = {
-  "V-1001": "photo-1581607767815-4d7df22e3e28",
-  "V-1002": "photo-1666335009171-3ddc17937d6d",
-  "V-1003": "photo-1673178267957-481c3d04c6b5",
-  "V-1004": "photo-1638618164682-12b986ec2a75",
-  "V-1005": "photo-1647418551307-a9bb946afe2e",
-  "V-1006": "photo-1767949374128-58d3592a273d",
-  "V-1007": "photo-1742811969388-d73cc0413d76",
-  "V-1008": "photo-1652509328308-7f0d7804e678",
-  "V-1009": "photo-1739644246928-f4f96c5d9afc",
-  "V-1010": "photo-1706589271894-4f4887011e51",
-  "V-1011": "photo-1727790621990-3a7a2623d564",
-  "V-1012": "photo-1768389533475-edc8b2bb9c7d",
-  "V-1014": "photo-1692279952855-4a72ce767dd8",
-  "V-2001": "photo-1744139858573-1519e7510ed4",
-  "V-2002": "photo-1666335009164-2597314da8e7",
-  "V-2003": "photo-1785900103411-b846f4a7d65e",
-  "V-2004": "photo-1604395924490-a3a18bb7193e",
-  "V-2005": "photo-1623869675781-80aa31012a5a",
-  "V-2006": "photo-1656947874545-075c9b00f44c",
-  "V-2007": "photo-1768391069045-d8851f8ba18e",
+const DEMO_PHOTOS: Record<string, { id: string; x: number; y: number }> = {
+  "V-1001": { id: "photo-1581607767815-4d7df22e3e28", x: 0.4, y: 0.64 },
+  "V-1002": { id: "photo-1666335009171-3ddc17937d6d", x: 0.5, y: 0.5 },
+  "V-1004": { id: "photo-1638618164682-12b986ec2a75", x: 0.5, y: 0.56 },
+  "V-1005": { id: "photo-1647418551307-a9bb946afe2e", x: 0.42, y: 0.42 },
+  "V-1006": { id: "photo-1767949374128-58d3592a273d", x: 0.5, y: 0.61 },
+  "V-1008": { id: "photo-1652509328308-7f0d7804e678", x: 0.45, y: 0.55 },
+  "V-1009": { id: "photo-1739644246928-f4f96c5d9afc", x: 0.5, y: 0.52 },
+  "V-1010": { id: "photo-1706589271894-4f4887011e51", x: 0.5, y: 0.5 },
+  "V-1011": { id: "photo-1727790621990-3a7a2623d564", x: 0.5, y: 0.5 },
+  "V-1012": { id: "photo-1768389533475-edc8b2bb9c7d", x: 0.5, y: 0.46 },
+  "V-1014": { id: "photo-1692279952855-4a72ce767dd8", x: 0.5, y: 0.51 },
+  "V-2001": { id: "photo-1744139858573-1519e7510ed4", x: 0.5, y: 0.67 },
+  "V-2002": { id: "photo-1666335009164-2597314da8e7", x: 0.5, y: 0.5 },
+  "V-2003": { id: "photo-1785900103411-b846f4a7d65e", x: 0.57, y: 0.67 },
+  "V-2004": { id: "photo-1604395924490-a3a18bb7193e", x: 0.5, y: 0.54 },
+  "V-2005": { id: "photo-1623869675781-80aa31012a5a", x: 0.55, y: 0.69 },
+  "V-2006": { id: "photo-1656947874545-075c9b00f44c", x: 0.39, y: 0.64 },
 };
+
+function demoPhotoUrl({ id, x, y }: { id: string; x: number; y: number }): string {
+  return `https://images.unsplash.com/${id}?auto=format&fit=crop&crop=focalpoint&fp-x=${x}&fp-y=${y}&ar=5:3&q=80`;
+}
 
 export const MOCK_VEHICLES: WgVehicle[] = RAW.map((v) => ({
   ...v,
   status: v.status ?? "ACTIVE",
-  photos: DEMO_PHOTOS[v.vehicle_id] ? [{ url: `https://images.unsplash.com/${DEMO_PHOTOS[v.vehicle_id]}?auto=format&fit=crop&q=80`, view: "exterior" }] : [],
+  photos: DEMO_PHOTOS[v.vehicle_id] ? [{ url: demoPhotoUrl(DEMO_PHOTOS[v.vehicle_id]), view: "exterior" }] : [],
 }));
 
 export const MOCK_EXTRAS: WgExtra[] = [

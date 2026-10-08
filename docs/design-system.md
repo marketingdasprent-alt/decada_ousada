@@ -227,7 +227,7 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 |---|---|
 | Client content missing (contacts, policies) | `Pending` / `ContactValue` chip "a confirmar"; never invented text |
 | No vehicle photo in WeGest | `CarIllustration` by body type and paint, labelled "Imagem ilustrativa" |
-| Stock photo of the model (demo data) | Photo flagged `illustrative`, same "Imagem ilustrativa" label; Unsplash CDN serves the width the screen needs (up to 3840 px) |
+| Stock photo of the model (demo data) | Photo flagged `illustrative`, same "Imagem ilustrativa" label; Unsplash CDN serves the width the screen needs (up to 3840 px), already 5:3 around a focal point on the car; `object-contain`, never cropped. A photo whose original cuts the car is not used |
 | Long vehicle or location names | Wrap; no truncation of names, prices or references. Prices never split from their unit (no-break space before "€") |
 | Empty results | `EmptyState` with the reason and the next action ("Limpar filtros", "Ver viaturas TVDE") |
 | WeGest error or timeout | `ErrorState` with "Tentar novamente" and "Contactar-nos"; browser requests time out after 20 s (45 s for payment) |

@@ -7,10 +7,13 @@ Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
 ### Added
 
-- Demo vehicle photos: one free Unsplash photo per model (20 of 22 vehicles,
+- Demo vehicle photos: one free Unsplash photo per model (17 of 22 vehicles,
   exact model checked), served by the Unsplash CDN at the width each screen
-  needs, up to 3840 px. Labelled "Imagem ilustrativa". Renault Trafic and
-  Kangoo keep the illustration (no free photo of the exact model).
+  needs, up to 3840 px, already cut to 5:3 around the car so no photo is
+  cropped in its frame (`object-contain` as a safeguard). Labelled "Imagem
+  ilustrativa". Renault Trafic and Kangoo (no free photo of the exact model)
+  and Toyota Yaris Hybrid, Peugeot 5008 and Citroën SpaceTourer (car cut in
+  the original photo) keep the illustration.
 
 ## [0.5.1]: 2026-10-08
 

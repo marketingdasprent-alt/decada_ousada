@@ -15,6 +15,13 @@ the browser needs (up to 3840 px) instead of the original. Stock photos are
 flagged `illustrative` and show "Imagem ilustrativa", because they show the
 model, not the fleet vehicle. This refines the 2026-10-07 decision: still no
 invented multi-angle galleries, one photo per model.
+No cropped photos (follow-up, same day): the CDN delivers each photo already
+cut to 5:3 (`ar=5:3`), the ratio of every vehicle frame, around a focal point
+set per photo on the car; `StockPhoto` uses `object-contain`, so a frame of
+another ratio shows neutral background instead of cutting the photo. Photos
+whose original already cuts the car (Toyota Yaris Hybrid, Peugeot 5008,
+Citroën SpaceTourer) were removed; those models keep the illustration.
+Final count: 17 of 22 vehicles with a photo.
 
 REASON:
 Request to fill the image placeholders with free 4K stock photos; exact
