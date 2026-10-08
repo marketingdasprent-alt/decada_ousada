@@ -2,13 +2,14 @@ import { UserRound } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { REGION_CONFIG, type Region } from "@/domain/region";
+import type { Region } from "@/domain/region";
 import { regionSwitchHref } from "@/lib/region";
 import { getSession } from "@/services/auth";
 
 import { Container } from "../shared/ui";
 import { Logo } from "../shared/logo";
 import { MobileMenu } from "./mobile-menu";
+import { RegionSwitch } from "./region-switch";
 
 export const NAV = [
   { href: "/rent-a-car", label: "Rent a Car" },
@@ -31,7 +32,7 @@ async function AccountLink() {
 }
 
 export function SiteHeader({ region }: { region: Region }) {
-  const other: Region = region === "azores" ? "mainland" : "azores";
+  const regionHrefs: Record<Region, string> = { mainland: regionSwitchHref("mainland"), azores: regionSwitchHref("azores") };
   return (
     <header className="sticky top-0 z-header bg-panel-dark text-on-dark">
       <Container className="flex h-header items-center gap-6">
@@ -45,20 +46,12 @@ export function SiteHeader({ region }: { region: Region }) {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <a
-            href={regionSwitchHref(other)}
-            className="hidden h-10 items-center rounded-control px-3 text-body-small text-on-dark/70 transition-colors hover:text-on-dark md:flex"
-            title={`Mudar para ${REGION_CONFIG[other].label}`}
-          >
-            <span className="mr-1.5 inline-block size-2 rounded-pill bg-brand" aria-hidden />
-            {REGION_CONFIG[region].shortLabel}
-            <span className="mx-1.5 text-on-dark/30">/</span>
-            <span className="underline-offset-4 hover:underline">{REGION_CONFIG[other].shortLabel}</span>
-          </a>
+          {/* Em mobile o seletor está no menu e na hero da página inicial */}
+          <RegionSwitch current={region} hrefs={regionHrefs} className="hidden sm:flex" />
           <Suspense fallback={<div className="h-11 w-11 rounded-control border border-on-dark/15 sm:w-24" />}>
             <AccountLink />
           </Suspense>
-          <MobileMenu nav={NAV} switchHref={regionSwitchHref(other)} switchLabel={`Mudar para ${REGION_CONFIG[other].label}`} />
+          <MobileMenu nav={NAV} region={region} regionHrefs={regionHrefs} />
         </div>
       </Container>
     </header>

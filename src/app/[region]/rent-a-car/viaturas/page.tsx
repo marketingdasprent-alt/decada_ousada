@@ -12,8 +12,8 @@ import { getOffer } from "@/domain/vehicle";
 import { attempt } from "@/lib/attempt";
 import { formatDateTime, rentalDays } from "@/lib/dates";
 import { regionFromParams } from "@/lib/region";
-import { parseRentalSearch, rentalSearchQuery, searchToFormValues } from "@/lib/search";
-import { listLocations, listVehicles, searchRentACar } from "@/services/wegest";
+import { firstParam, parseRentalSearch, rentalSearchQuery, searchToFormValues } from "@/lib/search";
+import { listCategories, listLocations, listVehicles, searchRentACar } from "@/services/wegest";
 
 export const metadata: Metadata = { title: "Viaturas Rent a Car" };
 
@@ -22,24 +22,29 @@ type SP = Record<string, string | string[] | undefined>;
 export default async function RentACarResultsPage({ params, searchParams }: PageProps<"/[region]/rent-a-car/viaturas">) {
   const region = await regionFromParams(params);
   return (
-    <>
-      <PageHeader title="Viaturas" crumbs={[{ href: "/rent-a-car", label: "Rent a Car" }, { label: "Viaturas" }]} />
-      <Suspense fallback={<ResultsSkeleton />}>
-        <Results region={region} searchParams={searchParams} />
-      </Suspense>
-    </>
+    <Suspense fallback={<><PageHeader title="Viaturas" crumbs={[{ href: "/rent-a-car", label: "Rent a Car" }, { label: "Viaturas" }]} /><ResultsSkeleton /></>}>
+      <Results region={region} searchParams={searchParams} />
+    </Suspense>
   );
 }
 
 async function Results({ region, searchParams }: { region: Region; searchParams: Promise<SP> }) {
   const sp = await searchParams;
   const search = parseRentalSearch(sp, region);
-  const locations = await listLocations(region, "rentacar");
+  const [locations, categories] = await Promise.all([listLocations(region, "rentacar"), listCategories()]);
+  // ?categoria= vem da página de categorias do Rent a Car
+  const category = categories.find((c) => c.slug === firstParam(sp.categoria));
+  const header = (
+    <PageHeader
+      title={category ? `Viaturas ${category.name}` : "Viaturas"}
+      crumbs={[{ href: "/rent-a-car", label: "Rent a Car" }, { label: category?.name ?? "Viaturas" }]}
+    />
+  );
 
   const searchBar = (
     <Container className="-mt-6 relative">
       <div className="rounded-panel bg-panel p-4 shadow-floating sm:p-5">
-        <RentACarSearchForm key={JSON.stringify(sp)} locations={locations} initial={searchToFormValues(search)} variant="bar" collapsible={!!search} />
+        <RentACarSearchForm key={JSON.stringify(sp)} locations={locations} initial={searchToFormValues(search)} variant="bar" collapsible={!!search} extraParams={category ? { categoria: category.slug } : undefined} />
       </div>
     </Container>
   );
@@ -49,6 +54,7 @@ async function Results({ region, searchParams }: { region: Region; searchParams:
     const res = await attempt(() => listVehicles(region, "rentacar"));
     return (
       <>
+        {header}
         {searchBar}
         <Section><Container>
           <Notice className="mb-6" title="Escolha as datas para ver disponibilidade e preço total">
@@ -58,6 +64,7 @@ async function Results({ region, searchParams }: { region: Region; searchParams:
             <VehicleResults
               product="rentacar"
               items={res.data.map((v) => ({ vehicle: v, offer: getOffer(v, "rentacar")!, href: `/rent-a-car/viatura/${v.slug}` }))}
+              initialCategory={category?.name}
             />
           ) : (
             <ErrorState timeout={res.timeout} retryHref="/rent-a-car/viaturas" />
@@ -74,6 +81,7 @@ async function Results({ region, searchParams }: { region: Region; searchParams:
 
   return (
     <>
+      {header}
       {searchBar}
       <Section><Container>
         <p className="mb-6 flex flex-wrap items-center gap-2 text-body-small text-copy-secondary">
@@ -97,6 +105,7 @@ async function Results({ region, searchParams }: { region: Region; searchParams:
               days,
               href: `/rent-a-car/viatura/${r.vehicle.slug}?${query}`,
             }))}
+            initialCategory={category?.name}
           />
         )}
       </Container></Section>

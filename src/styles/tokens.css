@@ -44,6 +44,10 @@
   --color-text-on-primary: var(--color-neutral-0);
   --color-text-on-dark: var(--color-neutral-0);
 
+  /* Cor de cada região, fixa (não muda com a região atual): seletor de região */
+  --color-mainland: #b00000;
+  --color-azores: #0b7a00;
+
   /* Brand roles: Continente (logo red). Açores overrides below. */
   --color-primary: #b00000;
   --color-primary-hover: #8c0000;
@@ -151,11 +155,13 @@
   /* RADIUS                                                         */
   /* ------------------------------------------------------------ */
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* Continente: angular, como o traço inclinado do logótipo. Açores (abaixo): arredondado. */
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
   --radius-full: 999px;
+  --radius-action: 2px;      /* buttons */
 
   /* ------------------------------------------------------------ */
   /* BORDERS                                                        */
@@ -227,12 +233,18 @@
   --layout-header-lg: 5rem;    /* from the lg breakpoint */
   --layout-field-short: 10rem; /* short inputs: CVV, card expiry, postal code */
   --layout-tap: 2.75rem;       /* minimum touch target (44 px, docs/accessibility.md) */
+  --layout-hero-form: 27rem;   /* search card on the right of the hero */
   --layout-action-bar: 9rem;   /* room for a fixed bottom action bar (mobile checkout) */
   --aspect-vehicle: 5 / 3;     /* vehicle photo / illustration ratio */
 }
 
-/* Região Açores: só os papéis de marca mudam (logótipo verde) */
+/* Região Açores: papéis de marca (logótipo verde) e forma arredondada (relevo das ilhas) */
 [data-region="azores"] {
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-action: 999px;
   /* #0b7a00: 5,5:1 com branco (AA). O verde do logótipo (#0f9200) dava 4,1:1. */
   --color-primary: #0b7a00;
   --color-primary-hover: #086100;

@@ -65,6 +65,12 @@ export function isRegion(value: unknown): value is Region {
 }
 
 /** Deteta a região a partir do host do pedido (acores.decadaousada.pt, acores.localhost, ...). */
+/** Domínio real do site (decadaousada.pt e subdomínios). Fora dele (localhost, *.vercel.app) é demo/pré-visualização. */
+export function isLiveDomain(host: string | null | undefined): boolean {
+  const hostname = (host ?? "").split(":")[0].toLowerCase();
+  return hostname === "decadaousada.pt" || hostname.endsWith(".decadaousada.pt");
+}
+
 export function regionFromHost(host: string | null | undefined): Region {
   const hostname = (host ?? "").split(":")[0].toLowerCase();
   return hostname.startsWith("acores.") ? "azores" : "mainland";

@@ -25,12 +25,12 @@ const DISABLED = "border-transparent bg-panel-sunken text-copy-muted shadow-none
 
 /** Classe de um link com aspeto de botão desativado (ação ainda indisponível). */
 export function disabledButtonClass(size: Size = "md", extra?: string) {
-  return cn("inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-control font-semibold select-none", DISABLED, SIZE[size], extra);
+  return cn("inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-button font-semibold select-none", DISABLED, SIZE[size], extra);
 }
 
 export function buttonClass(variant: Variant = "primary", size: Size = "md", extra?: string) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-control font-semibold transition-colors select-none disabled:cursor-not-allowed",
+    "inline-flex items-center justify-center gap-2 rounded-button font-semibold transition-colors select-none disabled:cursor-not-allowed",
     // Em carregamento (aria-busy) o botão mantém a cor; desativado de facto fica neutro
     "disabled:not-aria-busy:border-transparent disabled:not-aria-busy:bg-panel-sunken disabled:not-aria-busy:text-copy-muted",
     VARIANT[variant],

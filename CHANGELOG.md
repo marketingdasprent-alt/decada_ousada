@@ -3,6 +3,60 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.8.0]: 2026-10-08
+
+Second revision from team feedback (references: BV Seguros, Sixt, Localrent).
+
+### Changed
+
+- Hero in the BV pattern: region photos cross-fading (with pause), text on the
+  left, search card on the right.
+- Search card with big service tabs: Rent a Car in the brand colour, TVDE in
+  asphalt, each saying who it is for and how it works, CTA naming the
+  destination. Product pages show the card of their service.
+- Homepage: the "Rent a Car ou TVDE?" cards are removed; two labelled chips
+  under the title.
+- Region switch with each region's colour.
+- Regional shape: Continente angular (square buttons, diagonal lines), Açores
+  rounded (pill buttons, wavy lines).
+- Hero photos are automotive (car keys, cars on the road, driver at the wheel),
+  chosen so the car shows between the copy and the search card.
+
+## [0.7.0]: 2026-10-08
+
+Revision from team feedback (references: Localiza, DASP RENT).
+
+### Added
+
+- Photo hero per region on the homepage, Rent a Car and TVDE pages, with the
+  availability search inside it; homepage search with Rent a Car and TVDE tabs.
+- TVDE search by location and start date; results filtered by location and the
+  pickup carried to the vehicle page.
+- "Rent a Car ou TVDE?" comparison on the homepage.
+- Segmented region switch in the header, mobile menu and homepage hero.
+
+### Changed
+
+- Rent a Car entry is the categories page (photo, models, "desde" per category);
+  a category opens the results already filtered.
+- Region identity beyond colour and logo: own photos and homepage title per region.
+- TVDE page opens with the photo hero; the 5 steps follow in their own section.
+
+## [0.6.0]: 2026-10-08
+
+Ready for Vercel.
+
+### Added
+
+- `vercel.json` (functions in Paris, `cdg1`) and `docs/deploy-vercel.md`
+  (project, environment variables, domains, demo limitation).
+
+### Changed
+
+- Region switch with `?regiao=` works on any host other than the live domain
+  (including `*.vercel.app`); the live domain still decides by host.
+- `robots.txt` blocks indexing while `APP_URL` is not set.
+
 ## [0.5.2]: 2026-10-08
 
 ### Added

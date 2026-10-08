@@ -67,7 +67,7 @@ headings; uppercase is only `.display` and the footer column titles.
 | Scale | Values |
 |---|---|
 | `--space-*` | `3xs` 4; `2xs` 8; `xs` 12; `sm` 16; `md` 24; `lg` 32 px; `xl` 32 to 48, `2xl` 44 to 72, `3xl` 56 to 96 px (fluid). Tailwind numeric spacing is kept (override in `DECISIONS.md`) |
-| Radius (`rounded-*`) | `control` 8 px (buttons, inputs, badges); `card` 12 px; `panel` 16 px (cards, panels); `feature` 24 px; `pill` |
+| Radius (`rounded-*`) | Per region (same family, different shape). Continente, angular: `control` 3; `card` 4; `panel` 6; `feature` 8 px; `button` 2 px. Açores, rounded: `control` 12; `card` 16; `panel` 22; `feature` 28 px; `button` pill. `pill` is always round |
 | Shadow (`shadow-*`) | `low` (sm); `raised` (md); `floating` (lg, search card); `overlay` (xl, drawer, mobile bar) |
 | z-index (`z-*`) | `sticky` 200 (mobile action bar); `header` 300; `overlay` 400; `modal` 500 (drawer); `toast` 600 (skip link) |
 | Containers | `narrow` 736; `standard` 1280; `wide` 1472 px + gutter 16 to 32 px |
@@ -130,7 +130,22 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 - `PageHeader` (`shared/page-header.tsx`): `tone="light"` (default: Rent a
   Car, institutional) or `tone="dark"` (TVDE only); `lines` shows the logo
   lines crisp and complete (TVDE landing only). `PageSkeleton tone`.
-- `SiteHeader`, `SiteFooter`, `MobileMenu` (`layout/`).
+- `SiteHeader`, `SiteFooter`, `MobileMenu` (`layout/`). `RegionSwitch`
+  (`layout/region-switch.tsx`): segmented "Continente / Açores", current region
+  marked, the other a link, each with its region colour dot (`bg-region-mainland`,
+  `bg-region-azores`); hrefs come from the server.
+- `Hero` (`shared/hero.tsx`): BV pattern. `region`, `images` (from
+  `REGION_IMAGERY[region]`; more than one cross-fade every 6 s with dots, pause
+  and the photo's place as caption, still for reduced motion), `title`,
+  `description`, `crumbs`, `above`, `side` (search card on the right from `lg`,
+  `grid-hero`), children under the copy; `size` `large` or `medium`. Veil
+  `hero-veil` keeps white text AA on any photo. `RegionLines` decorates it:
+  diagonal lines (Continente) or wavy lines (Açores), in the brand colour.
+- `HeroSearch` (`shared/hero-search.tsx`): search card. Without `only`: big ARIA
+  tabs Rent a Car (brand colour, ao dia) and TVDE (asphalt, à semana), each with
+  who it is for and how it works; arrows, Home and End move between tabs. With
+  `only="rentacar" | "tvde"`: that service only, header in its colour. CTAs name
+  the destination ("Ver viaturas Rent a Car", "Ver viaturas TVDE").
 - Intentional overlaps (documented in `DECISIONS.md`): the search form rises
   24 px over the Rent a Car page header; the account navigation bleeds to the
   screen edge with its own horizontal scroll on mobile.
@@ -202,12 +217,15 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   only for values present in the data).
 - Rent a Car: `RentACarSearchForm` (`variant` `card` | `bar` (full page
   width only) | `stack` (narrow columns such as the vehicle panel),
+  `embedded` (the card grid inside another card, e.g. the hero tabs),
   `collapsible` on mobile), `BookingWizard` (steps "Proteção e extras",
   "Dados", "Pagamento"; mobile bottom bar with total, summary toggle and
   the step action; restores choices from `extras`/`cobertura`/`passo`),
   `BookingSummary`,
   `CustomerForm`, `ReservationStatus`.
-- TVDE: `PickupSelector` (re-checks availability on every change),
+- TVDE: `TvdeSearchForm` (location, start date and time; leads to
+  `/tvde/viaturas?local=&inicio=`), `PickupSelector` (re-checks availability on
+  every change; `initialLocationId` and `initialPickupAt` from the search),
   `DynamicWeGestForm`, `DocumentUploader`, `ApplicationStatusBadge`,
   `ApplicationTimeline` (vertical on mobile, step state in text, payment
   step from the real payment), `ApplicationChecklist` ("Vai precisar de",

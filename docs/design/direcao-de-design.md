@@ -269,3 +269,37 @@ preço e botão entre cards, texto do seletor de ordenação cortado
 
 **Aprovas a lista e a direção (Rent a Car A, TVDE B), ou queres cortar ou
 reordenar?**
+
+## F. Revisão de 08/10/2026 (feedback da equipa)
+
+Sete pontos de feedback (nota de voz da equipa) e duas maquetes de referência
+(DASP RENT: página inicial e lista de veículos de passageiros).
+
+**Referências de mercado (Localiza e DASP RENT):**
+- **Pesquisa primeiro:** a pesquisa é o primeiro elemento da página, logo abaixo do menu.
+- **Produtos separados:** na Localiza, o aluguer para Uber ("ZARP") é um produto à parte, como o nosso TVDE.
+- **Frota por categorias:** a Localiza mostra a frota por grupos ("similar a: ..."), não por uma lista com filtros.
+- **Entrada por família:** a DASP RENT separa "Passageiros" de "Comerciais" na entrada.
+
+**O que mudou:**
+
+| Ponto | Resolução |
+|---|---|
+| Hero principal com pesquisa | `Hero` com foto da região e `HeroSearch` com separadores Rent a Car (ao dia) e TVDE (à semana), cada um com os seus campos e destino |
+| Seletor de região | `RegionSwitch` segmentado "Continente / Açores" no cabeçalho (a partir de 640 px), no topo do menu móvel e na hero da página inicial em mobile |
+| Identidade por região | Fotos próprias por região e cena (`lib/region-imagery.ts`), automóveis desde 08/10: no Continente a chave a abrir a viatura, uma rua de Lisboa com trânsito e o motorista ao volante; nos Açores um carro numa estrada entre pastagens e muros de pedra, a entrega da chave junto ao mar e uma viatura a circular à noite. Título da página inicial por região |
+| Rent a Car sem passo intermédio | `/rent-a-car` passa a ser a página de categorias (Passageiros e Comerciais, com foto e "desde"); cada categoria abre os resultados já filtrados (`?categoria=`) |
+| Hero nas páginas de produto | Rent a Car e TVDE com hero de foto e a pesquisa respetiva; os 5 passos do TVDE numa secção a seguir |
+| Diferença entre serviços | `ServiceComparison` na página inicial: as mesmas cinco perguntas para os dois serviços |
+| Referências | Aplicadas nos pontos acima |
+
+**Segunda revisão (mesmo dia):**
+- **Hero:** ao estilo da BV, com fotos a trocar.
+- **Formulário à direita:** separadores grandes com cor, Rent a Car na cor da marca e TVDE em asfalto, e a diferença dita em cada um.
+- **Página inicial:** saem os cartões "Rent a Car ou TVDE?".
+- **Seletor de região:** cada região com a sua cor.
+- **Forma por região:**
+  - **Continente angular:** cantos de 2 a 8 px e linhas diagonais.
+  - **Açores arredondado:** botões em pílula e linhas onduladas.
+
+**Exceção à direção de 07/10:** a página TVDE deixa de abrir com o cabeçalho escuro e as linhas do logótipo; abre com a hero de foto, como as outras páginas de produto. As linhas do logótipo ficam no logótipo e no cabeçalho.

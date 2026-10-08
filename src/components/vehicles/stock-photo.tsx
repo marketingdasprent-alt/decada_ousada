@@ -1,14 +1,8 @@
 "use client";
 
-import Image, { type ImageLoader } from "next/image";
+import Image from "next/image";
 
-/** CDN do Unsplash: pede a largura que o browser precisa (até 3840 px), em vez da foto original. */
-const unsplashLoader: ImageLoader = ({ src, width, quality }) => {
-  const url = new URL(src);
-  url.searchParams.set("w", String(width));
-  if (quality) url.searchParams.set("q", String(quality));
-  return url.toString();
-};
+import { unsplashLoader } from "@/lib/unsplash";
 
 /**
  * Fotografia de banco de imagens (dados de demonstração), servida pelo CDN do Unsplash.
