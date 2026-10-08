@@ -18,6 +18,8 @@ const PACKAGE_JSON = path.join(ROOT, "package.json");
 const TOKENS_CSS = path.join(SRC_DIR, "styles", "tokens.css");
 
 const IGNORE_DIRS = new Set(["node_modules", "dist", ".git", ".vite", ".next"]);
+// Material de origem escrito pelo cliente: guardado tal como foi entregue, não é texto nosso
+const IGNORE_FILES = new Set(["briefing-cliente.md"]);
 const APP_DIR = path.join(SRC_DIR, "app");
 
 /** @typedef {{ level: "FAIL" | "WARN", section: string, message: string, location?: string }} Finding */
@@ -37,7 +39,7 @@ function walk(dir, exts) {
   if (!existsSync(dir)) return [];
   let results = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (IGNORE_DIRS.has(entry.name)) continue;
+    if (IGNORE_DIRS.has(entry.name) || IGNORE_FILES.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results = results.concat(walk(full, exts));
