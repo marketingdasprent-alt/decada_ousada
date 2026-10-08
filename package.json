@@ -1,17 +1,25 @@
 {
   "name": "decada-ousada",
-  "version": "0.1.0",
+  "version": "0.5.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "qa": "node scripts/qa-audit.mjs",
+    "qa:layout": "node scripts/qa-layout.mjs",
+    "validate:wegest": "node scripts/validate-wegest.mjs"
   },
   "dependencies": {
+    "lucide-react": "^1.52.0",
     "next": "16.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

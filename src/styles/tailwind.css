@@ -1,0 +1,166 @@
+/* Tailwind v4: utilities reference the runtime tokens in tokens.css.
+ * Alias NAMES follow the Web Blueprint (page, panel, brand, copy, line...).
+ * Differences from the Blueprint (no tw: prefix, numeric spacing scale kept)
+ * are recorded as an override in DECISIONS.md.
+ */
+@theme inline {
+  --color-*: initial;
+  --color-page: var(--color-background);
+  --color-panel: var(--color-surface);
+  --color-panel-alt: var(--color-surface-alt);
+  --color-panel-sunken: var(--color-surface-sunken);
+  --color-panel-dark: var(--color-surface-dark);
+  --color-overlay: var(--color-scrim);
+  --color-line: var(--color-border);
+  --color-line-strong: var(--color-border-strong);
+  --color-line-control: var(--color-border-control);
+  --color-brand: var(--color-primary);
+  --color-brand-hover: var(--color-primary-hover);
+  --color-brand-active: var(--color-primary-active);
+  --color-brand-surface: var(--color-primary-surface);
+  --color-brand-secondary: var(--color-secondary);
+  --color-highlight: var(--color-accent);
+  --color-copy: var(--color-text-primary);
+  --color-copy-secondary: var(--color-text-secondary);
+  --color-copy-muted: var(--color-text-muted);
+  --color-on-brand: var(--color-text-on-primary);
+  --color-on-dark: var(--color-text-on-dark);
+  --color-positive: var(--color-success);
+  --color-positive-surface: var(--color-success-surface);
+  --color-caution: var(--color-warning);
+  --color-caution-surface: var(--color-warning-surface);
+  --color-negative: var(--color-error);
+  --color-negative-surface: var(--color-error-surface);
+  --color-info: var(--color-information);
+  --color-info-surface: var(--color-information-surface);
+  --color-focus: var(--color-focus-ring);
+  --color-selected: var(--color-selection);
+  --color-selected-surface: var(--color-selection-surface);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-*: initial;
+  --font-heading: var(--font-display);
+  --font-copy: var(--font-body);
+  --font-code: var(--font-mono);
+  --text-*: initial;
+  --text-display: var(--font-size-display);
+  --text-h1: var(--font-size-h1);
+  --text-h2: var(--font-size-h2);
+  --text-h3: var(--font-size-h3);
+  --text-h4: var(--font-size-h4);
+  --text-body: var(--font-size-body);
+  --text-body-large: var(--font-size-body-large);
+  --text-body-small: var(--font-size-body-small);
+  --text-caption: var(--font-size-caption);
+  --text-label: var(--font-size-label);
+
+  --radius-*: initial;
+  --radius-control: var(--radius-sm);
+  --radius-card: var(--radius-md);
+  --radius-panel: var(--radius-lg);
+  --radius-feature: var(--radius-xl);
+  --radius-pill: var(--radius-full);
+  --shadow-*: initial;
+  --shadow-low: var(--shadow-sm);
+  --shadow-raised: var(--shadow-md);
+  --shadow-floating: var(--shadow-lg);
+  --shadow-overlay: var(--shadow-xl);
+  /* transition-* do Tailwind usam os tokens de movimento (antes: 150 ms do Tailwind) */
+  --default-transition-duration: var(--duration-fast);
+  --default-transition-timing-function: var(--easing-standard);
+}
+
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 96rem;
+}
+
+/* Recurring layouts: named utilities instead of arbitrary grid values */
+@utility grid-main-aside {
+  grid-template-columns: minmax(0, 1fr) var(--layout-aside);
+}
+@utility grid-nav-main {
+  grid-template-columns: var(--layout-nav) minmax(0, 1fr);
+}
+@utility grid-filters-main {
+  grid-template-columns: var(--layout-filters) minmax(0, 1fr);
+}
+@utility grid-label-value {
+  grid-template-columns: var(--layout-label) minmax(0, 1fr);
+}
+@utility grid-search {
+  grid-template-columns: 1.4fr 1fr 0.75fr 1fr 0.75fr;
+}
+@utility grid-search-bar {
+  grid-template-columns: 1.4fr 1fr 0.75fr 1fr 0.75fr auto;
+}
+@utility grid-date-time {
+  grid-template-columns: minmax(0, 1fr) 7.5rem;
+}
+@utility aspect-vehicle {
+  aspect-ratio: var(--aspect-vehicle);
+}
+@utility w-drawer {
+  width: min(var(--layout-drawer), 90vw);
+}
+/* Altura do cabeçalho fixo: a mesma fonte para o cabeçalho e para o scroll-padding-top */
+@utility h-header {
+  height: var(--layout-header);
+  @media (width >= 40rem) {
+    height: var(--layout-header-sm);
+  }
+  @media (width >= 64rem) {
+    height: var(--layout-header-lg);
+  }
+}
+
+/*
+ * Painel lateral preso abaixo do cabeçalho. Nunca mais alto do que o ecrã: se
+ * não cabe, tem scroll próprio. A folga de --space-3xs evita cortar sombras e o
+ * contorno de foco dos filhos.
+ */
+@utility sticky-panel {
+  position: sticky;
+  top: calc(var(--layout-header-lg) + var(--space-sm));
+  align-self: start;
+  max-height: calc(100dvh - var(--layout-header-lg) - 2 * var(--space-sm));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: var(--space-3xs);
+  margin: calc(var(--space-3xs) * -1);
+}
+
+/* Alvo de toque mínimo (44 px) sem mudar o tamanho do texto; usar com max-md: em links de texto */
+@utility tap-target {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--layout-tap);
+  min-width: var(--layout-tap);
+}
+
+/* Campos curtos (CVV, validade, código postal): não esticam à largura da coluna */
+@utility max-w-field-short {
+  max-width: var(--layout-field-short);
+}
+
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-header {
+  z-index: var(--z-header);
+}
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+@utility z-modal {
+  z-index: var(--z-modal);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}
