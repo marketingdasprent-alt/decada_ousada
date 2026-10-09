@@ -7,8 +7,8 @@
 //      sangram até à borda (margem negativa) e elementos fixos;
 //   3. caixas lado a lado na mesma linha têm a mesma altura e o conteúdo
 //      começa à mesma altura;
-//   4. numa grelha que quebra em várias linhas, cada caixa da última linha
-//      fica alinhada a uma coluna da primeira (sem órfão desalinhado);
+//   4. numa grelha de caixas, cada linha ocupa a largura toda (sem espaço
+//      vazio no fim da linha; uma caixa pode ocupar várias colunas);
 //   5. grid-main-aside: em mobile a coluna lateral fica abaixo do conteúdo;
 //      um elemento sticky nunca é mais alto do que o ecrã;
 //   6. nenhum texto cortado na horizontal;
@@ -169,7 +169,7 @@ const AUDIT = `(() => {
     for (const k of kids) {
       const box = boxOf(k), b = box.getBoundingClientRect();
       const first = [...box.querySelectorAll("*")].find((c) => vis(c) && c.offsetWidth > 0 && !srOnly(c) && getComputedStyle(c).position !== "absolute");
-      const r = { left: b.left, right: b.right, top: b.top, height: b.height, firstTop: first ? first.getBoundingClientRect().top : b.top };
+      const r = { left: b.left, right: b.right, top: b.top, height: b.height, firstTop: first ? first.getBoundingClientRect().top : b.top, filler: box.hasAttribute("data-grid-filler") };
       const row = rows.find((x) => Math.abs(x.top - r.top) < 4);
       if (row) row.items.push(r); else rows.push({ top: r.top, items: [r] });
     }
@@ -177,13 +177,18 @@ const AUDIT = `(() => {
       if (row.items.length < 2) continue;
       const h = row.items.map((r) => r.height);
       if (Math.max(...h) - Math.min(...h) > 2) { problems.push("3 alturas diferentes na mesma linha (" + h.map(Math.round).join("/") + "px) em " + describe(parent)); break; }
-      const st = row.items.map((r) => r.firstTop - r.top);
+      // O cartão que fecha a linha (GridFiller) centra o conteúdo de propósito
+      const st = row.items.filter((r) => !r.filler).map((r) => r.firstTop - r.top);
       if (Math.max(...st) - Math.min(...st) > 2) { problems.push("3 conteúdo começa a alturas diferentes (" + st.map(Math.round).join("/") + "px) em " + describe(parent)); break; }
     }
-    if (rows.length > 1 && ps.display === "grid") {
-      const cols = rows[0].items.map((r) => r.left);
-      const last = rows[rows.length - 1];
-      if (last.items.some((r) => !cols.some((c) => Math.abs(c - r.left) < 3))) problems.push("4 última linha fora das colunas (" + rows.map((r) => r.items.length).join("+") + ") em " + describe(parent));
+    if (ps.display === "grid" && ps.gridTemplateColumns.split(" ").length > 1) {
+      // Cada linha de caixas tem de ocupar a largura toda da grelha (sem buracos; um item
+      // pode ocupar várias colunas) e começar na primeira coluna
+      const pb = parent.getBoundingClientRect();
+      const left = pb.left + parseFloat(ps.paddingLeft) + parseFloat(ps.borderLeftWidth);
+      const right = pb.right - parseFloat(ps.paddingRight) - parseFloat(ps.borderRightWidth);
+      const holes = rows.filter((row) => Math.min(...row.items.map((r) => r.left)) > left + 3 || Math.max(...row.items.map((r) => r.right)) < right - 3);
+      if (holes.length) problems.push("4 linha com espaço vazio (" + rows.map((r) => r.items.length).join("+") + " caixas por linha) em " + describe(parent));
     }
   }
 
@@ -317,8 +322,9 @@ async function prepare(region) {
   const tvdeSteps = [];
   if (cadastroRoute) tvdeSteps.push(cadastroRoute);
   if (appId) {
-    tvdeSteps.push(`/tvde/candidatura/documentos?id=${appId}`);
-    await go(tvdeSteps[1], 1500);
+    const docsRoute = `/tvde/candidatura/documentos?id=${appId}`;
+    tvdeSteps.push(docsRoute);
+    await go(docsRoute, 1500);
     await js(`const pdf=new Uint8Array([0x25,0x50,0x44,0x46,0x2d,0x31]); for (const i of document.querySelectorAll('input[type=file][id^="doc-"]')) { const dt=new DataTransfer(); dt.items.add(new File([pdf], 'doc.pdf', {type:'application/pdf'})); i.files=dt.files; i.dispatchEvent(new Event('change',{bubbles:true})); await new Promise(r=>setTimeout(r,1300)); }`);
     tvdeSteps.push(`/tvde/candidatura/pagamento?id=${appId}`);
   }

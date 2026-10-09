@@ -62,6 +62,12 @@ Fonts are self-hosted with `next/font` (`font-display: swap`). Prices and
 references use `.tabular` (tabular figures). No uppercase eyebrows above
 headings; uppercase is only `.display` and the footer column titles.
 
+No orphan words (team request): headings and `.display` use `text-wrap:
+balance` (lines of similar length, never one word alone on the last line);
+paragraphs and list items use `text-wrap: pretty`. Set once in
+`src/app/globals.css`; a heading that shares a row with actions keeps its own
+width (`flex-1`) instead of the narrower width of its intro text.
+
 ### Space, radius, shadow, z-index, layout
 
 | Scale | Values |
@@ -145,7 +151,34 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   tabs Rent a Car (brand colour, ao dia) and TVDE (asphalt, à semana), each with
   who it is for and how it works; arrows, Home and End move between tabs. With
   `only="rentacar" | "tvde"`: that service only, header in its colour. CTAs name
-  the destination ("Ver viaturas Rent a Car", "Ver viaturas TVDE").
+  the destination ("Ver viaturas Rent a Car", "Ver viaturas TVDE"). Both panels
+  share one grid cell and the inactive one is `invisible` and `inert`, so the
+  card keeps the height of the taller panel and never jumps when switching.
+  Inside `ServiceSelectionProvider` (`shared/service-selection.tsx`, homepage)
+  the chosen tab is shared, and `ForService` shows the matching section under
+  the hero: Rent a Car categories or the TVDE band. The TVDE panel is shorter than
+  the Rent a Car one; its extra height goes to a "Como funciona" box (`flex-1`,
+  the three steps and the note that the deposit is not an approval), so the card
+  never shows an empty area.
+- `TvdeProcess` (`tvde/tvde-process.tsx`): dark band with the five TVDE steps
+  (`TVDE_STEPS`) and the note that the deposit is not an approval. TVDE page: title
+  only; homepage, before the pickup points: title, intro with the "desde" price
+  and actions ("Ver viaturas TVDE", "Saber mais"), explaining TVDE without listing
+  vehicles.
+- `CategoryGrid` (`rentacar/category-grid.tsx`) with `rentACarCategories()`:
+  category cards (cover photo, name, model count, "desde" per day from the API),
+  the whole card links to `/rent-a-car/viaturas?categoria=`. `dense` = four per
+  row (homepage); default three (Rent a Car page, grouped by family). No row is
+  left with empty space: `fillSpans()` (`lib/grid.ts`) makes the first cards span
+  two columns (or one card the whole row) and those cards turn horizontal, photo
+  whole (never cropped) and sized to the row height, text stacked on the right.
+- Gap-free grids (rule): a grid of cards never ends a row with empty space.
+  Fixed lists (categories, pickup points) use `fillSpans()` / `fillSpanClasses()`;
+  vehicle lists end with `GridFiller` (`shared/grid-filler.tsx`), a dashed card
+  that takes exactly the columns left at each width (hidden when the row is full
+  and on mobile) and must carry something useful (see all, help, FAQ). An odd
+  last extra in the booking wizard spans the row. `npm run qa:layout` check 4
+  fails any box row that does not reach the grid's full width.
 - Intentional overlaps (documented in `DECISIONS.md`): the search form rises
   24 px over the Rent a Car page header; the account navigation bleeds to the
   screen edge with its own horizontal scroll on mobile.
@@ -153,7 +186,7 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 ### Primitives (`shared/`)
 
 - `Button` / `ButtonLink` / `buttonClass` (`variant`: `primary` | `dark` |
-  `outline` | `ghost` | `light`; `size`: `sm` | `md` | `lg`; `loading`).
+  `outline` | `ghost` | `light` | `onDark`; `size`: `sm` | `md` | `lg`; `loading`).
   Disabled is neutral (`panel-sunken`); while `loading` (aria-busy) the
   colour stays. `disabledButtonClass(size)` for a link-styled action that is
   not available yet.
@@ -182,7 +215,7 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 |---|---|---|
 | `Button` | sizes | `sm` 36 px high, 14 px text (desktop only or with `h-11` on mobile); `md` 44 px; `lg` 52 px; radius `control`; weight semibold |
 | | `primary` | `brand` background, white text; hover `brand-hover`; one primary action per step or panel |
-| | `outline` / `ghost` / `dark` / `light` | outline: `copy/15` border on `panel`, hover `copy/40`; ghost: no border, hover `panel-sunken`; dark: `panel-dark`; light: `panel` on dark bands |
+| | `outline` / `ghost` / `dark` / `light` / `onDark` | outline: `copy/15` border on `panel`, hover `copy/40`; ghost: no border, hover `panel-sunken`; dark: `panel-dark`; light: `panel` on dark bands; onDark: `on-dark/40` border, transparent, hover `on-dark/10`, the secondary action next to `light` on dark bands |
 | | focus | global `:focus-visible`: 2 px `focus` outline, 2 px offset |
 | | disabled | `panel-sunken` background, `copy-muted` text, no shadow, `cursor-not-allowed`; never brand colour at reduced opacity |
 | | loading | `aria-busy`, spinner before the label, colour kept, not clickable; label says what is happening ("A processar…") |
@@ -218,7 +251,12 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 - Rent a Car: `RentACarSearchForm` (`variant` `card` | `bar` (full page
   width only) | `stack` (narrow columns such as the vehicle panel),
   `embedded` (the card grid inside another card, e.g. the hero tabs),
-  `collapsible` on mobile), `BookingWizard` (steps "Proteção e extras",
+  `collapsible` on mobile; vehicle type first, radio pair "Carros" /
+  "Comerciais" sent as `?tipo=passageiros|comerciais` and preselecting the
+  "Tipo" filter; the return-location field is always shown: while
+  "Devolver no mesmo local" is ticked it is disabled and shows the pickup point,
+  so the form never changes height),
+  `BookingWizard` (steps "Proteção e extras",
   "Dados", "Pagamento"; mobile bottom bar with total, summary toggle and
   the step action; restores choices from `extras`/`cobertura`/`passo`),
   `BookingSummary`,
@@ -236,8 +274,14 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   Multibanco reference or MB WAY request still to be paid.
 - Mileage: always `formatMileage(offer)` ("6000 km por mês"), never a
   hard-coded unit.
-- Account: `AccountShell`, `AccountNav`, `AuthShell`, auth forms,
-  `ProfileForm`, `CancelBooking`, `BookingListItem`.
+- Account: `AccountShell`, `AccountNav`, auth forms, `ProfileForm`,
+  `CancelBooking`, `BookingListItem`. `AuthShell` (`region`, `title`,
+  `description`; sign in, register, recover password): one card, region photo
+  with the veil, region lines and what the account gives on the left (desktop
+  only), form on the right; on mobile only the form, under a brand-colour top
+  border. Password fields have a show/hide button (`aria-pressed`). Sign in:
+  "Esqueci-me da password" under the password, then "Ainda não tem conta?" with
+  an outline "Criar conta" button.
 
 ## Content and edge cases
 
@@ -253,7 +297,7 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 | Vehicle taken during checkout | Message with what happened to the money and "Ver viaturas para as mesmas datas" |
 | Session expired during checkout | "Entrar" link that returns to the same step with the same choices |
 | Pending Multibanco / MB WAY | `PendingPayment` block on the confirmation and the booking page |
-| Demo data | Demo banner on every page while `WEGEST_MODE` is not `http` |
+| Demo data | No site-wide banner (override 2026-10-08, see `DECISIONS.md`). Notices stay where they change what the user does: test card on the payment form, "Imagem ilustrativa" on stock photos |
 
 ## Accessibility (baseline: `docs/accessibility.md`)
 

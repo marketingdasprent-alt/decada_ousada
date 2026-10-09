@@ -6,6 +6,9 @@ import { cn } from "@/lib/cn";
 import { CarIllustration } from "./car-illustration";
 import { StockPhoto } from "./stock-photo";
 
+/** Fotos de demonstração: CDN do Unsplash ou cópias editadas em `public/demo/`. */
+const isStock = (url: string) => url.startsWith("https://images.unsplash.com/") || url.startsWith("/demo/");
+
 /**
  * Fotografia da viatura. Usa a URL do WeGest quando existe; caso contrário, ilustração.
  * As URLs do WeGest são temporárias (24 h): nunca guardar o link, só o modelo.
@@ -33,7 +36,7 @@ export function VehicleImage({
   }
   return (
     <div className={cn("relative overflow-hidden bg-panel-sunken", className)}>
-      {image.url.startsWith("https://images.unsplash.com/") ? (
+      {isStock(image.url) ? (
         <StockPhoto src={image.url} alt={image.alt} sizes={sizes ?? "(min-width: 1024px) 33vw, 100vw"} priority={priority} />
       ) : (
         <Image src={image.url} alt={image.alt} fill sizes={sizes ?? "(min-width: 1024px) 33vw, 100vw"} className="object-cover" priority={priority} unoptimized />

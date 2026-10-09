@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "dark" | "outline" | "ghost" | "light";
+type Variant = "primary" | "dark" | "outline" | "ghost" | "light" | "onDark";
 type Size = "sm" | "md" | "lg";
 
 const VARIANT: Record<Variant, string> = {
@@ -12,6 +12,8 @@ const VARIANT: Record<Variant, string> = {
   outline: "border border-copy/15 bg-panel text-copy hover:border-copy/40",
   ghost: "text-copy hover:bg-panel-sunken",
   light: "bg-panel text-copy hover:bg-panel/90",
+  /** Contorno sobre fundo escuro (faixas TVDE, hero): ação secundária ao lado de `light`. */
+  onDark: "border border-on-dark/40 text-on-dark hover:bg-on-dark/10",
 };
 
 const SIZE: Record<Size, string> = {

@@ -36,11 +36,6 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[re
           Saltar para o conteúdo
         </a>
         <SiteHeader region={region} />
-        {process.env.WEGEST_MODE !== "http" && (
-          <p role="note" className="bg-caution-surface px-4 py-2 text-center text-caption font-medium text-caution">
-            Ambiente de demonstração: viaturas, preços, locais e disponibilidade são fictícios até à ligação ao sistema de gestão.
-          </p>
-        )}
         <main id="conteudo" className="flex-1">
           {children}
         </main>

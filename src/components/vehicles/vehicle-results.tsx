@@ -12,8 +12,9 @@ import { cn } from "@/lib/cn";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 
 import { Checkbox, Label, Select } from "../shared/form";
+import { GridFiller } from "../shared/grid-filler";
 import { EmptyState } from "../shared/states";
-import { Button } from "../shared/ui";
+import { Button, ButtonLink } from "../shared/ui";
 import { VehicleCard } from "./vehicle-card";
 
 export interface ResultItem {
@@ -45,8 +46,20 @@ const uniq = <T,>(list: (T | undefined)[]) => [...new Set(list.filter((x): x is 
  * Listagem com filtros (doc §13, §41).
  * Só mostra filtros para valores que existem realmente nos resultados.
  */
-export function VehicleResults({ items, product, initialCategory }: { items: ResultItem[]; product: "rentacar" | "tvde"; /** Categoria já escolhida (vinda da página de categorias); pode ser retirada nos filtros. */ initialCategory?: string }) {
-  const [filters, setFilters] = useState<Filters>(initialCategory ? { ...EMPTY, categories: [initialCategory] } : EMPTY);
+export function VehicleResults({
+  items,
+  product,
+  initialCategory,
+  initialFamily,
+}: {
+  items: ResultItem[];
+  product: "rentacar" | "tvde";
+  /** Categoria já escolhida (vinda da página de categorias); pode ser retirada nos filtros. */
+  initialCategory?: string;
+  /** Tipo escolhido na pesquisa (carros ou comerciais); pode ser trocado nos filtros. */
+  initialFamily?: VehicleFamily;
+}) {
+  const [filters, setFilters] = useState<Filters>({ ...EMPTY, family: initialFamily ?? "all", categories: initialCategory ? [initialCategory] : [] });
   const [sort, setSort] = useState<"price_asc" | "price_desc" | "name">("price_asc");
   const [panelOpen, setPanelOpen] = useState(false);
   useEffect(() => {
@@ -238,6 +251,21 @@ export function VehicleResults({ items, product, initialCategory }: { items: Res
             {filtered.map((i) => (
               <VehicleCard key={i.vehicle.id} vehicle={i.vehicle} offer={i.offer} href={i.href} availability={i.availability} total={i.total} days={i.days} />
             ))}
+            <GridFiller count={filtered.length} xl={3}>
+              {product === "rentacar" ? (
+                <>
+                  <p className="font-bold">Não encontrou a viatura certa?</p>
+                  <p className="text-body-small text-copy-secondary">Ajuste os filtros ou fale connosco.</p>
+                  <ButtonLink href="/contactos" variant="outline" size="sm">Contactos</ButtonLink>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold">Dúvidas sobre a candidatura TVDE?</p>
+                  <p className="text-body-small text-copy-secondary">Veja as respostas sobre o sinal e a aprovação da candidatura.</p>
+                  <ButtonLink href="/perguntas-frequentes" variant="outline" size="sm">Perguntas frequentes</ButtonLink>
+                </>
+              )}
+            </GridFiller>
           </div>
         )}
       </div>
