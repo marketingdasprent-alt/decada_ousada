@@ -62,6 +62,12 @@ Fonts are self-hosted with `next/font` (`font-display: swap`). Prices and
 references use `.tabular` (tabular figures). No uppercase eyebrows above
 headings; uppercase is only `.display` and the footer column titles.
 
+No orphan words (team request): headings and `.display` use `text-wrap:
+balance` (lines of similar length, never one word alone on the last line);
+paragraphs and list items use `text-wrap: pretty`. Set once in
+`src/app/globals.css`; a heading that shares a row with actions keeps its own
+width (`flex-1`) instead of the narrower width of its intro text.
+
 ### Space, radius, shadow, z-index, layout
 
 | Scale | Values |
@@ -154,6 +160,11 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   the Rent a Car one; its extra height goes to a "Como funciona" box (`flex-1`,
   the three steps and the note that the deposit is not an approval), so the card
   never shows an empty area.
+- `TvdeProcess` (`tvde/tvde-process.tsx`): dark band with the five TVDE steps
+  (`TVDE_STEPS`) and the note that the deposit is not an approval. TVDE page: title
+  only; homepage, before the pickup points: title, intro with the "desde" price
+  and actions ("Ver viaturas TVDE", "Saber mais"), explaining TVDE without listing
+  vehicles.
 - `CategoryGrid` (`rentacar/category-grid.tsx`) with `rentACarCategories()`:
   category cards (cover photo, name, model count, "desde" per day from the API),
   the whole card links to `/rent-a-car/viaturas?categoria=`. `dense` = four per
@@ -175,7 +186,7 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 ### Primitives (`shared/`)
 
 - `Button` / `ButtonLink` / `buttonClass` (`variant`: `primary` | `dark` |
-  `outline` | `ghost` | `light`; `size`: `sm` | `md` | `lg`; `loading`).
+  `outline` | `ghost` | `light` | `onDark`; `size`: `sm` | `md` | `lg`; `loading`).
   Disabled is neutral (`panel-sunken`); while `loading` (aria-busy) the
   colour stays. `disabledButtonClass(size)` for a link-styled action that is
   not available yet.
@@ -204,7 +215,7 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 |---|---|---|
 | `Button` | sizes | `sm` 36 px high, 14 px text (desktop only or with `h-11` on mobile); `md` 44 px; `lg` 52 px; radius `control`; weight semibold |
 | | `primary` | `brand` background, white text; hover `brand-hover`; one primary action per step or panel |
-| | `outline` / `ghost` / `dark` / `light` | outline: `copy/15` border on `panel`, hover `copy/40`; ghost: no border, hover `panel-sunken`; dark: `panel-dark`; light: `panel` on dark bands |
+| | `outline` / `ghost` / `dark` / `light` / `onDark` | outline: `copy/15` border on `panel`, hover `copy/40`; ghost: no border, hover `panel-sunken`; dark: `panel-dark`; light: `panel` on dark bands; onDark: `on-dark/40` border, transparent, hover `on-dark/10`, the secondary action next to `light` on dark bands |
 | | focus | global `:focus-visible`: 2 px `focus` outline, 2 px offset |
 | | disabled | `panel-sunken` background, `copy-muted` text, no shadow, `cursor-not-allowed`; never brand colour at reduced opacity |
 | | loading | `aria-busy`, spinner before the label, colour kept, not clickable; label says what is happening ("A processar…") |

@@ -29,6 +29,15 @@
     }
   }
 
+  /* Sem palavras órfãs: títulos com linhas equilibradas, parágrafos sem uma palavra
+     sozinha na última linha */
+  h1, h2, h3, h4, .display {
+    text-wrap: balance;
+  }
+  p, li, dd, figcaption {
+    text-wrap: pretty;
+  }
+
   body {
     background: var(--color-background);
     color: var(--color-text-primary);

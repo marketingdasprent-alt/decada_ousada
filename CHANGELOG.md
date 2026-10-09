@@ -3,6 +3,21 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.9.1]: 2026-10-09
+
+Team feedback on the homepage.
+
+### Added
+
+- Homepage: TVDE explained before the pickup points (dark band, five steps,
+  price from, "Ver viaturas TVDE" and "Saber mais"), shared with the TVDE page
+  (`TvdeProcess`). New button variant `onDark`.
+
+### Changed
+
+- No orphan words: headings break into balanced lines (`text-wrap: balance`),
+  paragraphs avoid a lone last word (`text-wrap: pretty`).
+
 ## [0.9.0]: 2026-10-08
 
 Third round of team feedback.

@@ -8,6 +8,7 @@ import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
 import { ForService, ServiceSelectionProvider } from "@/components/shared/service-selection";
 import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
+import { TvdeProcess } from "@/components/tvde/tvde-process";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { formatMoney } from "@/domain/pricing";
 import { getOffer } from "@/domain/vehicle";
@@ -123,6 +124,23 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
           ))}
         </div>
       </Container></Section>
+
+      {/* TVDE explicado (sem viaturas): a página inicial não pode falar só de Rent a Car */}
+      <TvdeProcess
+        title="TVDE: viaturas à semana para motoristas"
+        intro={
+          <p>
+            Para motoristas TVDE profissionais: alugue uma viatura à semana, com preço, caução, limite de quilómetros e condições à vista antes de se candidatar.
+            {tvdeFrom !== null && <> Desde <span className="font-semibold text-on-dark tabular">{formatMoney(tvdeFrom)}</span> por semana.</>}
+          </p>
+        }
+        actions={
+          <>
+            <ButtonLink href="/tvde/viaturas" variant="light" size="lg">Ver viaturas TVDE</ButtonLink>
+            <ButtonLink href="/tvde" variant="onDark" size="lg">Saber mais</ButtonLink>
+          </>
+        }
+      />
 
       {/* Localizações (SEO regional, doc §109) */}
       <Section><Container>
