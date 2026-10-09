@@ -138,3 +138,83 @@ DATE:
 2026-10-08
 ```
 
+---
+
+```
+OVERRIDE:
+AGENTS.md rule 4 ("Demo data is only acceptable behind the demo banner") and
+the "Demo data" row of docs/design-system.md.
+
+DECISION:
+The site-wide demo banner under the header is removed, at the team's request.
+The local notices stay: test card on the payment form, "Imagem ilustrativa"
+on stock vehicle photos, "Só demonstração" in the admin simulator. The demo
+account notice on the sign-in page was removed too (team request, 2026-10-09);
+the account still exists in mock mode (src/services/auth/seed.ts, README).
+
+REASON:
+Team request (2026-10-08): the banner should not appear on the page while the
+site is shown to the client. The preview on *.vercel.app is not indexed
+(robots.txt disallows all without APP_URL).
+
+RISK:
+With WEGEST_MODE=mock, prices, locations and availability are fictitious and
+nothing on the page says so. The site must not be announced to the public
+before WEGEST_MODE=http.
+
+SCOPE:
+src/app/[region]/layout.tsx, docs/design-system.md.
+
+LEVEL:
+Project rule override.
+
+DATE:
+2026-10-08
+```
+
+---
+
+```
+DECISION:
+Third round of team feedback (2026-10-08).
+- Rent a Car search asks the vehicle type first (Carros / Comerciais, radio
+  pair), sent as ?tipo= and preselecting the existing "Tipo" filter. A
+  ?categoria= of the other type is ignored.
+- Homepage: the section under the hero follows the hero tab
+  (ServiceSelectionProvider + ForService): Rent a Car categories
+  (CategoryGrid, shared with the Rent a Car page) or the TVDE band. The
+  "Frota em destaque" grid is replaced by the categories.
+- Search card with a fixed height: tab panels stacked in one grid cell
+  (inactive one invisible + inert); the return-location field is always in
+  the flow (invisible + inert while not used).
+- No empty space (team request): the TVDE panel of the search card fills its
+  extra height with "Como funciona"; the return-location field is always
+  shown (disabled while "mesmo local" is ticked); card grids never end a row
+  with empty space (fillSpans in lib/grid.ts for fixed lists, GridFiller with
+  useful content for vehicle lists); qa:layout check 4 enforces it.
+- Demo photos with readable plates are served as edited copies from
+  public/demo/ (same Unsplash photo, 5:3, plates blurred). The Unsplash
+  licence allows modified copies. Fiat Panda falls back to the illustration.
+
+REASON:
+Team feedback: the hero changed size when switching service; Rent a Car must
+show its categories and let the customer choose cars or commercials; no
+readable licence plates of private people on the site.
+
+SCOPE:
+src/components/shared/{hero-search,service-selection,grid-filler}.tsx, src/lib/grid.ts,
+src/components/booking/booking-wizard.tsx, src/app/[region]/{contactos,tvde,
+rent-a-car/[cidade]}/page.tsx, scripts/qa-layout.mjs,
+src/components/rentacar/{search-form,category-grid}.tsx,
+src/components/vehicles/{vehicle-results,vehicle-image,stock-photo}.tsx,
+src/components/shared/hero-background.tsx, src/lib/{unsplash,region-imagery}.ts,
+src/services/wegest/{mappers.ts,mock/data.ts}, src/domain/vehicle/index.ts,
+src/app/[region]/{page,rent-a-car/page,rent-a-car/viaturas/page}.tsx,
+public/demo/.
+
+LEVEL:
+Component system (Level 3).
+
+DATE:
+2026-10-08
+```

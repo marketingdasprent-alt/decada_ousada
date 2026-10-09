@@ -6,7 +6,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { cn } from "@/lib/cn";
 import { heroImageUrl, type HeroImage } from "@/lib/region-imagery";
-import { unsplashLoader } from "@/lib/unsplash";
+import { isUnsplash, unsplashLoader } from "@/lib/unsplash";
 
 const INTERVAL_MS = 6000;
 
@@ -56,7 +56,7 @@ export function HeroBackground({ images }: { images: HeroImage[] }) {
               fill
               priority={i === 0}
               sizes="100vw"
-              loader={unsplashLoader}
+              loader={isUnsplash(heroImageUrl(img)) ? unsplashLoader : undefined}
               className={cn("object-cover transition-opacity", i === current ? "opacity-100" : "opacity-0")}
               style={{ objectPosition: `${img.x}% ${img.y}%`, transitionDuration: "var(--duration-slow)" }}
             />

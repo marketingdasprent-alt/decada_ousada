@@ -2,16 +2,20 @@ import { BadgeCheck, CalendarCheck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 import { RegionSwitch } from "@/components/layout/region-switch";
+import { CategoryGrid, rentACarCategories } from "@/components/rentacar/category-grid";
+import { GridFiller } from "@/components/shared/grid-filler";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
+import { ForService, ServiceSelectionProvider } from "@/components/shared/service-selection";
 import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { formatMoney } from "@/domain/pricing";
 import { getOffer } from "@/domain/vehicle";
 import type { Region } from "@/domain/region";
+import { fillSpanClasses } from "@/lib/grid";
 import { regionFromParams, regionSwitchHref } from "@/lib/region";
 import { REGION_IMAGERY } from "@/lib/region-imagery";
-import { getStartingPrice, listLocations, listVehicles } from "@/services/wegest";
+import { getStartingPrice, listCategories, listLocations, listVehicles } from "@/services/wegest";
 
 /** Título da hero por região: a mesma promessa, dita para quem está em cada região. */
 const HOME_COPY: Record<Region, { title: string; description: string }> = {
@@ -27,19 +31,21 @@ const HOME_COPY: Record<Region, { title: string; description: string }> = {
 
 export default async function HomePage({ params }: PageProps<"/[region]">) {
   const region = await regionFromParams(params);
-  const [locations, tvdeLocations, tvdeFrom, racFrom, vehicles] = await Promise.all([
+  const [locations, tvdeLocations, tvdeFrom, racFrom, vehicles, categories] = await Promise.all([
     listLocations(region, "rentacar"),
     listLocations(region, "tvde"),
     getStartingPrice(region, "tvde"),
     getStartingPrice(region, "rentacar"),
     listVehicles(region),
+    listCategories(),
   ]);
-  const featured = vehicles.filter((v) => getOffer(v, "rentacar")).slice(0, 3);
+  const racCategories = rentACarCategories(categories, vehicles);
   const featuredTvde = vehicles.filter((v) => getOffer(v, "tvde")).slice(0, 3);
   const regionHrefs: Record<Region, string> = { mainland: regionSwitchHref("mainland"), azores: regionSwitchHref("azores") };
 
+  const locationSpans = fillSpanClasses(locations.length, { lg: 4 });
   return (
-    <>
+    <ServiceSelectionProvider>
       {/* Hero: foto da região, a pesquisa com um separador por serviço (doc §7: os dois com o mesmo peso) */}
       <Hero
         region={region}
@@ -60,20 +66,46 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
         </ul>
       </Hero>
 
-      {/* Frota em destaque */}
-      {featured.length > 0 && (
-        <Section><Container>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <SectionHeading title="Frota em destaque" description="Preços por dia com IVA incluído. O total do seu período aparece ao pesquisar datas." />
-            <ButtonLink href="/rent-a-car/viaturas" variant="outline">Ver toda a frota</ButtonLink>
-          </div>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((v) => (
-              <VehicleCard key={v.id} vehicle={v} offer={getOffer(v, "rentacar")!} href={`/rent-a-car/viatura/${v.slug}`} />
-            ))}
-          </div>
-        </Container></Section>
-      )}
+      {/* Por baixo da hero, o que o separador escolhido pede: categorias Rent a Car ou viaturas TVDE */}
+      <ForService product="rentacar">
+        {racCategories.length > 0 && (
+          <Section><Container>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <SectionHeading title="A nossa frota Rent a Car" description="Escolha a categoria. Preços por dia com IVA incluído; o total do seu período aparece ao pesquisar datas." />
+              <ButtonLink href="/rent-a-car/viaturas" variant="outline">Ver toda a frota</ButtonLink>
+            </div>
+            <CategoryGrid entries={racCategories} dense className="mt-8" />
+          </Container></Section>
+        )}
+      </ForService>
+      <ForService product="tvde">
+        {/* TVDE: faixa escura, a identidade do produto profissional */}
+        {featuredTvde.length > 0 && (
+          <Section variant="spacious" className="bg-panel-dark text-on-dark">
+            <Container>
+              <div className="flex flex-wrap items-end justify-between gap-6">
+                <div className="max-w-xl">
+                  <h2 className="display text-h2">Trabalhe já esta semana.</h2>
+                  <p className="mt-3 text-on-dark/75">Escolha a viatura, submeta a candidatura com os documentos e reserve com o sinal.</p>
+                </div>
+                <ButtonLink href="/tvde/viaturas" variant="light" size="lg">
+                  Ver viaturas TVDE
+                </ButtonLink>
+              </div>
+              <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {featuredTvde.map((v) => (
+                  <VehicleCard key={v.id} vehicle={v} offer={getOffer(v, "tvde")!} href={`/tvde/viatura/${v.slug}`} />
+                ))}
+                <GridFiller count={featuredTvde.length} lg={3} tone="dark">
+                  <p className="font-bold">Mais viaturas TVDE</p>
+                  <p className="text-body-small text-on-dark/75">Veja a frota TVDE completa, com preço por semana.</p>
+                  <ButtonLink href="/tvde/viaturas" variant="light" size="sm">Ver viaturas TVDE</ButtonLink>
+                </GridFiller>
+              </div>
+            </Container>
+          </Section>
+        )}
+      </ForService>
 
       {/* Porquê */}
       <Section><Container>
@@ -92,34 +124,12 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
         </div>
       </Container></Section>
 
-      {/* TVDE: faixa escura, a identidade do produto profissional */}
-      {featuredTvde.length > 0 && (
-        <Section variant="spacious" className="bg-panel-dark text-on-dark">
-          <Container>
-            <div className="flex flex-wrap items-end justify-between gap-6">
-              <div className="max-w-xl">
-                <h2 className="display text-h2">Trabalhe já esta semana.</h2>
-                <p className="mt-3 text-on-dark/75">Escolha a viatura, submeta a candidatura com os documentos e reserve com o sinal.</p>
-              </div>
-              <ButtonLink href="/tvde/viaturas" variant="light" size="lg">
-                Ver viaturas TVDE
-              </ButtonLink>
-            </div>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredTvde.map((v) => (
-                <VehicleCard key={v.id} vehicle={v} offer={getOffer(v, "tvde")!} href={`/tvde/viatura/${v.slug}`} />
-              ))}
-            </div>
-          </Container>
-        </Section>
-      )}
-
       {/* Localizações (SEO regional, doc §109) */}
       <Section><Container>
         <SectionHeading title={region === "azores" ? "Pontos de levantamento nos Açores" : "Pontos de levantamento"} />
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {locations.map((l) => (
-            <li key={l.id}>
+          {locations.map((l, i) => (
+            <li key={l.id} className={locationSpans[i]}>
               <Link href={`/rent-a-car/${l.slug}`} className="block h-full rounded-panel border border-line bg-panel p-5 transition-colors hover:border-brand">
                 <p className="font-bold">{l.name}</p>
                 {l.address && <p className="mt-1 text-body-small text-copy-secondary">{l.address}</p>}
@@ -129,6 +139,6 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
           ))}
         </ul>
       </Container></Section>
-    </>
+    </ServiceSelectionProvider>
   );
 }

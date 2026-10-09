@@ -68,6 +68,16 @@ export const FAMILY_LABEL: Record<VehicleFamily, string> = {
   commercial: "Comerciais",
 };
 
+/** Valor de `?tipo=` nos URLs da pesquisa Rent a Car. */
+export const FAMILY_SLUG: Record<VehicleFamily, string> = {
+  passenger: "passageiros",
+  commercial: "comerciais",
+};
+
+export function familyFromSlug(slug: string | undefined): VehicleFamily | undefined {
+  return (Object.keys(FAMILY_SLUG) as VehicleFamily[]).find((f) => FAMILY_SLUG[f] === slug);
+}
+
 export function getOffer(vehicle: Vehicle, type: ProductType): VehicleOffer | undefined {
   return vehicle.offers.find((o) => o.type === type);
 }

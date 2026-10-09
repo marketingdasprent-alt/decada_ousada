@@ -8,7 +8,7 @@ import { EmptyState, ErrorState, Notice } from "@/components/shared/states";
 import { Container, Section, Skeleton } from "@/components/shared/ui";
 import { VehicleResults, type ResultItem } from "@/components/vehicles/vehicle-results";
 import type { Region } from "@/domain/region";
-import { getOffer } from "@/domain/vehicle";
+import { familyFromSlug, getOffer } from "@/domain/vehicle";
 import { attempt } from "@/lib/attempt";
 import { formatDateTime, rentalDays } from "@/lib/dates";
 import { regionFromParams } from "@/lib/region";
@@ -32,8 +32,10 @@ async function Results({ region, searchParams }: { region: Region; searchParams:
   const sp = await searchParams;
   const search = parseRentalSearch(sp, region);
   const [locations, categories] = await Promise.all([listLocations(region, "rentacar"), listCategories()]);
-  // ?categoria= vem da página de categorias do Rent a Car
-  const category = categories.find((c) => c.slug === firstParam(sp.categoria));
+  // ?tipo= vem da pesquisa (carros ou comerciais); ?categoria= da página de categorias.
+  // Uma categoria de outro tipo é ignorada (o tipo foi escolhido depois, na pesquisa).
+  const family = familyFromSlug(firstParam(sp.tipo));
+  const category = categories.find((c) => c.slug === firstParam(sp.categoria) && (!family || c.family === family));
   const header = (
     <PageHeader
       title={category ? `Viaturas ${category.name}` : "Viaturas"}
@@ -44,7 +46,7 @@ async function Results({ region, searchParams }: { region: Region; searchParams:
   const searchBar = (
     <Container className="-mt-6 relative">
       <div className="rounded-panel bg-panel p-4 shadow-floating sm:p-5">
-        <RentACarSearchForm key={JSON.stringify(sp)} locations={locations} initial={searchToFormValues(search)} variant="bar" collapsible={!!search} extraParams={category ? { categoria: category.slug } : undefined} />
+        <RentACarSearchForm key={JSON.stringify(sp)} locations={locations} initial={searchToFormValues(search)} initialFamily={family ?? category?.family} variant="bar" collapsible={!!search} extraParams={category ? { categoria: category.slug } : undefined} />
       </div>
     </Container>
   );
@@ -65,6 +67,7 @@ async function Results({ region, searchParams }: { region: Region; searchParams:
               product="rentacar"
               items={res.data.map((v) => ({ vehicle: v, offer: getOffer(v, "rentacar")!, href: `/rent-a-car/viatura/${v.slug}` }))}
               initialCategory={category?.name}
+              initialFamily={family ?? category?.family}
             />
           ) : (
             <ErrorState timeout={res.timeout} retryHref="/rent-a-car/viaturas" />
@@ -106,6 +109,7 @@ async function Results({ region, searchParams }: { region: Region; searchParams:
               href: `/rent-a-car/viatura/${r.vehicle.slug}?${query}`,
             }))}
             initialCategory={category?.name}
+            initialFamily={family ?? category?.family}
           />
         )}
       </Container></Section>

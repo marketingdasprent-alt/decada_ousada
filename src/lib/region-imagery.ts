@@ -15,12 +15,14 @@ export interface HeroImage {
   y: number;
   /** O que a foto mostra (para quem mantém o site; no ecrã é decorativa). */
   subject: string;
+  /** Cópia editada em `public/` (ex.: matrículas desfocadas), usada em vez do CDN. */
+  file?: string;
 }
 
 export const REGION_IMAGERY: Record<Region, Record<HeroScene, HeroImage>> = {
   mainland: {
     home: { id: "photo-1662577629898-484e7eb1d0d2", x: 50, y: 50, subject: "Chave na mão e a viatura pronta" },
-    rentacar: { id: "photo-1629725194712-b091c4a1aadd", x: 50, y: 70, subject: "Viatura numa rua de Lisboa, com o elétrico ao fundo" },
+    rentacar: { id: "photo-1629725194712-b091c4a1aadd", x: 50, y: 70, subject: "Viatura numa rua de Lisboa, com o elétrico ao fundo", file: "/demo/hero/lisboa.jpg" },
     tvde: { id: "photo-1565128446913-4433ca388a53", x: 50, y: 60, subject: "Motorista ao volante" },
   },
   azores: {
@@ -31,5 +33,5 @@ export const REGION_IMAGERY: Record<Region, Record<HeroScene, HeroImage>> = {
 };
 
 export function heroImageUrl(image: HeroImage): string {
-  return `https://images.unsplash.com/${image.id}?auto=format&fit=crop&q=75`;
+  return image.file ?? `https://images.unsplash.com/${image.id}?auto=format&fit=crop&q=75`;
 }

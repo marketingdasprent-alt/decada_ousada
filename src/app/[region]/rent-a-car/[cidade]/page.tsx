@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { RentACarSearchForm } from "@/components/rentacar/search-form";
+import { GridFiller } from "@/components/shared/grid-filler";
 import { PageHeader, PageSkeleton } from "@/components/shared/page-header";
-import { Container, Section, SectionHeading } from "@/components/shared/ui";
+import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { isRegion, REGIONS } from "@/domain/region";
 import { getOffer } from "@/domain/vehicle";
@@ -57,6 +58,11 @@ async function City({ params }: { params: Promise<{ region: string; cidade: stri
         <SectionHeading title={`Frota disponível em ${loc.name}`} />
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {vehicles.map((v) => <VehicleCard key={v.id} vehicle={v} offer={getOffer(v, "rentacar")!} href={`/rent-a-car/viatura/${v.slug}`} />)}
+          <GridFiller count={vehicles.length} lg={3}>
+            <p className="font-bold">Pesquise com as suas datas</p>
+            <p className="text-body-small text-copy-secondary">Veja a disponibilidade e o total do período em {loc.name}.</p>
+            <ButtonLink href={`/rent-a-car/viaturas?levantamento=${loc.id}&devolucao=${loc.id}`} variant="outline" size="sm">Ver viaturas</ButtonLink>
+          </GridFiller>
         </div>
       </Container></Section>
     </>

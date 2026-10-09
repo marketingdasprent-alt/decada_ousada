@@ -3,6 +3,40 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.9.0]: 2026-10-08
+
+Third round of team feedback.
+
+### Added
+
+- Rent a Car search starts with the vehicle type: Carros (passageiros) or
+  Comerciais; the results open with that type filtered.
+- Homepage: under the hero, the Rent a Car categories (photo, model count,
+  price from) when the Rent a Car tab is chosen; the TVDE band when TVDE is.
+- Search card, TVDE tab: "Como funciona" box fills the height the panel has
+  over the Rent a Car one.
+- No grid of cards ends a row with empty space: categories and pickup points
+  stretch the first cards; vehicle lists end with a card that links to the
+  full fleet, contacts or FAQ. `qa:layout` check 4 now fails any row with
+  empty space.
+
+### Changed
+
+- The search card keeps a fixed height: switching service or unticking
+  "Devolver no mesmo local" no longer moves the layout.
+- Demo vehicle photos with readable licence plates now use edited copies with
+  the plates blurred (`public/demo/`); same for the Lisbon hero photo.
+- Fiat Panda shows the illustration (no free photo of the current model).
+
+- Sign in, register and recover password: one card with the region photo and
+  what the account gives on the left, the form on the right; show/hide
+  password; "Criar conta" as a full button under the sign-in form.
+
+### Removed
+
+- The site-wide demo banner under the header (override in `DECISIONS.md`).
+- The demo account notice on the sign-in page.
+
 ## [0.8.0]: 2026-10-08
 
 Second revision from team feedback (references: BV Seguros, Sixt, Localrent).

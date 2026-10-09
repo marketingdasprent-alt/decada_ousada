@@ -68,7 +68,7 @@ export function bodyFromCategory(cat: WgCategory | undefined): VehicleBody {
   return /suv|7 lugares|monovolume|familiar/i.test(cat.category_name) ? "suv" : "sedan";
 }
 
-const STOCK_PHOTO_HOSTS = ["https://images.unsplash.com/"];
+const STOCK_PHOTO_HOSTS = ["https://images.unsplash.com/", "/demo/"];
 
 function mapImages(v: WgVehicle, cat: WgCategory | undefined): VehicleImage[] {
   const photos = v.photos.filter((p) => !p.url.startsWith("placeholder:"));

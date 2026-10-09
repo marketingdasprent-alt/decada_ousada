@@ -1,7 +1,8 @@
 "use client";
 
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useId } from "react";
+import { useActionState, useId, useState, type ComponentProps } from "react";
 
 import { changePasswordAction, loginAction, recoverPasswordAction, registerAction, type FormState } from "@/app/actions/auth";
 
@@ -9,27 +10,54 @@ import { track } from "@/lib/analytics";
 
 import { Field, Input } from "../shared/form";
 import { Notice } from "../shared/states";
-import { Button } from "../shared/ui";
+import { Button, ButtonLink } from "../shared/ui";
+
+/** Campo de password com botão para mostrar o que se escreveu (evita erros no telemóvel). */
+function PasswordInput(props: Omit<ComponentProps<typeof Input>, "type">) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <Input {...props} type={visible ? "text" : "password"} className="pr-12" />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        aria-pressed={visible}
+        aria-label={visible ? "Esconder password" : "Mostrar password"}
+        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-control text-copy-muted hover:text-copy focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+      >
+        {visible ? <EyeOff className="size-5" aria-hidden /> : <Eye className="size-5" aria-hidden />}
+      </button>
+    </div>
+  );
+}
 
 /** `secondary`: quando a ação principal da página é criar conta (entrada a partir do TVDE). */
-export function LoginForm({ next, demo, secondary = false }: { next?: string; demo?: { email: string; password: string }; secondary?: boolean }) {
+export function LoginForm({ next, secondary = false }: { next?: string; secondary?: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(loginAction, {});
   const uid = useId();
+  const registerHref = `/registar${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   return (
     <form action={action} className="space-y-5">
       <input type="hidden" name="next" value={next ?? ""} />
       <Field label="Email" htmlFor={`${uid}-email`} required>
-        <Input id={`${uid}-email`} name="email" type="email" autoComplete="email" required defaultValue={demo?.email} />
+        <Input id={`${uid}-email`} name="email" type="email" autoComplete="email" required />
       </Field>
-      <Field label="Password" htmlFor={`${uid}-password`} required>
-        <Input id={`${uid}-password`} name="password" type="password" autoComplete="current-password" required defaultValue={demo?.password} />
-      </Field>
+      <div>
+        <Field label="Password" htmlFor={`${uid}-password`} required>
+          <PasswordInput id={`${uid}-password`} name="password" autoComplete="current-password" required />
+        </Field>
+        <p className="mt-2 text-right text-body-small">
+          <Link href="/recuperar-password" className="text-copy-secondary underline-offset-4 hover:text-copy hover:underline max-md:tap-target">Esqueci-me da password</Link>
+        </p>
+      </div>
       {state.error && <Notice tone="danger">{state.error}</Notice>}
       <Button type="submit" size="lg" variant={secondary ? "outline" : "primary"} className="w-full" loading={pending}>Entrar</Button>
-      <div className="flex justify-between text-body-small">
-        <Link href="/recuperar-password" className="text-copy-secondary hover:text-copy max-md:tap-target">Esqueci-me da password</Link>
-        {!secondary && <Link href={`/registar${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="font-medium text-brand max-md:tap-target">Criar conta</Link>}
-      </div>
+      {!secondary && (
+        <div className="border-t border-line pt-5 text-center">
+          <p className="text-body-small text-copy-secondary">Ainda não tem conta?</p>
+          <ButtonLink href={registerHref} variant="outline" size="lg" className="mt-3 w-full">Criar conta</ButtonLink>
+        </div>
+      )}
     </form>
   );
 }
@@ -47,7 +75,7 @@ export function RegisterForm({ next }: { next?: string }) {
         <Input id={`${uid}-email`} name="email" type="email" autoComplete="email" required />
       </Field>
       <Field label="Password" htmlFor={`${uid}-password`} required help="Mínimo 8 caracteres.">
-        <Input id={`${uid}-password`} name="password" type="password" autoComplete="new-password" minLength={8} required />
+        <PasswordInput id={`${uid}-password`} name="password" autoComplete="new-password" minLength={8} required />
       </Field>
       {state.error && <Notice tone="danger">{state.error}</Notice>}
       <Button type="submit" size="lg" className="w-full" loading={pending}>Criar conta</Button>

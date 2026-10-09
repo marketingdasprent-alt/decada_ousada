@@ -296,11 +296,13 @@ export function BookingWizard({
                 <section aria-labelledby="extras">
                   <h2 id="extras" {...(coverages.length === 0 ? { "data-step-heading": true, tabIndex: -1 } : {})} className="text-h3 font-bold focus:outline-none">Personalize a sua reserva</h2>
                   <ul className="mt-5 grid gap-3 md:grid-cols-2">
-                    {extras.map((e) => {
+                    {extras.map((e, i) => {
                       const Icon = (e.icon && ICONS[e.icon]) || MapPinned;
                       const n = qty(e.id);
+                      // Com um número ímpar de extras, o último ocupa a linha toda (sem espaço vazio)
+                      const fullRow = extras.length % 2 === 1 && i === extras.length - 1;
                       return (
-                        <li key={e.id} className={cn("flex items-center gap-4 rounded-panel border bg-panel p-4", n > 0 ? "border-selected" : "border-line")}>
+                        <li key={e.id} className={cn("flex items-center gap-4 rounded-panel border bg-panel p-4", n > 0 ? "border-selected" : "border-line", fullRow && "md:col-span-2")}>
                           <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-card", n > 0 ? "bg-selected text-on-dark" : "bg-panel-alt text-copy-secondary")}>
                             <Icon className="size-5" aria-hidden />
                           </span>

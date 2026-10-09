@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { GridFiller } from "@/components/shared/grid-filler";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
 import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
@@ -74,6 +75,11 @@ export default async function TvdePage({ params }: PageProps<"/[region]/tvde">) 
             {vehicles.slice(0, 6).map((v) => (
               <VehicleCard key={v.id} vehicle={v} offer={getOffer(v, "tvde")!} href={`/tvde/viatura/${v.slug}`} />
             ))}
+            <GridFiller count={Math.min(vehicles.length, 6)} lg={3}>
+              <p className="font-bold">Dúvidas sobre a candidatura?</p>
+              <p className="text-body-small text-copy-secondary">Veja as respostas sobre o sinal e a aprovação da candidatura.</p>
+              <ButtonLink href="/perguntas-frequentes" variant="outline" size="sm">Perguntas frequentes</ButtonLink>
+            </GridFiller>
           </div>
         </Container>
       </Section>

@@ -1,10 +1,11 @@
 "use client";
 
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Car, Search, SlidersHorizontal, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 
 import type { Location } from "@/domain/location";
+import { FAMILY_SLUG, type VehicleFamily } from "@/domain/vehicle";
 import { addDays, TIME_SLOTS } from "@/lib/dates";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
@@ -33,7 +34,12 @@ export function searchToQuery(v: SearchValues): string {
   }).toString();
 }
 
-/** Pesquisa Rent a Car (doc §9–10). */
+const FAMILY_OPTIONS: Array<{ value: VehicleFamily; label: string; hint: string; icon: typeof Car }> = [
+  { value: "passenger", label: "Carros", hint: "Passageiros", icon: Car },
+  { value: "commercial", label: "Comerciais", hint: "Carga", icon: Truck },
+];
+
+/** Pesquisa Rent a Car (doc §9–10), com o tipo de viatura (carros ou comerciais) em primeiro. */
 export function RentACarSearchForm({
   locations,
   initial,
@@ -42,6 +48,7 @@ export function RentACarSearchForm({
   extraParams,
   collapsible,
   submitLabel = "Pesquisar",
+  initialFamily = "passenger",
 }: {
   locations: Location[];
   initial?: Partial<SearchValues>;
@@ -56,6 +63,8 @@ export function RentACarSearchForm({
   collapsible?: boolean;
   /** Texto do botão (ex.: "Ver viaturas Rent a Car" na hero). */
   submitLabel?: string;
+  /** Tipo de viatura já escolhido (`?tipo=`). */
+  initialFamily?: VehicleFamily;
 }) {
   const [expanded, setExpanded] = useState(false);
   const router = useRouter();
@@ -72,6 +81,7 @@ export function RentACarSearchForm({
     returnDate: initial?.returnDate ?? "",
     returnTime: initial?.returnTime ?? "10:00",
   });
+  const [family, setFamily] = useState<VehicleFamily>(initialFamily);
   const [sameReturn, setSameReturn] = useState(!initial?.returnLocationId || initial.returnLocationId === initial.pickupLocationId);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,9 +106,9 @@ export function RentACarSearchForm({
       return setError(`O aluguer online tem um máximo de ${MAX_DAYS} dias. Para períodos maiores, contacte-nos.`);
     }
     setError(null);
-    track("rentacar_search", { pickupLocationId: v.pickupLocationId, returnLocationId: v.returnLocationId, sameReturn });
-    const extra = extraParams ? `&${new URLSearchParams(extraParams).toString()}` : "";
-    router.push(`${action}?${searchToQuery(v)}${extra}`);
+    track("rentacar_search", { pickupLocationId: v.pickupLocationId, returnLocationId: v.returnLocationId, sameReturn, family });
+    const extra = new URLSearchParams({ tipo: FAMILY_SLUG[family], ...extraParams }).toString();
+    router.push(`${action}?${searchToQuery(v)}&${extra}`);
   }
 
   const bar = variant === "bar";
@@ -115,6 +125,23 @@ export function RentACarSearchForm({
     <>
     {toggle}
     <form onSubmit={submit} noValidate className={cn(collapsible && !expanded && "hidden md:block", variant === "card" && "rounded-panel bg-panel p-5 shadow-floating sm:p-6")} aria-label="Pesquisar viaturas Rent a Car">
+      <fieldset className="mb-4">
+        <legend className="mb-2 text-body-small font-semibold">Que tipo de viatura pretende?</legend>
+        <div className={cn("grid grid-cols-2 gap-2", !stack && "sm:max-w-sm")}>
+          {FAMILY_OPTIONS.map(({ value, label, hint, icon: Icon }) => (
+            <label
+              key={value}
+              className="flex min-h-11 cursor-pointer items-center gap-2 rounded-control border border-line-control bg-panel px-3 py-2 text-body-small transition-colors hover:border-copy has-[:checked]:border-brand has-[:checked]:bg-brand has-[:checked]:text-on-brand has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus"
+            >
+              <input type="radio" name={`${id}-family`} value={value} checked={family === value} onChange={() => setFamily(value)} className="sr-only" />
+              <Icon className="size-5 shrink-0" aria-hidden />
+              <span className="font-semibold">{label}</span>
+              <span className="sr-only">({hint})</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
       <div className={cn("grid gap-4", bar ? "sm:grid-cols-2 lg:grid-search-bar lg:items-end" : stack ? "grid-cols-2" : "sm:grid-cols-2 lg:grid-search")}>
         <div className={cn(stack ? "col-span-2" : "sm:col-span-2 lg:col-span-1")}>
           <Label htmlFor={`${id}-pl`}>Local de levantamento</Label>
@@ -154,16 +181,22 @@ export function RentACarSearchForm({
       <div className={cn("mt-4 flex flex-col gap-4", cardLike && "sm:flex-row sm:items-end sm:justify-between")}>
         <div className={cn("flex flex-col gap-3", !stack && "sm:flex-row sm:items-center sm:gap-6")}>
           <Checkbox label="Devolver no mesmo local" checked={sameReturn} onChange={(e) => setSameReturn(e.target.checked)} />
-          {!sameReturn && (
-            <div className="min-w-56">
-              <Label htmlFor={`${id}-rl`} className="sr-only">Local de devolução</Label>
-              <Select id={`${id}-rl`} value={values.returnLocationId} onChange={(e) => set({ returnLocationId: e.target.value })} aria-label="Local de devolução">
-                {returnLocations.map((l) => (
-                  <option key={l.id} value={l.id}>{l.name}</option>
-                ))}
-              </Select>
-            </div>
-          )}
+          {/* Sempre visível (o formulário não muda de altura ao marcar): com "mesmo local",
+              fica desativado e mostra o local de levantamento */}
+          <div className="min-w-56">
+            <Label htmlFor={`${id}-rl`} className="sr-only">Local de devolução</Label>
+            <Select
+              id={`${id}-rl`}
+              value={sameReturn ? values.pickupLocationId : values.returnLocationId}
+              onChange={(e) => set({ returnLocationId: e.target.value })}
+              disabled={sameReturn}
+              aria-label="Local de devolução"
+            >
+              {(sameReturn ? pickupLocations : returnLocations).map((l) => (
+                <option key={l.id} value={l.id}>{l.name}</option>
+              ))}
+            </Select>
+          </div>
         </div>
         {!bar && (
           <Button type="submit" size="lg" className={cn("w-full", !stack && "sm:w-auto")}>

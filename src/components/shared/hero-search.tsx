@@ -1,14 +1,15 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useId, useRef } from "react";
 
 import type { Location } from "@/domain/location";
 import { cn } from "@/lib/cn";
 
 import { RentACarSearchForm } from "../rentacar/search-form";
 import { TvdeSearchForm } from "../tvde/tvde-search-form";
+import { useServiceSelection, type Product } from "./service-selection";
 
-export type Product = "rentacar" | "tvde";
+export type { Product };
 
 /**
  * O que distingue os dois serviços, dito no próprio formulário. Cada um tem a sua cor:
@@ -45,6 +46,32 @@ function ServiceIntro({ product }: { product: Product }) {
   );
 }
 
+/** Os passos do TVDE, no espaço que o painel TVDE tem a mais (é mais curto que o Rent a Car). */
+const TVDE_STEPS = [
+  "Escolha a viatura e a data de início.",
+  "Submeta a candidatura com os documentos.",
+  "Reserve com o sinal. A equipa analisa a candidatura antes do levantamento.",
+];
+
+function TvdeSteps({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex flex-col justify-center rounded-card bg-panel-alt p-4", className)}>
+      <p className="text-body-small font-semibold">Como funciona</p>
+      <ol className="mt-3 space-y-3">
+        {TVDE_STEPS.map((step, i) => (
+          <li key={step} className="flex gap-3 text-body-small text-copy-secondary">
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-pill bg-panel-dark text-caption font-bold text-on-dark" aria-hidden>
+              {i + 1}
+            </span>
+            {step}
+          </li>
+        ))}
+      </ol>
+      <p className="mt-4 border-t border-line pt-3 text-caption text-copy-muted">O sinal reserva a viatura. A aprovação depende da análise da candidatura.</p>
+    </div>
+  );
+}
+
 function ProductForm({ product, racLocations, tvdeLocations }: { product: Product; racLocations: Location[]; tvdeLocations: Location[] }) {
   return product === "rentacar" ? (
     <RentACarSearchForm locations={racLocations} variant="stack" submitLabel={SERVICE.rentacar.cta} />
@@ -56,10 +83,13 @@ function ProductForm({ product, racLocations, tvdeLocations }: { product: Produc
 /**
  * Cartão de pesquisa da hero, à direita. Na página inicial, dois separadores grandes
  * (Rent a Car / TVDE) com a cor de cada serviço; nas páginas de produto, só o serviço
- * da página (`only`). Separadores com o padrão ARIA (setas, Home, End).
+ * da página (`only`). Separadores com o padrão ARIA (setas, Home, End). Os dois painéis
+ * ocupam a mesma célula da grelha, e o escondido fica invisível (fora do foco e do leitor
+ * de ecrã) em vez de sair do fluxo: o cartão tem sempre a altura do painel maior e não
+ * salta ao trocar de serviço.
  */
 export function HeroSearch({ racLocations, tvdeLocations, only }: { racLocations: Location[]; tvdeLocations: Location[]; only?: Product }) {
-  const [active, setActive] = useState<Product>(only ?? "rentacar");
+  const [active, setActive] = useServiceSelection(only ?? "rentacar");
   const id = useId();
   const tabRefs = useRef<Record<Product, HTMLButtonElement | null>>({ rentacar: null, tvde: null });
   const products: Product[] = ["rentacar", "tvde"];
@@ -124,12 +154,23 @@ export function HeroSearch({ racLocations, tvdeLocations, only }: { racLocations
           );
         })}
       </div>
-      {products.map((p) => (
-        <div key={p} role="tabpanel" id={`${id}-panel-${p}`} aria-labelledby={`${id}-tab-${p}`} hidden={active !== p} className="space-y-4 p-5">
-          <ServiceIntro product={p} />
-          <ProductForm product={p} racLocations={racLocations} tvdeLocations={tvdeLocations} />
-        </div>
-      ))}
+      <div className="grid">
+        {products.map((p) => (
+          <div
+            key={p}
+            role="tabpanel"
+            id={`${id}-panel-${p}`}
+            aria-labelledby={`${id}-tab-${p}`}
+            inert={active !== p}
+            className={cn("col-start-1 row-start-1 flex flex-col gap-4 p-5", active !== p && "invisible")}
+          >
+            <ServiceIntro product={p} />
+            {/* O painel TVDE estica até à altura do Rent a Car: o espaço a mais vai para os passos */}
+            {p === "tvde" && <TvdeSteps className="flex-1" />}
+            <ProductForm product={p} racLocations={racLocations} tvdeLocations={tvdeLocations} />
+          </div>
+        ))}
+      </div>
       <div className={cn("h-1", ACCENT[active].bar)} aria-hidden />
     </div>
   );
