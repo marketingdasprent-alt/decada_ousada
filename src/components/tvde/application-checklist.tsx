@@ -46,7 +46,7 @@ export function ApplicationChecklist({
         {filled > 0
           ? `Faltam ${toFill} ${toFill === 1 ? "campo" : "campos"} no cadastro; os outros já vêm da sua conta.`
           : `O cadastro tem ${form.fields.length} ${form.fields.length === 1 ? "campo" : "campos"}.`}
-        {reservationAmount ? ` No fim paga o sinal de ${formatMoney(reservationAmount)}.` : ""}
+        {reservationAmount ? ` No fim paga o sinal de ${formatMoney(reservationAmount)}, descontado na caução no levantamento.` : ""}
       </p>
     </section>
   );

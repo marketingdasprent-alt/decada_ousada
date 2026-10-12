@@ -10,7 +10,7 @@ import type { Customer, CustomerInput, Invoice } from "@/domain/customer";
 import type { Location } from "@/domain/location";
 import type { VehicleOffer } from "@/domain/offer";
 import type { PaymentStatus } from "@/domain/payment";
-import type { PriceLine, Quote } from "@/domain/pricing";
+import { TVDE_RESERVATION_FEE, type PriceLine, type Quote } from "@/domain/pricing";
 import type { Region } from "@/domain/region";
 import type { FuelType, Vehicle, VehicleBody, VehicleCategory, VehicleImage } from "@/domain/vehicle";
 import { slugify } from "@/lib/slug";
@@ -97,7 +97,8 @@ function mapOffer(v: WgVehicle, r: WgRate): VehicleOffer {
       amount: (isTvde ? r.weekly_rate : r.daily_rate) ?? 0,
       currency: "EUR",
       deposit: r.deposit_amount,
-      reservationAmount: isTvde ? (r.reservation_amount ?? r.deposit_amount) : undefined,
+      // Sinal TVDE: regra comercial fixa (o WeGest não tem sinal), descontado na caução
+      reservationAmount: isTvde ? TVDE_RESERVATION_FEE : undefined,
     },
     deposit: r.deposit_amount,
     mileageLimit: r.km_limit,

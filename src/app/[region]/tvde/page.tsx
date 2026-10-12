@@ -5,6 +5,7 @@ import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
 import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { TvdeProcess } from "@/components/tvde/tvde-process";
+import { TvdeRequirements } from "@/components/tvde/tvde-requirements";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { formatMoney } from "@/domain/pricing";
 import { getOffer } from "@/domain/vehicle";
@@ -42,6 +43,8 @@ export default async function TvdePage({ params }: PageProps<"/[region]/tvde">) 
 
       <TvdeProcess />
 
+      <TvdeRequirements region={region} />
+
       <Section>
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -54,7 +57,7 @@ export default async function TvdePage({ params }: PageProps<"/[region]/tvde">) 
             ))}
             <GridFiller count={Math.min(vehicles.length, 6)} lg={3}>
               <p className="font-bold">Dúvidas sobre a candidatura?</p>
-              <p className="text-body-small text-copy-secondary">Veja as respostas sobre o sinal e a aprovação da candidatura.</p>
+              <p className="text-body-small text-copy-secondary">Veja as respostas sobre requisitos, sinal, caução e aprovação.</p>
               <ButtonLink href="/perguntas-frequentes" variant="outline" size="sm">Perguntas frequentes</ButtonLink>
             </GridFiller>
           </div>

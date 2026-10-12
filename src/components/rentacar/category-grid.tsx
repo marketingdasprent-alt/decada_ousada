@@ -48,8 +48,8 @@ const STACKED_LG = "lg:flex-col lg:items-start lg:justify-center";
 
 /**
  * Cartões de categoria Rent a Car: foto, nome, quantos modelos e o preço "desde" por dia.
- * O cartão inteiro abre as viaturas da categoria. `dense` põe quatro por linha no desktop
- * (página inicial); por omissão, três (página Rent a Car). Nenhuma linha fica com espaço
+ * O cartão inteiro abre as viaturas da categoria. Por omissão, três por linha (página Rent
+ * a Car); `dense` põe quatro. Nenhuma linha fica com espaço
  * vazio: os cartões que ocupam mais de uma coluna passam a horizontais (foto à esquerda,
  * inteira, nunca cortada; texto empilhado à direita).
  */

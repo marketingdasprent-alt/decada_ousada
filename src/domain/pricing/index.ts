@@ -1,9 +1,17 @@
 /**
  * Preços (doc §72–76).
  *
- * Regra: o frontend NÃO cria regras comerciais. Totais, impostos, cauções e sinais
- * vêm sempre da API (WeGest). As funções aqui servem apenas para apresentação.
+ * Regra: o frontend NÃO cria regras comerciais. Totais, impostos e cauções vêm sempre
+ * da API (WeGest). As funções aqui servem apenas para apresentação. Exceção: o sinal
+ * TVDE (abaixo), que o WeGest não tem (docs/wegest/analise-gaps.md, gap 9).
  */
+
+/**
+ * Sinal TVDE: valor fixo que o motorista paga para confirmar a reserva da viatura e que
+ * é descontado na caução no levantamento. Regra comercial da DÉCADA OUSADA (equipa,
+ * 2026-10-09); a candidatura continua sujeita a análise. Override em DECISIONS.md.
+ */
+export const TVDE_RESERVATION_FEE = 50;
 export type PricingUnit = "day" | "week";
 
 export type Currency = "EUR";

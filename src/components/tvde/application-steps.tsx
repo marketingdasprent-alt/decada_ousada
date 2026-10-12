@@ -135,7 +135,7 @@ export function TvdePaymentStep({ applicationId, amount }: { applicationId: stri
       <div className="mt-6 rounded-panel border-2 border-caution/40 bg-caution-surface p-5">
         <p className="font-semibold text-copy">Importante</p>
         <p className="mt-1 text-body-small text-copy-secondary">
-          O pagamento do sinal ou caução não representa aprovação automática da candidatura. A candidatura será analisada pela DÉCADA OUSADA. Caso não seja aprovada, o valor pago será devolvido de acordo com o procedimento aplicável.
+          O sinal confirma a reserva da viatura e é descontado na caução no levantamento. O pagamento do sinal não representa aprovação automática da candidatura. A candidatura será analisada pela DÉCADA OUSADA. Caso não seja aprovada, o valor pago será devolvido de acordo com o procedimento aplicável.
         </p>
         <Checkbox className="mt-4 font-medium text-copy" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} label="Compreendo e aceito esta condição." />
       </div>

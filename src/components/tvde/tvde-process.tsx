@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { formatMoney, TVDE_RESERVATION_FEE } from "@/domain/pricing";
 import { cn } from "@/lib/cn";
 
 import { Container, Section } from "../shared/ui";
@@ -9,7 +10,7 @@ export const TVDE_STEPS = [
   { title: "Escolha a viatura", text: "Preço semanal, caução, limite de km e condições." },
   { title: "Faça o cadastro", text: "A ficha de motorista, em poucos minutos." },
   { title: "Envie os documentos", text: "Identificação, carta, certificado TVDE e morada." },
-  { title: "Pague o sinal", text: "Reserva a viatura enquanto analisamos a candidatura." },
+  { title: `Pague ${formatMoney(TVDE_RESERVATION_FEE)} de sinal`, text: "Confirma a reserva da viatura e é descontado na caução no levantamento." },
   { title: "Levante após aprovação", text: "Assina o contrato e começa a conduzir." },
 ];
 
@@ -18,7 +19,7 @@ export const TVDE_STEPS = [
  * sinal não é aprovação. Na página TVDE só com o título; na página inicial com o título,
  * a introdução e as ações (`intro`, `actions`), a explicar o serviço sem listar viaturas.
  */
-export function TvdeProcess({ title = "Como funciona", intro, actions, className }: { title?: string; intro?: ReactNode; actions?: ReactNode; className?: string }) {
+export function TvdeProcess({ title = "Como funciona", intro, actions, children, className }: { title?: string; intro?: ReactNode; actions?: ReactNode; /** Por baixo do processo (ex.: "O que precisa de saber" na página inicial). */ children?: ReactNode; className?: string }) {
   return (
     <Section className={cn("bg-panel-dark text-on-dark", className)}>
       <Container>
@@ -40,6 +41,7 @@ export function TvdeProcess({ title = "Como funciona", intro, actions, className
           ))}
         </ol>
         <p className="mt-8 text-body-small text-on-dark/75">O pagamento do sinal não significa aprovação automática. Se a candidatura não for aprovada, o valor é devolvido.</p>
+        {children}
       </Container>
     </Section>
   );

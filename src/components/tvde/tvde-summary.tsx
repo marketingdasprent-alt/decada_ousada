@@ -49,7 +49,7 @@ export function TvdeSummary({
       <dl className="space-y-2 p-4 text-body-small">
         <div className="flex justify-between"><dt className="text-copy-secondary">Preço semanal</dt><dd className="font-semibold tabular">{formatMoney(weeklyPrice)}/semana</dd></div>
         {deposit !== undefined && <div className="flex justify-between"><dt className="text-copy-secondary">Caução</dt><dd className="tabular">{formatMoney(deposit)}</dd></div>}
-        {deposit !== undefined && now < deposit && <div className="flex justify-between"><dt className="text-copy-secondary">Restante (no levantamento)</dt><dd className="tabular">{formatMoney(deposit - now)}</dd></div>}
+        {deposit !== undefined && now < deposit && <div className="flex justify-between"><dt className="text-copy-secondary">Restante da caução (no levantamento)</dt><dd className="tabular">{formatMoney(deposit - now)}</dd></div>}
         <div className="mt-3 flex items-end justify-between border-t border-line pt-3">
           <dt className="font-semibold">Sinal (pago agora)</dt>
           <dd className="text-h3 font-bold tabular">{formatMoney(now)}</dd>
