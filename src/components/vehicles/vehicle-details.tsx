@@ -5,6 +5,7 @@ import { formatMileage, type VehicleOffer } from "@/domain/offer";
 import { formatMoney } from "@/domain/pricing";
 import type { Vehicle } from "@/domain/vehicle";
 
+import { OFFER_COST_LABELS } from "./offer-cost-facts";
 import { VehicleGallery } from "./vehicle-gallery";
 import { VehicleSpecs } from "./vehicle-specs";
 
@@ -21,8 +22,9 @@ export function VehicleOverview({ vehicle, offer, aside }: { vehicle: Vehicle; o
     offer.cancellationPolicy && { label: "Cancelamento", value: offer.cancellationPolicy },
   ]
     .filter(Boolean)
-    // TVDE: caução, km e período mínimo já estão no painel de decisão (uma fonte por informação)
-    .filter((c) => !isTvde || !["Caução", "Quilometragem incluída", "Km adicional", "Período mínimo"].includes((c as { label: string }).label)) as Array<{ label: string; value: string }>;
+    // Os custos que já estão no painel de decisão, junto do preço, saem daqui (uma fonte por
+    // informação): TVDE caução, km e período mínimo; Rent a Car os de OfferCostFacts
+    .filter((c) => !(isTvde ? ["Caução", "Quilometragem incluída", "Km adicional", "Período mínimo"] : OFFER_COST_LABELS).includes((c as { label: string }).label)) as Array<{ label: string; value: string }>;
 
   return (
     // Mobile: galeria, decisão (preço e ação), detalhes. Desktop: decisão fixa à direita.

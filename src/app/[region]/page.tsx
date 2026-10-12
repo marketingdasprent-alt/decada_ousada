@@ -4,11 +4,13 @@ import { RegionSwitch } from "@/components/layout/region-switch";
 import { RacIntro } from "@/components/rentacar/rac-intro";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
+import { InstagramFeed } from "@/components/shared/instagram";
+import { PriceDisplay } from "@/components/shared/price-display";
 import { Testimonials } from "@/components/shared/testimonials";
 import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { TvdeHighlights } from "@/components/tvde/tvde-highlights";
 import { TvdeProcess } from "@/components/tvde/tvde-process";
-import { formatMoney } from "@/domain/pricing";
+import { formatMoney, TVDE_RESERVATION_FEE } from "@/domain/pricing";
 import type { Region } from "@/domain/region";
 import { fillSpanClasses } from "@/lib/grid";
 import { regionFromParams, regionSwitchHref } from "@/lib/region";
@@ -64,14 +66,28 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
       {/* Rent a Car apresentado: para quem é, vantagens, preço desde (a frota fica nas páginas de viaturas) */}
       <RacIntro region={region} from={racFrom} />
 
+      {/* Depoimentos de clientes logo a seguir ao Rent a Car, antes do TVDE (pedido da equipa; DECISIONS.md, 2026-10-12) */}
+      <Testimonials service="rentacar" />
+
       {/* TVDE explicado (sem viaturas): a página inicial não pode falar só de Rent a Car */}
       <TvdeProcess
         title="TVDE: viaturas à semana para motoristas"
         intro={
-          <p>
-            Para motoristas TVDE profissionais: alugue uma viatura à semana, com preço, caução, limite de quilómetros e condições à vista antes de se candidatar.
-            {tvdeFrom !== null && <> Desde <span className="font-semibold text-on-dark tabular">{formatMoney(tvdeFrom)}</span> por semana.</>}
-          </p>
+          <>
+            <p>Para motoristas TVDE profissionais: alugue uma viatura à semana, com preço, caução, limite de quilómetros e condições à vista antes de se candidatar.</p>
+            {/* Preço semanal e o que se paga para reservar, juntos e fora do parágrafo */}
+            {tvdeFrom !== null && (
+              <PriceDisplay
+                amount={tvdeFrom}
+                unit="week"
+                prefix="Desde"
+                size="lg"
+                tone="dark"
+                note={`Sinal de ${formatMoney(TVDE_RESERVATION_FEE)} para reservar, descontado na caução`}
+                className="mt-6"
+              />
+            )}
+          </>
         }
         actions={
           <>
@@ -83,8 +99,8 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
         <TvdeHighlights region={region} />
       </TvdeProcess>
 
-      {/* Depoimentos de clientes depois dos dois serviços (os de TVDE ficam para outro sítio; DECISIONS.md, 2026-10-12) */}
-      <Testimonials service="rentacar" />
+      {/* Instagram: últimas publicações de @decada_ousada (pedido da equipa, DECISIONS.md 2026-10-12) */}
+      <InstagramFeed />
 
       {/* Localizações (SEO regional, doc §109) */}
       <Section><Container>

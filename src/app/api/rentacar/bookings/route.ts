@@ -4,18 +4,21 @@ import { bookingRequestSchema } from "@/lib/validation";
 import { getCustomerId, getSession, linkCustomer, register } from "@/services/auth";
 import { sendEmail } from "@/services/email";
 import { createPayment, linkPayment, refundPayment } from "@/services/payments";
-import { checkVehicleAvailability, createBooking, quoteRentACar, upsertCustomer, WeGestError } from "@/services/wegest";
+import { checkVehicleAvailability, createBooking, onlineRequestsEnabled, quoteRentACar, upsertCustomer, WeGestError } from "@/services/wegest";
 
 /**
  * POST /api/rentacar/bookings: fluxo completo de reserva (doc §27):
  * conta → cotação (preço protegido) → disponibilidade → cliente WeGest → pagamento → reserva WeGest.
  * Se o WeGest recusar depois do pagamento, o pagamento é reembolsado automaticamente.
  */
+const ONLINE_OFF = "As reservas online ainda não estão disponíveis. Contacte-nos para reservar esta viatura.";
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = bookingRequestSchema.safeParse(body);
   if (!parsed.success) return fromZod(parsed.error);
   const input = parsed.data;
+  if (!onlineRequestsEnabled()) return fail("unavailable", ONLINE_OFF, 503);
   const region = regionFromRequest(req);
   const search = { ...input.search, region };
 
@@ -72,6 +75,7 @@ export async function POST(req: Request) {
       const booking = await createBooking({
         customerId: customer.id,
         quoteId: quote.id,
+        expectedTotal: quote.total,
         vehicleId: input.vehicleId,
         offerId: input.offerId,
         search,

@@ -1,15 +1,307 @@
 import "server-only";
 
+import type {
+  ApiCategoria,
+  ApiCobertura,
+  ApiCotacao,
+  ApiExtra,
+  ApiLocalizacao,
+  ApiModelo,
+  ApiModeloDetalhe,
+  ApiModeloDisponivel,
+  ApiModeloTvde,
+  ApiPreco,
+  ApiReserva,
+} from "./api-types";
 import { wegestRequest } from "./client";
 import type { WeGestTransport } from "./transport";
-import { WeGestError, type WgApplication, type WgBooking, type WgCustomer, type WgVehicle } from "./types";
+import {
+  WeGestError,
+  type WgApplication,
+  type WgBooking,
+  type WgCategory,
+  type WgCustomer,
+  type WgFormField,
+  type WgLocation,
+  type WgQuote,
+  type WgRate,
+  type WgVehicle,
+} from "./types";
 
 /**
- * Implementação HTTP do WeGest.
+ * Implementação HTTP do WeGest: API v1 (https://api.wegest.pt/v1, docs/wegest/openapi.json).
+ * Converte as respostas reais para os DTOs Wg* que o mock também produz, para o resto da
+ * app não depender do transporte.
  *
- * TODO(WeGest): TODOS os caminhos abaixo são provisórios: confirmar com o Swagger/OpenAPI.
- * Ver lista de perguntas em docs/perguntas-wegest.md.
+ * O que a API não tem (docs/wegest/analise-gaps.md) fica aqui, em memória por instância:
+ * fichas de cliente, a lista de reservas e candidaturas de cada cliente, faturas (vazio).
+ * Em produção isto tem de passar para a base de dados local (DATABASE_URL).
  */
+
+type RegionCode = WgVehicle["region_code"];
+
+// ───────────────────────────── Estado local (o que a API não guarda) ─────────────────────────────
+
+interface LocalState {
+  customers: Map<string, WgCustomer>;
+  bookingsByCustomer: Map<string, Set<number>>;
+  applicationsByCustomer: Map<string, Map<string, WgApplication>>;
+}
+
+const g = globalThis as unknown as { __wegestHttp?: LocalState };
+const local = (): LocalState =>
+  (g.__wegestHttp ??= { customers: new Map(), bookingsByCustomer: new Map(), applicationsByCustomer: new Map() });
+
+// ───────────────────────────── Conversões ─────────────────────────────
+
+const money = (p: ApiPreco | null | undefined) => p?.com_iva;
+
+/** A API não tem região: uma localização é dos Açores pelo nome, cidade ou morada. */
+const AZORES = /a[çc]ores|azores|ponta delgada|angra|horta|terceira|s[ãa]o miguel|faial|pico|lajes|ribeira grande|praia da vit[óo]ria/i;
+const regionOf = (l: ApiLocalizacao): RegionCode => (AZORES.test([l.nome, l.cidade, l.morada].filter(Boolean).join(" ")) ? "PT-AC" : "PT-CONT");
+
+function toLocation(l: ApiLocalizacao): WgLocation {
+  return {
+    location_id: l.id,
+    location_name: l.nome,
+    region_code: regionOf(l),
+    address: [l.morada, l.cidade].filter(Boolean).join(", ") || undefined,
+    lat: l.latitude ?? undefined,
+    lng: l.longitude ?? undefined,
+    allows_pickup: true,
+    allows_return: true,
+    opening_hours: l.horario ?? undefined,
+  };
+}
+
+/** Combustível em texto livre no WeGest ("Diesel", "diesel", "Elétrico"…). */
+function fuelOf(text: string | null): WgVehicle["fuel_type"] {
+  if (!text) return undefined;
+  const t = text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  if (/plug|phev/.test(t)) return "PHEV";
+  if (/hibrid|hybrid/.test(t)) return "HIBRIDO";
+  if (/eletric|electric|^ev$/.test(t)) return "ELETRICO";
+  if (/diesel|gasoleo/.test(t)) return "DIESEL";
+  if (/gpl|lpg/.test(t)) return "GPL";
+  if (/gasolina|petrol/.test(t)) return "GASOLINA";
+  return undefined;
+}
+
+const transmissionOf = (c: ApiModelo["caixa"]): WgVehicle["transmission_type"] =>
+  c === "automatica" ? "AUTOMATICA" : c === "manual" ? "MANUAL" : undefined;
+
+const racRateId = (modelId: string) => `rac:${modelId}`;
+const tvdeRateId = (modelId: string) => `tvde:${modelId}`;
+
+function racRate(m: ApiModelo | ApiModeloDetalhe): WgRate {
+  const t = "tarifa" in m ? m.tarifa : undefined;
+  return {
+    rate_id: racRateId(m.id),
+    product: "RAC",
+    daily_rate: money(m.preco_dia),
+    deposit_amount: money(t?.caucao),
+    km_limit: t?.km_incluidos ?? undefined,
+    extra_km_price: money(t?.km_adicional),
+    excess_amount: money(t?.franquia),
+  };
+}
+
+function tvdeRate(m: ApiModeloTvde): WgRate {
+  return {
+    rate_id: tvdeRateId(m.id),
+    product: "TVDE",
+    weekly_rate: money(m.preco_semana),
+    deposit_amount: money(m.caucao),
+    km_limit: m.km_incluidos ?? undefined,
+    extra_km_price: money(m.km_adicional),
+    excess_amount: money(m.franquia),
+  };
+}
+
+/** Modelo da API → viatura. A API trabalha por modelo ("ou similar"), sem viatura nem local. */
+function toVehicle(m: ApiModelo | ApiModeloTvde, rate: WgRate, regionCode: RegionCode, locationIds: string[]): WgVehicle {
+  return {
+    vehicle_id: m.id,
+    vehicle_name: `${m.marca} ${m.modelo}`,
+    brand: m.marca,
+    model: m.modelo,
+    category_id: m.categoria?.id ?? "",
+    photos: m.imagem_url ? [{ url: m.imagem_url }] : [],
+    fuel_type: fuelOf(m.combustivel),
+    transmission_type: transmissionOf(m.caixa),
+    seats: m.lugares ?? undefined,
+    doors: m.portas ?? undefined,
+    luggage: m.bagageira ?? undefined,
+    features: m.ar_condicionado ? ["Ar condicionado"] : undefined,
+    region_code: regionCode,
+    location_ids: locationIds,
+    rates: [rate],
+    status: "ACTIVE",
+  };
+}
+
+/** Junta o mesmo modelo de Rent a Car e de TVDE numa só viatura com as duas ofertas. */
+function mergeVehicles(list: WgVehicle[]): WgVehicle[] {
+  const byId = new Map<string, WgVehicle>();
+  for (const v of list) {
+    const prev = byId.get(v.vehicle_id);
+    if (!prev) byId.set(v.vehicle_id, v);
+    else byId.set(v.vehicle_id, { ...prev, ...v, photos: prev.photos.length ? prev.photos : v.photos, rates: [...prev.rates, ...v.rates] });
+  }
+  return [...byId.values()];
+}
+
+const LINE_TYPE = { aluguer: "BASE", cobertura: "COVERAGE", extra: "EXTRA" } as const;
+
+function toQuote(c: ApiCotacao, id: string): WgQuote {
+  const total = c.subtotal.com_iva;
+  return {
+    quote_id: id,
+    lines: c.linhas.map((l, i) => ({
+      code: `${l.tipo}-${i}`,
+      description: l.quantidade && l.quantidade > 1 ? `${l.descricao} (×${l.quantidade})` : l.descricao,
+      amount: l.total.com_iva,
+      type: LINE_TYPE[l.tipo] ?? "BASE",
+    })),
+    subtotal: c.subtotal.sem_iva,
+    tax_total: Math.round((total - c.subtotal.sem_iva) * 100) / 100,
+    grand_total: total,
+    deposit: money(c.caucao),
+    excess: money(c.franquia) ?? null,
+    km_included_per_day: c.km_incluidos ?? null,
+  };
+}
+
+/** Cotação sem extras, a partir do que a disponibilidade já devolve. */
+function quoteFromAvailability(m: ApiModeloDisponivel): WgQuote | undefined {
+  const c = m.cotacao;
+  if (!c) return undefined;
+  return toQuote(
+    {
+      linhas: [{ tipo: "aluguer", descricao: `Aluguer, ${c.dias} ${c.dias === 1 ? "dia" : "dias"}`, quantidade: 1, total: c.aluguer }],
+      subtotal: c.aluguer,
+      franquia: c.franquia,
+      caucao: c.caucao,
+    },
+    `disp:${m.id}`,
+  );
+}
+
+const BOOKING_STATE: Record<ApiReserva["estado"], WgBooking["state"]> = {
+  pendente: "PENDING",
+  confirmada: "CONFIRMED",
+  em_curso: "OPEN",
+  concluida: "CLOSED",
+  cancelada: "CANCELLED",
+  expirada: "EXPIRED",
+};
+
+function toBooking(r: ApiReserva, customerId = ""): WgBooking {
+  const entrega = r.estacoes?.entrega;
+  const recolha = r.estacoes?.recolha ?? entrega;
+  const name = `${r.modelo.marca} ${r.modelo.modelo}`;
+  return {
+    booking_id: String(r.codigo),
+    booking_number: String(r.codigo),
+    state: BOOKING_STATE[r.estado],
+    region_code: entrega && AZORES.test(entrega.nome) ? "PT-AC" : "PT-CONT",
+    customer_id: customerId,
+    vehicle_id: r.modelo.id,
+    vehicle_name: name,
+    rate_id: racRateId(r.modelo.id),
+    pickup_location_id: entrega?.id ?? "",
+    pickup_location_name: entrega?.nome ?? "",
+    return_location_id: recolha?.id ?? "",
+    return_location_name: recolha?.nome ?? "",
+    pickup_datetime: r.periodo.inicio,
+    return_datetime: r.periodo.fim,
+    // O GET da reserva não devolve as linhas: só o total
+    extras: [],
+    quote: {
+      quote_id: `res:${r.codigo}`,
+      lines: [{ code: "total", description: `Aluguer ${name}, ${r.periodo.dias} ${r.periodo.dias === 1 ? "dia" : "dias"}`, amount: r.total.com_iva, type: "BASE" }],
+      subtotal: r.total.sem_iva,
+      tax_total: Math.round((r.total.com_iva - r.total.sem_iva) * 100) / 100,
+      grand_total: r.total.com_iva,
+    },
+    // Só uma reserva pendente se cancela pela API
+    can_modify: false,
+    can_cancel: r.estado === "pendente",
+    created_at: r.criada_em,
+  };
+}
+
+// ───────────────────────────── Candidatura TVDE ─────────────────────────────
+
+/** Versão do texto de consentimento mostrado na ficha (enviada à API com a data de aceitação). */
+const CONSENT_VERSION = "site-2026-10";
+
+/** Ficha da candidatura com os campos que POST /tvde/candidaturas pede. Os documentos não vão pela API. */
+const APPLICATION_FORM: { version: string; fields: WgFormField[] } = {
+  version: "api-v1",
+  fields: [
+    { key: "full_name", label: "Nome completo", input_type: "text", mandatory: true, max_length: 200, group: "Dados pessoais" },
+    { key: "email", label: "Email", input_type: "email", mandatory: true, max_length: 254, group: "Dados pessoais" },
+    { key: "phone", label: "Telemóvel", input_type: "tel", mandatory: true, max_length: 20, group: "Dados pessoais" },
+    { key: "nif", label: "NIF", input_type: "text", mandatory: true, regex: "^\\d{9}$", regex_message: "O NIF tem 9 dígitos.", group: "Dados pessoais" },
+    { key: "address", label: "Morada", input_type: "text", mandatory: true, max_length: 200, group: "Morada" },
+    { key: "zip_code", label: "Código postal", input_type: "text", mandatory: true, placeholder: "0000-000", regex: "^\\d{4}-\\d{3}$", regex_message: "Use o formato 0000-000.", group: "Morada" },
+    { key: "city", label: "Localidade", input_type: "text", mandatory: true, max_length: 100, group: "Morada" },
+    {
+      key: "id_type",
+      label: "Documento de identificação",
+      input_type: "select",
+      mandatory: true,
+      choices: [
+        { value: "cc", label: "Cartão de cidadão" },
+        { value: "bi", label: "Bilhete de identidade" },
+        { value: "ar", label: "Autorização de residência" },
+        { value: "tr", label: "Título de residência" },
+        { value: "passaporte", label: "Passaporte" },
+      ],
+      group: "Documento de identificação",
+    },
+    { key: "id_number", label: "Número do documento", input_type: "text", mandatory: true, max_length: 40, group: "Documento de identificação" },
+    { key: "id_expiry", label: "Validade do documento", input_type: "date", mandatory: true, group: "Documento de identificação" },
+    { key: "license_number", label: "Número da carta de condução", input_type: "text", mandatory: true, max_length: 40, group: "Carta de condução" },
+    {
+      key: "license_categories",
+      label: "Categorias da carta",
+      input_type: "text",
+      mandatory: true,
+      placeholder: "B",
+      hint: "Separadas por vírgulas. Tem de incluir a categoria B.",
+      regex: "^\\s*(A|A1|A2|AM|B|B1|BE|C|C1|CE|D|D1|DE)(\\s*,\\s*(A|A1|A2|AM|B|B1|BE|C|C1|CE|D|D1|DE))*\\s*$",
+      regex_message: "Indique as categorias separadas por vírgulas (ex.: B, BE).",
+      group: "Carta de condução",
+    },
+    { key: "license_expiry", label: "Validade da carta", input_type: "date", mandatory: true, group: "Carta de condução" },
+    { key: "tvde_certificate", label: "Número do certificado de motorista TVDE", input_type: "text", mandatory: false, max_length: 40, hint: "Deixe em branco se ainda está a tirar a formação TVDE.", group: "Licença TVDE" },
+    { key: "tvde_certificate_expiry", label: "Validade do certificado TVDE", input_type: "date", mandatory: false, group: "Licença TVDE" },
+    { key: "iban", label: "IBAN", input_type: "text", mandatory: true, max_length: 42, hint: "Para os pagamentos.", group: "Pagamentos" },
+    { key: "notes", label: "Observações", input_type: "textarea", mandatory: false, max_length: 1000, group: "Observações" },
+    { key: "consent", label: "Autorizo o tratamento dos meus dados pessoais para a análise desta candidatura.", input_type: "checkbox", mandatory: true, group: "Consentimento" },
+  ],
+};
+
+const APPLICATION_STATE: Record<string, WgApplication["state"]> = {
+  submetido: "SUBMITTED",
+  em_analise: "IN_REVIEW",
+  aprovado: "APPROVED",
+  rejeitado: "REJECTED",
+};
+
+interface ApiCandidatura {
+  id: string;
+  estado: string;
+  criada_em: string;
+  decidida_em: string | null;
+}
+
+// ───────────────────────────── Pedidos ─────────────────────────────
+
+const CATALOG = { catalog: true } as const;
+
 const orNull = async <T,>(p: Promise<T>): Promise<T | null> => {
   try {
     return await p;
@@ -19,105 +311,300 @@ const orNull = async <T,>(p: Promise<T>): Promise<T | null> => {
   }
 };
 
+async function regionLocations(regionCode: RegionCode) {
+  const all = await wegestRequest<ApiLocalizacao[]>("/localizacoes", CATALOG);
+  return all.filter((l) => regionOf(l) === regionCode);
+}
+
+/** Detalhe de cada modelo (km, franquia, caução); a lista não os traz. Um pedido por modelo. */
+async function racModels(): Promise<ApiModeloDetalhe[]> {
+  const list = await wegestRequest<ApiModelo[]>("/modelos", CATALOG);
+  return Promise.all(list.map(async (m) => (await orNull(wegestRequest<ApiModeloDetalhe>(`/modelos/${encodeURIComponent(m.id)}`, CATALOG))) ?? m));
+}
+
+const notSupported = (what: string) => new WeGestError("unavailable", `${what} não está disponível online. Contacte-nos.`, 501);
+
 export const httpTransport: WeGestTransport = {
   mode: "http",
 
-  listLocations: (regionCode) => wegestRequest("/locations", { query: { region: regionCode } }),
-  listCategories: () => wegestRequest("/categories"),
-  listVehicles: ({ regionCode, product }) => wegestRequest("/vehicles", { query: { region: regionCode, product } }),
-  getVehicle: (id) => orNull(wegestRequest<WgVehicle>(`/vehicles/${encodeURIComponent(id)}`)),
+  listLocations: async (regionCode) => (await regionLocations(regionCode as RegionCode)).map(toLocation),
 
-  searchAvailability: (p) =>
-    wegestRequest("/availability", {
-      query: {
-        region: p.regionCode,
-        product: p.product,
-        pickup_location: p.pickupLocationId,
-        return_location: p.returnLocationId,
-        pickup: p.pickupDatetime,
-        return: p.returnDatetime,
-        vehicle_id: p.vehicleId,
-      },
-    }),
+  listCategories: async () => {
+    const [cats, rac, tvde] = await Promise.all([
+      wegestRequest<ApiCategoria[]>("/categorias", CATALOG),
+      wegestRequest<ApiModelo[]>("/modelos", CATALOG),
+      wegestRequest<ApiModeloTvde[]>("/tvde/modelos", CATALOG),
+    ]);
+    const commercial = new Set(rac.filter((m) => m.tipo === "comercial").map((m) => m.categoria?.id));
+    const out = new Map<string, WgCategory>(
+      cats.map((c) => [c.id, { category_id: c.id, category_name: c.nome, group: commercial.has(c.id) ? "COM" : "PAX" }]),
+    );
+    // Categorias que só aparecem nos modelos TVDE (sem tarifa de Rent a Car)
+    for (const m of tvde) if (m.categoria && !out.has(m.categoria.id)) out.set(m.categoria.id, { category_id: m.categoria.id, category_name: m.categoria.nome, group: "PAX" });
+    return [...out.values()];
+  },
 
-  listExtras: ({ regionCode, vehicleId }) => wegestRequest("/extras", { query: { region: regionCode, vehicle_id: vehicleId } }),
+  listVehicles: async ({ regionCode, product }) => {
+    const code = regionCode as RegionCode;
+    const [locations, rac, tvde] = await Promise.all([
+      regionLocations(code),
+      product === "TVDE" ? [] : racModels(),
+      product === "RAC" ? [] : wegestRequest<ApiModeloTvde[]>("/tvde/modelos", CATALOG),
+    ]);
+    const ids = locations.map((l) => l.id);
+    return mergeVehicles([
+      ...rac.map((m) => toVehicle(m, racRate(m), code, ids)),
+      ...tvde.map((m) => toVehicle(m, tvdeRate(m), code, ids)),
+    ]);
+  },
 
-  listCoverages: ({ regionCode }) => wegestRequest("/coberturas", { query: { region: regionCode } }),
+  getVehicle: async (id) => {
+    const [rac, tvde] = await Promise.all([
+      orNull(wegestRequest<ApiModeloDetalhe>(`/modelos/${encodeURIComponent(id)}`, CATALOG)),
+      orNull(wegestRequest<ApiModeloTvde>(`/tvde/modelos/${encodeURIComponent(id)}`, CATALOG)),
+    ]);
+    const list = [...(rac ? [toVehicle(rac, racRate(rac), "PT-CONT", [])] : []), ...(tvde ? [toVehicle(tvde, tvdeRate(tvde), "PT-CONT", [])] : [])];
+    return mergeVehicles(list)[0] ?? null;
+  },
 
-  quote: (p) =>
-    wegestRequest("/quotes", {
+  searchAvailability: async (p) => {
+    if (p.product === "TVDE") {
+      // TVDE: sem local nem fim (renova-se semana a semana)
+      const res = await wegestRequest<{ modelos: ApiModeloTvde[] }>("/tvde/disponibilidade", { query: { inicio: p.pickupDatetime } });
+      return res.modelos
+        .filter((m) => !p.vehicleId || m.id === p.vehicleId)
+        .map((m) => ({ vehicle_id: m.id, status: (m.quantidade_disponivel ?? 1) > 1 ? "AVAILABLE" : "LIMITED" }));
+    }
+    if (!p.returnDatetime) throw new WeGestError("validation", "Indique a data de devolução.", 400);
+    const res = await wegestRequest<{ modelos: ApiModeloDisponivel[] }>("/disponibilidade", {
+      query: { inicio: p.pickupDatetime, fim: p.returnDatetime, entrega: p.pickupLocationId, recolha: p.returnLocationId ?? p.pickupLocationId },
+    });
+    return res.modelos
+      .filter((m) => !p.vehicleId || m.id === p.vehicleId)
+      .map((m) => ({ vehicle_id: m.id, status: m.quantidade_disponivel > 1 ? "AVAILABLE" : "LIMITED", quote: quoteFromAvailability(m) }));
+  },
+
+  listExtras: async () =>
+    (await wegestRequest<ApiExtra[]>("/extras", CATALOG)).map((e) => ({
+      extra_id: e.id,
+      extra_name: e.nome,
+      extra_description: e.descricao ?? undefined,
+      price: e.preco.com_iva,
+      charge_type: e.tipo_calculo === "dia" ? "PER_DAY" : "PER_RENTAL",
+      // null = sem limite na API; no site, um por reserva
+      max_qty: e.quantidade_maxima ?? 1,
+      code: "",
+    })),
+
+  listCoverages: async () =>
+    (await wegestRequest<ApiCobertura[]>("/coberturas", CATALOG)).map((c) => ({
+      coverage_id: c.id,
+      coverage_name: c.nome,
+      coverage_description: c.descricao ?? undefined,
+      price_per_day: c.preco_dia.com_iva,
+      excess_amount: money(c.franquia) ?? null,
+    })),
+
+  quote: async (p) => {
+    const c = await wegestRequest<ApiCotacao>("/cotacoes", {
       method: "POST",
       retry: true,
       body: {
-        vehicle_id: p.vehicleId,
-        rate_id: p.rateId,
-        pickup_location_id: p.pickupLocationId,
-        return_location_id: p.returnLocationId,
-        pickup_datetime: p.pickupDatetime,
-        return_datetime: p.returnDatetime,
-        extras: p.extras,
+        modelo_id: p.vehicleId,
+        inicio: p.pickupDatetime,
+        fim: p.returnDatetime,
+        entrega: p.pickupLocationId,
+        recolha: p.returnLocationId,
+        extras: p.extras.map((e) => ({ extra_id: e.extra_id, quantidade: e.qty })),
         cobertura_id: p.coverageId ?? null,
       },
-    }),
-
-  createCustomer: (input) => wegestRequest("/customers", { method: "POST", body: input }),
-  updateCustomer: (id, input) => wegestRequest(`/customers/${encodeURIComponent(id)}`, { method: "PATCH", body: input }),
-  getCustomer: (id) => orNull(wegestRequest<WgCustomer>(`/customers/${encodeURIComponent(id)}`)),
-  findCustomerByEmail: async (email, type) => {
-    const list = await wegestRequest<WgCustomer[]>("/customers", { query: { email, type } });
-    return list[0] ?? null;
+    });
+    // A API não dá id à cotação: o preço fica protegido por total_esperado na reserva
+    return toQuote(c, `cot:${p.vehicleId}:${c.subtotal.com_iva}`);
   },
 
-  createBooking: (input) =>
-    wegestRequest("/bookings", {
+  // Sem endpoints de cliente na API: o cliente vai no corpo de POST /reservas
+  createCustomer: async (input) => {
+    const customer: WgCustomer = { ...input, customer_id: `cli-${crypto.randomUUID()}` };
+    local().customers.set(customer.customer_id, customer);
+    return customer;
+  },
+  updateCustomer: async (id, input) => {
+    const prev = local().customers.get(id);
+    if (!prev) throw new WeGestError("not_found", "Cliente não encontrado.", 404);
+    const next = { ...prev, ...input, customer_id: id };
+    local().customers.set(id, next);
+    return next;
+  },
+  getCustomer: async (id) => local().customers.get(id) ?? null,
+  findCustomerByEmail: async (email, type) =>
+    [...local().customers.values()].find((c) => c.email.toLowerCase() === email.toLowerCase() && c.customer_type === type) ?? null,
+
+  createBooking: async (input) => {
+    const c = local().customers.get(input.customerId);
+    if (!c) throw new WeGestError("validation", "Faltam os dados do condutor.", 400);
+    const r = await wegestRequest<ApiReserva>("/reservas", {
       method: "POST",
-      idempotencyKey: input.idempotencyKey,
+      // A referencia_externa torna o pedido idempotente: repetir devolve a mesma reserva
       retry: true,
       body: {
-        customer_id: input.customerId,
-        quote_id: input.quoteId,
-        vehicle_id: input.vehicleId,
-        rate_id: input.rateId,
-        pickup_location_id: input.pickupLocationId,
-        return_location_id: input.returnLocationId,
-        pickup_datetime: input.pickupDatetime,
-        return_datetime: input.returnDatetime,
-        extras: input.extras,
+        modelo_id: input.vehicleId,
+        inicio: input.pickupDatetime,
+        fim: input.returnDatetime,
+        entrega: input.pickupLocationId,
+        recolha: input.returnLocationId,
+        extras: input.extras.map((e) => ({ extra_id: e.extra_id, quantidade: e.qty })),
         cobertura_id: input.coverageId ?? null,
-        driver: input.driver,
+        cliente: {
+          nome: c.name,
+          email: c.email,
+          telefone: c.phone ?? "",
+          nif: c.nif ?? null,
+          data_nascimento: input.driver.birthDate,
+          morada: c.address ?? null,
+          codigo_postal: c.zip_code ?? null,
+          localidade: c.city ?? null,
+          pais: c.country ?? "PT",
+        },
+        carta_conducao: { numero: input.driver.licenseNumber, validade: input.driver.licenseExpiry, pais: input.driver.licenseCountry },
+        total_esperado: input.expectedTotal,
+        referencia_externa: input.idempotencyKey,
         mensagem: input.message ?? null,
-        payment_reference: input.paymentReference,
       },
-    }),
-  getBooking: (id) => orNull(wegestRequest<WgBooking>(`/bookings/${encodeURIComponent(id)}`)),
-  listCustomerBookings: (customerId) => wegestRequest(`/customers/${encodeURIComponent(customerId)}/bookings`),
-  previewCancellation: (id) => wegestRequest(`/bookings/${encodeURIComponent(id)}/cancellation-preview`),
-  cancelBooking: (id) => wegestRequest(`/bookings/${encodeURIComponent(id)}/cancel`, { method: "POST" }),
-  listCustomerInvoices: (customerId) => wegestRequest(`/customers/${encodeURIComponent(customerId)}/invoices`),
-
-  getApplicationForm: (regionCode) => wegestRequest("/tvde/application-form", { query: { region: regionCode } }),
-  createApplication: (input) =>
-    wegestRequest("/tvde/applications", {
-      method: "POST",
-      body: {
-        customer_id: input.customerId,
-        vehicle_id: input.vehicleId,
-        rate_id: input.rateId,
-        pickup_datetime: input.pickupDatetime,
-        pickup_location_id: input.pickupLocationId,
-        form_data: input.formData,
-      },
-    }),
-  getApplication: (id) => orNull(wegestRequest<WgApplication>(`/tvde/applications/${encodeURIComponent(id)}`)),
-  listCustomerApplications: (customerId) => wegestRequest(`/tvde/applications`, { query: { customer_id: customerId } }),
-  uploadApplicationDocument: (id, doc) => {
-    const form = new FormData();
-    form.set("doc_type", doc.docType);
-    form.set("file", new Blob([doc.content], { type: doc.mimeType }), doc.fileName);
-    return wegestRequest(`/tvde/applications/${encodeURIComponent(id)}/documents`, { method: "POST", form });
+    });
+    const set = local().bookingsByCustomer.get(input.customerId) ?? new Set<number>();
+    set.add(r.codigo);
+    local().bookingsByCustomer.set(input.customerId, set);
+    return toBooking(r, input.customerId);
   },
-  submitApplication: (id, paymentReference) =>
-    wegestRequest(`/tvde/applications/${encodeURIComponent(id)}/submit`, { method: "POST", body: { payment_reference: paymentReference } }),
+
+  getBooking: async (id) => {
+    if (!/^\d+$/.test(id)) return null;
+    const r = await orNull(wegestRequest<ApiReserva>(`/reservas/${id}`));
+    if (!r) return null;
+    const owner = [...local().bookingsByCustomer.entries()].find(([, codes]) => codes.has(r.codigo))?.[0];
+    return toBooking(r, owner);
+  },
+
+  listCustomerBookings: async (customerId) => {
+    const codes = [...(local().bookingsByCustomer.get(customerId) ?? [])];
+    const list = await Promise.all(codes.map((c) => orNull(wegestRequest<ApiReserva>(`/reservas/${c}`))));
+    return list.filter((r): r is ApiReserva => r !== null).map((r) => toBooking(r, customerId));
+  },
+
+  // Sem pré-visualização na API: cancela-se só enquanto pendente, sem taxa pela API
+  previewCancellation: async () => {
+    throw notSupported("O cálculo do valor a devolver");
+  },
+
+  cancelBooking: async (id) => {
+    const r = await wegestRequest<ApiReserva>(`/reservas/${encodeURIComponent(id)}`, { method: "DELETE" });
+    const owner = [...local().bookingsByCustomer.entries()].find(([, codes]) => codes.has(r.codigo))?.[0];
+    return toBooking(r, owner);
+  },
+
+  // Sem faturas na API
+  listCustomerInvoices: async () => [],
+
+  getApplicationForm: async () => ({ ...APPLICATION_FORM, documents: [] }),
+
+  createApplication: async (input) => {
+    const c = local().customers.get(input.customerId);
+    if (!c) throw new WeGestError("validation", "Faltam os dados do motorista.", 400);
+    const f = input.formData;
+    const certificate = f.tvde_certificate?.trim();
+    const res = await wegestRequest<ApiCandidatura>("/tvde/candidaturas", {
+      method: "POST",
+      retry: true,
+      body: {
+        referencia_externa: `site-cand-${crypto.randomUUID()}`,
+        nome: f.full_name ?? c.name,
+        email: f.email ?? c.email,
+        telefone: f.phone ?? c.phone ?? "",
+        nif: f.nif ?? c.nif ?? "",
+        morada: f.address ?? c.address ?? "",
+        codigo_postal: f.zip_code ?? c.zip_code ?? "",
+        cidade: f.city ?? c.city ?? "",
+        documento: { tipo: f.id_type, numero: f.id_number, validade: f.id_expiry },
+        carta_conducao: {
+          numero: f.license_number,
+          categorias: (f.license_categories ?? "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean),
+          validade: f.license_expiry,
+        },
+        licenca_tvde: certificate ? { numero: certificate, validade: f.tvde_certificate_expiry } : null,
+        em_formacao_tvde: !certificate,
+        iban: f.iban,
+        modelo_pretendido_id: input.vehicleId,
+        data_inicio_pretendida: input.pickupDatetime.slice(0, 10),
+        observacoes: f.notes || null,
+        consentimento: { versao: CONSENT_VERSION, aceite_em: new Date().toISOString() },
+      },
+    });
+    const app: WgApplication = {
+      application_id: res.id,
+      application_number: res.id.slice(0, 8).toUpperCase(),
+      state: APPLICATION_STATE[res.estado] ?? "SUBMITTED",
+      region_code: "PT-CONT",
+      customer_id: input.customerId,
+      vehicle_id: input.vehicleId,
+      vehicle_name: "",
+      rate_id: input.rateId,
+      pickup_datetime: input.pickupDatetime,
+      pickup_location_id: input.pickupLocationId,
+      pickup_location_name: "",
+      weekly_rate: 0,
+      deposit_amount: 0,
+      reservation_amount: 0,
+      documents: [],
+      created_at: res.criada_em,
+      updated_at: res.decidida_em ?? res.criada_em,
+    };
+    const apps = local().applicationsByCustomer.get(input.customerId) ?? new Map<string, WgApplication>();
+    apps.set(app.application_id, app);
+    local().applicationsByCustomer.set(input.customerId, apps);
+    return app;
+  },
+
+  getApplication: async (id) => {
+    const res = await orNull(wegestRequest<ApiCandidatura>(`/tvde/candidaturas/${encodeURIComponent(id)}`));
+    if (!res) return null;
+    const known = [...local().applicationsByCustomer.values()].map((m) => m.get(id)).find(Boolean);
+    return {
+      ...(known ?? {
+        application_id: res.id,
+        application_number: res.id.slice(0, 8).toUpperCase(),
+        region_code: "PT-CONT" as const,
+        customer_id: "",
+        vehicle_id: "",
+        vehicle_name: "",
+        rate_id: "",
+        pickup_datetime: res.criada_em,
+        pickup_location_id: "",
+        pickup_location_name: "",
+        weekly_rate: 0,
+        deposit_amount: 0,
+        reservation_amount: 0,
+        documents: [],
+      }),
+      state: APPLICATION_STATE[res.estado] ?? "SUBMITTED",
+      created_at: res.criada_em,
+      updated_at: res.decidida_em ?? res.criada_em,
+    };
+  },
+
+  listCustomerApplications: async (customerId) => [...(local().applicationsByCustomer.get(customerId)?.values() ?? [])],
+
+  // Os documentos não vão pela API: a equipa pede-os depois da candidatura
+  uploadApplicationDocument: async () => {
+    throw notSupported("O envio de documentos");
+  },
+
+  // A candidatura já fica submetida no POST; aqui só se lê o estado atual
+  submitApplication: async (id) => {
+    const app = await httpTransport.getApplication(id);
+    if (!app) throw new WeGestError("not_found", "Candidatura não encontrada.", 404);
+    return app;
+  },
 
   ping: async () => {
     const t = performance.now();

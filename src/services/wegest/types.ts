@@ -1,9 +1,9 @@
 /**
- * DTOs "crus" do WeGest.
+ * DTOs internos da camada WeGest: o formato que os dois transportes devolvem.
  *
- * ATENÇÃO: a API real ainda não foi documentada. Estes formatos são HIPÓTESES
- * (snake_case, como no exemplo do doc §82). Quando o Swagger/OpenAPI chegar,
- * ajustar apenas este ficheiro + mappers.ts: o resto da app não muda.
+ * O mock produz-os diretamente; o http-transport converte para eles as respostas da API
+ * real (formatos em api-types.ts, contrato em docs/wegest/openapi.json). Os mappers
+ * convertem-nos depois para o modelo de domínio.
  */
 import type { Region } from "@/domain/region";
 
@@ -55,8 +55,9 @@ export interface WgVehicle {
   photos: Array<{ url: string; view?: string }>;
   /** Cor da pintura (nome). Hipótese: o WeGest v1 não devolve cor. */
   paint?: string;
-  fuel_type: "GASOLINA" | "DIESEL" | "HIBRIDO" | "PHEV" | "ELETRICO" | "GPL";
-  transmission_type: "MANUAL" | "AUTOMATICA";
+  /** Em falta quando o WeGest não tem o dado preenchido. */
+  fuel_type?: "GASOLINA" | "DIESEL" | "HIBRIDO" | "PHEV" | "ELETRICO" | "GPL";
+  transmission_type?: "MANUAL" | "AUTOMATICA";
   seats?: number;
   doors?: number;
   luggage?: number;
@@ -221,6 +222,10 @@ export class WeGestError extends Error {
     public readonly status?: number,
     public readonly fieldErrors?: Record<string, string>,
     public readonly wegestRequestId?: string,
+    /** `erro.codigo` da API (ex.: PRECO_ALTERADO). */
+    public readonly apiCode?: string,
+    /** `erro.detalhes` da API (ex.: a cotação nova em PRECO_ALTERADO). */
+    public readonly details?: unknown,
   ) {
     super(message);
     this.name = "WeGestError";

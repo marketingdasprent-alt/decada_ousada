@@ -2,8 +2,10 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 
 import { REGION_CONFIG, type Region } from "@/domain/region";
+import { INSTAGRAM } from "@/domain/social";
 import { regionSwitchHref } from "@/lib/region";
 
+import { InstagramIcon } from "../shared/instagram-icon";
 import { ContactValue } from "../shared/pending";
 import { Container } from "../shared/ui";
 import { Logo } from "../shared/logo";
@@ -41,6 +43,12 @@ export function SiteFooter({ region }: { region: Region }) {
             <li className="flex items-center gap-2"><Phone className="size-4" aria-hidden /><ContactValue kind="phone" value={cfg.contact.phone} className="hover:text-on-dark max-md:tap-target" /></li>
             <li className="flex items-center gap-2"><Mail className="size-4" aria-hidden /><ContactValue kind="email" value={cfg.contact.email} className="hover:text-on-dark max-md:tap-target" /></li>
             <li className="flex items-center gap-2"><MapPin className="size-4" aria-hidden /><ContactValue kind="address" value={cfg.contact.address} /></li>
+            <li className="flex items-center gap-2">
+              <InstagramIcon />
+              <a className="hover:text-on-dark max-md:tap-target" href={INSTAGRAM.url} target="_blank" rel="noopener noreferrer">
+                <span className="sr-only">Instagram: </span>@{INSTAGRAM.handle}
+              </a>
+            </li>
           </ul>
         </div>
       </Container>

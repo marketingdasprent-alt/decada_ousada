@@ -7,7 +7,7 @@ import { KNOWN_FIELD_MAP, validateDynamicForm } from "@/lib/dynamic-form";
 import { regionFromRequest } from "@/lib/region";
 import { getCustomerId, getSession, linkCustomer } from "@/services/auth";
 import { sendEmail } from "@/services/email";
-import { checkVehicleAvailability, createApplication, getApplicationForm, getVehicleById, upsertCustomer } from "@/services/wegest";
+import { checkVehicleAvailability, createApplication, getApplicationForm, getVehicleById, onlineRequestsEnabled, upsertCustomer } from "@/services/wegest";
 
 const schema = z.object({
   vehicleId: z.string().min(1),
@@ -24,6 +24,9 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return fromZod(parsed.error);
   const { vehicleId, pickupAt, pickupLocationId, formData } = parsed.data;
+  if (!onlineRequestsEnabled()) {
+    return fail("unavailable", "As candidaturas online ainda não estão disponíveis. Contacte-nos para se candidatar a esta viatura.", 503);
+  }
   const region = regionFromRequest(req);
 
   try {

@@ -317,8 +317,11 @@ SPLIT BY SERVICE (same day, team request): the homepage panel shows only
 customer (Rent a Car) testimonials; the TVDE ones will go elsewhere on the
 site. Each testimonial carries `service`; TVDE = the three that talk
 explicitly about drivers/TVDE (Patricia Silva, Samuel Guimarães, Daiane
-Goulart), as the team confirmed. The panel stays after the TVDE band (no
-change requested); the reason above no longer applies to its content.
+Goulart), as the team confirmed.
+
+PLACEMENT, FINAL (same day, team request): the panel goes back between the
+Rent a Car section and the TVDE band, next to the service its testimonials
+talk about. This replaces the "after the TVDE band" placement above.
 
 SCOPE:
 Homepage content (`Testimonials`).
@@ -330,3 +333,67 @@ DATE:
 2026-10-12
 ```
 
+
+---
+
+```
+DECISION:
+Instagram on the homepage (team request): section "Siga-nos no Instagram"
+with the latest 8 posts of @decada_ousada, and the profile link in the
+footer. Posts come from the Instagram API with Instagram login
+(graph.instagram.com/me/media), read on the server with
+INSTAGRAM_ACCESS_TOKEN and cached with the `minutes` profile. No embed
+script and no third-party widget. Images go through next/image, with the
+Meta CDN hosts (*.cdninstagram.com, *.fbcdn.net) in remotePatterns.
+
+REASON:
+The official API is the only source that keeps the posts current without
+scraping. Server-side keeps the token secret and adds no client script or
+tracking from Meta. Without a token the section shows only the profile
+button, never invented posts (AGENTS.md rule 4). No new dependency.
+
+SCOPE:
+Homepage, footer, next.config images, env (INSTAGRAM_ACCESS_TOKEN).
+
+LEVEL:
+Content and integration (Level 3).
+
+DATE:
+2026-10-12
+```
+
+---
+
+```
+DECISION:
+WeGest real API wired in through the existing transport seam. The
+http-transport converts api.wegest.pt v1 responses into the Wg* DTOs the mock
+already produces, so mappers, pages and components stay unchanged. What the
+API lacks (customer records, per-customer booking and application lists,
+invoices, cancellation preview, TVDE documents) is kept per instance in the
+transport or answered as "not available online". A new switch,
+WEGEST_PEDIDOS_ONLINE (default off with the real API), gates the two write
+paths: the booking and application routes answer 503 and the vehicle pages
+show "Contactar a equipa" instead of "Reservar" / "Candidatar-me".
+Catalogue GETs are shared for 5 minutes per process (the API allows it) and
+429 honours Retry-After.
+
+REASON:
+The build against the real API hit the 120 requests/min limit and the
+English provisional paths answered 404. Writes create real bookings and
+applications in WeGest; with mock payments, an in-memory local store (lost
+between serverless invocations) and no CAPTCHA (required by the API for
+applications), turning them on would create unpaid or orphaned requests.
+Reading the catalogue has none of these risks.
+
+SCOPE:
+src/services/wegest (client, http-transport, api-types, types, mappers,
+index), booking and TVDE application API routes, vehicle pages,
+lib/static-params, .env.example, docs/wegest.
+
+LEVEL:
+Integration (Level 2).
+
+DATE:
+2026-10-12
+```
