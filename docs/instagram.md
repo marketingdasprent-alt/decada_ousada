@@ -1,53 +1,57 @@
-# Instagram: ligar as publicações ao site
+# Instagram na página inicial
 
-As últimas publicações de `@decada_ousada` aparecem no fim da página inicial
-e na landing `/motoristas`. O site lê-as no servidor (`src/services/instagram`)
-e guarda-as em cache durante alguns minutos. Enquanto a conta não estiver
-ligada, as secções não aparecem (a landing mostra fotos da frota com ligação
-para o perfil).
+A secção "Siga-nos no Instagram" mostra as últimas 8 publicações de
+[@decada_ousada](https://www.instagram.com/decada_ousada/). O servidor lê-as
+da Instagram API (`src/services/instagram`) e guarda-as em cache com o perfil
+`minutes`: uma publicação nova aparece no site cerca de um minuto depois.
 
-Há duas formas de ligar a conta. Basta uma.
+Sem fonte configurada, ou com a fonte em baixo, a secção mostra só o
+título e o botão "Seguir no Instagram". O site nunca fica com um espaço vazio
+nem com um erro.
 
-## Opção A: Behold (a mais simples)
+Há duas formas de ligar a conta. Basta uma; se as duas existirem, o token tem
+prioridade.
 
-O Behold guarda e renova o acesso ao Instagram. O site só recebe um URL
-público com as publicações.
+## Opção A: Behold (a mais simples, sem renovações)
 
-1. Quem tem acesso à conta `@decada_ousada` entra em behold.so e liga o
-   Instagram.
-2. Cria um feed do tipo **JSON** e copia o URL ("JSON feed URL").
-3. Na Vercel (Settings → Environment Variables), cria
-   `INSTAGRAM_FEED_URL` com esse URL e faz **Redeploy**.
+O Behold guarda e renova o acesso ao Instagram; o site só recebe um URL com as
+publicações.
 
-## Opção B: API oficial da Meta (sem serviço externo)
+1. Quem tem acesso a @decada_ousada entra em [behold.so](https://behold.so),
+   liga o Instagram e cria um feed do tipo **JSON**.
+2. Copiar o "JSON feed URL".
+3. No Vercel, em Settings → Environment Variables, criar `INSTAGRAM_FEED_URL`
+   com esse URL (Production e Preview) e fazer um novo deploy.
 
-1. A conta `@decada_ousada` tem de ser **Profissional** (Empresa ou
-   Criador): Instagram → Definições → Tipo de conta.
-2. Em developers.facebook.com, criar uma app do tipo **Business** e
-   adicionar o produto **Instagram → API setup with Instagram login**.
-3. Em "Generate access tokens", adicionar a conta `@decada_ousada` (fica
-   com função na app, por isso não é preciso pedir revisão à Meta) e gerar o
-   token. A única permissão necessária é `instagram_business_basic`.
-4. Na Vercel, criar `INSTAGRAM_ACCESS_TOKEN` com o token e fazer
-   **Redeploy**.
+## Opção B: token da API oficial
 
-O token de longa duração expira ao fim de **60 dias**. Para o prolongar,
-antes de expirar:
+### Obter o token
 
-```bash
-curl "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=TOKEN_ATUAL"
+Requisito: @decada_ousada tem de ser uma conta profissional (Empresa ou
+Criador de conteúdo), em Instagram → Definições → Tipo de conta.
+
+1. Em [developers.facebook.com](https://developers.facebook.com/apps), criar
+   uma app do tipo "Empresa".
+2. Adicionar o produto **Instagram** e escolher "API setup with Instagram
+   login".
+3. Em "Generate access tokens", adicionar a conta @decada_ousada (é preciso
+   entrar com ela) e gerar o token. Este token já é de longa duração (60
+   dias) e só precisa da permissão `instagram_business_basic`.
+4. No Vercel, em Settings → Environment Variables, criar
+   `INSTAGRAM_ACCESS_TOKEN` com esse valor (Production e Preview) e fazer um
+   novo deploy.
+
+O token é um segredo: fica só no servidor, nunca com prefixo `NEXT_PUBLIC_`.
+
+### Renovar o token
+
+O token expira 60 dias depois de ser gerado ou renovado. Para o renovar (a
+partir de 24 horas depois de criado):
+
+```
+https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=TOKEN_ATUAL
 ```
 
-A resposta traz o token renovado (`access_token`) e a validade
-(`expires_in`, em segundos). Se o valor mudar, atualizar a variável na Vercel.
-Quando o site tiver base de dados (`DATABASE_URL`), esta renovação pode
-passar a ser automática.
-
-## Regras
-
-- O token só existe no servidor: nunca com prefixo `NEXT_PUBLIC_`, nunca
-  num repositório, nunca colado em conversas.
-- Os links das imagens do Instagram são temporários: o site não os guarda,
-  só os mostra.
-- Para testar localmente, pôr a mesma variável em `.env.local` e abrir
-  `/api/instagram`: deve devolver `posts` com as últimas publicações.
+A resposta traz o `access_token` e o `expires_in` novos. Atualizar a variável
+no Vercel e fazer um novo deploy. Se o token expirar, a secção volta a mostrar
+só o botão até ser trocado.

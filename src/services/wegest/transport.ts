@@ -34,7 +34,15 @@ export interface WeGestTransport {
     pickupDatetime: string;
     returnDatetime?: string;
     vehicleId?: string;
-  }): Promise<Array<{ vehicle_id: string; status: "AVAILABLE" | "LIMITED" | "UNAVAILABLE"; next_available?: string }>>;
+  }): Promise<
+    Array<{
+      vehicle_id: string;
+      status: "AVAILABLE" | "LIMITED" | "UNAVAILABLE";
+      next_available?: string;
+      /** Preço do período já calculado pela API (sem extras): dispensa uma cotação por viatura. */
+      quote?: WgQuote;
+    }>
+  >;
 
   listExtras(params: { regionCode: string; vehicleId?: string }): Promise<WgExtra[]>;
   listCoverages(params: { regionCode: string }): Promise<WgCoverage[]>;
@@ -70,6 +78,8 @@ export interface WeGestTransport {
     message?: string;
     paymentReference: string;
     idempotencyKey: string;
+    /** Total com IVA que o cliente viu; a API recusa (PRECO_ALTERADO) se já não for esse. */
+    expectedTotal: number;
   }): Promise<WgBooking>;
   getBooking(bookingId: string): Promise<WgBooking | null>;
   listCustomerBookings(customerId: string): Promise<WgBooking[]>;

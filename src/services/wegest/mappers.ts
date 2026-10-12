@@ -52,7 +52,7 @@ export function mapCategory(c: WgCategory): VehicleCategory {
   return { id: c.category_id, slug: slugify(c.category_name), name: c.category_name, family: c.group === "COM" ? "commercial" : "passenger" };
 }
 
-const FUEL: Record<WgVehicle["fuel_type"], FuelType> = {
+const FUEL: Record<NonNullable<WgVehicle["fuel_type"]>, FuelType> = {
   GASOLINA: "petrol",
   DIESEL: "diesel",
   HIBRIDO: "hybrid",
@@ -130,8 +130,8 @@ export function mapVehicle(v: WgVehicle, ctx: { categories: WgCategory[]; locati
     description: v.description,
     images: mapImages(v, cat),
     category: cat ? mapCategory(cat) : undefined,
-    fuel: FUEL[v.fuel_type],
-    transmission: v.transmission_type === "AUTOMATICA" ? "automatic" : "manual",
+    fuel: v.fuel_type && FUEL[v.fuel_type],
+    transmission: v.transmission_type && (v.transmission_type === "AUTOMATICA" ? "automatic" : "manual"),
     seats: v.seats,
     doors: v.doors,
     luggage: v.luggage,

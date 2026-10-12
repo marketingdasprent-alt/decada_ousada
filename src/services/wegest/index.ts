@@ -51,6 +51,14 @@ function transport(): WeGestTransport {
 
 export const integrationMode = () => transport().mode;
 
+/**
+ * Pedidos online (reservas Rent a Car e candidaturas TVDE) ligados?
+ * No mock, sempre. Com a API real só com WEGEST_PEDIDOS_ONLINE=on: um pedido cria uma
+ * reserva ou candidatura verdadeira no WeGest, por isso só se liga quando os pagamentos,
+ * a base de dados e o CAPTCHA estiverem prontos (docs/wegest/integracao.md).
+ */
+export const onlineRequestsEnabled = () => integrationMode() === "mock" || process.env.WEGEST_PEDIDOS_ONLINE === "on";
+
 const PRODUCT_CODE: Record<ProductType, "RAC" | "TVDE"> = { rentacar: "RAC", tvde: "TVDE" };
 
 // ───────────────────────────── Catálogo (cacheável) ─────────────────────────────
@@ -143,6 +151,8 @@ export async function searchRentACar(search: RentalSearch): Promise<RentACarResu
       const vehicle = vehicles.find((v) => v.id === a.vehicle_id);
       const offer = vehicle && getOffer(vehicle, "rentacar");
       if (!vehicle || !offer) return null;
+      // A API real já devolve o preço do período na disponibilidade; o mock não
+      if (a.quote) return { vehicle, offer, availability: mapAvailability(a), quote: mapQuote(a.quote) };
       const quote = await t.quote({
         vehicleId: vehicle.id,
         rateId: offer.id,
@@ -245,6 +255,7 @@ export async function createBooking(input: {
   message?: string;
   paymentReference: string;
   idempotencyKey: string;
+  expectedTotal: number;
 }): Promise<Booking> {
   await connection();
   const b = await transport().createBooking({
@@ -262,6 +273,7 @@ export async function createBooking(input: {
     message: input.message,
     paymentReference: input.paymentReference,
     idempotencyKey: input.idempotencyKey,
+    expectedTotal: input.expectedTotal,
   });
   return mapBooking(b);
 }
@@ -338,7 +350,6 @@ export async function uploadApplicationDocument(
   applicationId: string,
   doc: { docType: string; fileName: string; mimeType: string; content: ArrayBuffer },
 ): Promise<TvdeApplication> {
-  await connection();
   await connection();
   return mapApplication(await transport().uploadApplicationDocument(applicationId, doc));
 }

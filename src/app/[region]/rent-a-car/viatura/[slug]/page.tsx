@@ -4,9 +4,11 @@ import { Suspense } from "react";
 
 import { RentACarSearchForm } from "@/components/rentacar/search-form";
 import { PageHeader, PageSkeleton } from "@/components/shared/page-header";
+import { PriceDisplay } from "@/components/shared/price-display";
 import { Notice } from "@/components/shared/states";
 import { TrackEvent } from "@/components/shared/track-event";
 import { Badge, ButtonLink, Card, Container, Section, Skeleton } from "@/components/shared/ui";
+import { OfferCostFacts } from "@/components/vehicles/offer-cost-facts";
 import { VehicleOverview } from "@/components/vehicles/vehicle-details";
 import { AVAILABILITY_LABEL } from "@/domain/availability";
 import type { VehicleOffer } from "@/domain/offer";
@@ -16,12 +18,13 @@ import { getOffer, type Vehicle } from "@/domain/vehicle";
 import { attempt } from "@/lib/attempt";
 import { formatDateTime, rentalDays } from "@/lib/dates";
 import { parseRentalSearch, rentalSearchQuery, searchToFormValues } from "@/lib/search";
-import { checkVehicleAvailability, getVehicleBySlug, listLocations, listVehicles, quoteRentACar } from "@/services/wegest";
+import { checkVehicleAvailability, getVehicleBySlug, listLocations, listVehicles, onlineRequestsEnabled, quoteRentACar } from "@/services/wegest";
+import { atLeastOne } from "@/lib/static-params";
 
 export async function generateStaticParams({ params }: { params: { region: string } }) {
   const regions = isRegion(params?.region) ? [params.region] : REGIONS;
   const all = await Promise.all(regions.map((r) => listVehicles(r, "rentacar")));
-  return all.flat().map((v) => ({ slug: v.slug }));
+  return atLeastOne(all.flat().map((v) => ({ slug: v.slug })), "slug");
 }
 
 export async function generateMetadata({ params }: PageProps<"/[region]/rent-a-car/viatura/[slug]">): Promise<Metadata> {
@@ -83,9 +86,10 @@ async function BookingPanel({ region, vehicle, offer, searchParams }: { region: 
   if (!search) {
     return (
       <Card className="p-6">
-        <p className="text-body-small text-copy-muted">Desde</p>
-        <p className="text-h1 font-bold tabular">{formatMoney(offer.pricing.amount)}<span className="text-body font-medium text-copy-muted">/dia</span></p>
-        <p className="mt-4 text-body text-copy-secondary">Escolha as datas para confirmar a disponibilidade e ver o preço total.</p>
+        <PriceDisplay amount={offer.pricing.amount} unit="day" prefix="Desde" size="xl" note="IVA incluído" />
+        {/* Caução, franquia, km e cancelamento junto do preço: o custo real não fica escondido no fim da página */}
+        <OfferCostFacts offer={offer} className="mt-5" />
+        <p className="mt-5 text-body text-copy-secondary">Escolha as datas para confirmar a disponibilidade e ver o preço total.</p>
         <div className="mt-5">
           <RentACarSearchForm locations={locations} variant="stack" action={`/rent-a-car/viatura/${vehicle.slug}`} />
         </div>
@@ -122,12 +126,13 @@ async function BookingPanel({ region, vehicle, offer, searchParams }: { region: 
       <hr className="my-5 border-line" />
       {quote.ok ? (
         <>
-          <div className="flex items-end justify-between">
+          {/* O total do período é o número que o cliente paga: o maior, no tipo display dos preços */}
+          <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-body-small text-copy-muted">{formatMoney(offer.pricing.amount)}/dia, {days} {days === 1 ? "dia" : "dias"}</p>
-              <p className="text-caption text-copy-muted">IVA incluído</p>
+              <p className="text-body-small font-semibold">Total, {days} {days === 1 ? "dia" : "dias"}</p>
+              <p className="text-caption text-copy-muted">{formatMoney(offer.pricing.amount)} por dia, IVA incluído</p>
             </div>
-            <p className="text-h2 font-bold tabular">{formatMoney(quote.data.total)}</p>
+            <p className="display text-h2 tabular">{formatMoney(quote.data.total)}</p>
           </div>
           {quote.data.lines.some((l) => l.kind === "discount" || l.kind === "fee") && (
             <ul className="mt-3 space-y-1 text-caption text-copy-secondary">
@@ -140,7 +145,12 @@ async function BookingPanel({ region, vehicle, offer, searchParams }: { region: 
       ) : (
         <Notice tone="warn">Não foi possível obter o preço neste momento. Tente novamente.</Notice>
       )}
-      {available && quote.ok ? (
+      {!onlineRequestsEnabled() ? (
+        <>
+          <Notice tone="info" className="mt-6">As reservas online ainda não estão disponíveis. Contacte-nos para reservar esta viatura.</Notice>
+          <ButtonLink href="/contactos" size="lg" className="mt-3 w-full">Contactar a equipa</ButtonLink>
+        </>
+      ) : available && quote.ok ? (
         <ButtonLink href={`/rent-a-car/reserva?viatura=${vehicle.id}&${rentalSearchQuery(search)}`} size="lg" className="mt-6 w-full">
           Reservar
         </ButtonLink>
@@ -149,6 +159,9 @@ async function BookingPanel({ region, vehicle, offer, searchParams }: { region: 
           {avail.ok ? "Esta viatura não está disponível nestas datas. Altere as datas ou veja outras viaturas." : "Não foi possível confirmar a disponibilidade."}
         </Notice>
       )}
+      {/* Total, ação e logo a seguir os custos e o cancelamento: a 1280x800 o "Reservar" fica à
+          vista sem scroll, e os custos continuam no mesmo cartão (e no resumo antes de pagar) */}
+      <OfferCostFacts offer={offer} className="mt-5" />
       <details className="mt-5 text-body-small">
         <summary className="cursor-pointer font-medium text-brand max-md:min-h-(--layout-tap) max-md:py-2.5">Alterar datas</summary>
         <div className="mt-4">

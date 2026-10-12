@@ -3,17 +3,85 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.11.1]: 2026-10-12
+
+### Changed
+
+- Instagram also reads `INSTAGRAM_FEED_URL` (a JSON feed such as Behold,
+  which renews the access itself) when there is no `INSTAGRAM_ACCESS_TOKEN`
+  (`docs/instagram.md`).
+- A post whose image is not on the Instagram CDN (`images.remotePatterns`) is
+  left out instead of making `next/image` fail the whole page.
+
+### Removed
+
+- The static `/motoristas` landing (`public/landing/motoristas.html`, the
+  `proxy.ts` rewrite and `GET /api/instagram`) merged into `main` the same
+  day as 0.10.0: the native `/motoristas` page (0.11.0) replaces it, and its
+  Instagram section replaced the duplicate one.
+
+## [0.11.0]: 2026-10-12
+
+### Added
+
+- `/motoristas`: driver recruitment page rebuilt from the team's landing
+  (`landing-motoristas.html`) with the site's components and tokens: hero with
+  the Aluguer / Slot choice, numbers and awards over a photo, benefits, Aluguer
+  vs Slot, three real TVDE vehicles from WeGest, three steps, TVDE
+  testimonials, questions, application (WeGest hosted forms, new tab),
+  Instagram and the drivers' contacts. Facts confirmed by the team.
+- "Motoristas" in the header, "Trabalhar como motorista" in the footer, and
+  the page in the sitemap. New `CoverPhoto` (photo covering its block).
+
 ## [0.10.0]: 2026-10-12
 
 ### Added
 
-- `/motoristas`: landing for TVDE drivers (Aluguer or Slot), a static page
-  with its own look (`public/landing/motoristas.html`, served by `proxy.ts`).
-  The two candidatura buttons open the WeGest forms in a new tab for now.
-- Instagram: `src/services/instagram` reads the latest posts on the server
-  (official API token or a JSON feed), `GET /api/instagram` serves them and
-  `InstagramFeed` shows them at the end of the homepage. Hidden until the
-  account is connected (`docs/instagram.md`).
+- WeGest real API adapter (`WEGEST_MODE=http`): locations, categories, Rent a
+  Car models (`/modelos`), TVDE models (`/tvde/modelos`), availability with the
+  period price, quotes, extras and coverages come from api.wegest.pt. Bookings
+  (`POST /reservas`) and TVDE applications (`POST /tvde/candidaturas`) are
+  implemented but stay off until `WEGEST_PEDIDOS_ONLINE=on`; while off, the
+  vehicle pages show "Contactar a equipa" instead of "Reservar" /
+  "Candidatar-me".
+- WeGest errors are read from `erro.codigo` and shown as our own pt-PT
+  messages; catalogue responses are shared for 5 minutes per process and 429
+  waits for `Retry-After` (API limit: 120 requests per minute).
+
+### Fixed
+
+- Builds no longer fail when the WeGest catalogue is empty (Rent a Car has no
+  models yet): `generateStaticParams` returns a placeholder that answers 404.
+
+## [0.9.5]: 2026-10-12
+
+### Added
+
+- Homepage section "Siga-nos no Instagram", between the TVDE band and the
+  pickup points: the latest 8 posts from @decada_ousada, read on the server
+  from the Instagram API and refreshed every minute (`InstagramFeed`). Without
+  `INSTAGRAM_ACCESS_TOKEN` it shows only the "Seguir no Instagram" button.
+  Setup and token renewal: `docs/instagram.md`.
+- Instagram link (@decada_ousada) in the footer contacts.
+
+## [0.9.4]: 2026-10-12
+
+### Changed
+
+- The customer testimonials panel moves back between Rent a Car and TVDE on
+  the homepage (team request).
+- Prices easier to see: on the homepage the Rent a Car "desde" price (per
+  day, IVA incluído) and the TVDE one (per week, with the 50 € deposit
+  note) leave the end of the paragraph and get their own block
+  (`PriceDisplay`, now with `note` and `tone`).
+- Rent a Car vehicle page: caução, franquia, km incluídos, km adicional and
+  the cancellation policy sit in the decision panel (`OfferCostFacts`), under
+  the price without dates and right after "Reservar" with dates (so the
+  button stays on screen at 1280x800); they leave the "Condições" list.
+- Price design pass: the homepage Rent a Car price sits on the same row as its
+  buttons, with the advantages below; no boxes around the "desde" prices; the
+  vehicle page uses `PriceDisplay` and shows "Total, N dias" in the display
+  face; prices read as one sentence for screen readers.
 
 ## [0.9.3]: 2026-10-12
 

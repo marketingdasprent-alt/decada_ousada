@@ -14,6 +14,7 @@ import { RegionSwitch } from "./region-switch";
 export const NAV = [
   { href: "/rent-a-car", label: "Rent a Car" },
   { href: "/tvde", label: "TVDE" },
+  { href: "/motoristas", label: "Motoristas" },
   { href: "/perguntas-frequentes", label: "Perguntas frequentes" },
   { href: "/contactos", label: "Contactos" },
 ];

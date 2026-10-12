@@ -15,12 +15,13 @@ import { getOffer } from "@/domain/vehicle";
 import type { Location } from "@/domain/location";
 import { attempt } from "@/lib/attempt";
 import { firstParam } from "@/lib/search";
-import { getApplicationForm, getVehicleBySlug, listLocations, listVehicles } from "@/services/wegest";
+import { getApplicationForm, getVehicleBySlug, listLocations, listVehicles, onlineRequestsEnabled } from "@/services/wegest";
+import { atLeastOne } from "@/lib/static-params";
 
 export async function generateStaticParams({ params }: { params: { region: string } }) {
   const regions = isRegion(params?.region) ? [params.region] : REGIONS;
   const all = await Promise.all(regions.map((r) => listVehicles(r, "tvde")));
-  return all.flat().map((v) => ({ slug: v.slug }));
+  return atLeastOne(all.flat().map((v) => ({ slug: v.slug })), "slug");
 }
 
 export async function generateMetadata({ params }: PageProps<"/[region]/tvde/viatura/[slug]">): Promise<Metadata> {
@@ -45,7 +46,7 @@ export default function Page({ params, searchParams }: { params: Promise<{ regio
 /** Seletor de levantamento com o local e a data vindos da pesquisa TVDE (?local=&inicio=). */
 async function PickupFromSearch({ searchParams, vehicleId, locations }: { searchParams: Promise<SP>; vehicleId: string; locations: Location[] }) {
   const sp = await searchParams;
-  return <PickupSelector vehicleId={vehicleId} locations={locations} initialLocationId={firstParam(sp.local)} initialPickupAt={firstParam(sp.inicio)} />;
+  return <PickupSelector vehicleId={vehicleId} locations={locations} initialLocationId={firstParam(sp.local)} initialPickupAt={firstParam(sp.inicio)} online={onlineRequestsEnabled()} />;
 }
 
 async function TvdeVehicle({ params, searchParams }: { params: Promise<{ region: string; slug: string }>; searchParams: Promise<SP> }) {

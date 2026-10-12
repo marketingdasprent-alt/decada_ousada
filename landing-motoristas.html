@@ -387,7 +387,7 @@ footer a:hover{color:var(--ink)}
 .badge-spin text{font:700 11.5px var(--mono);letter-spacing:.2em;fill:#fff;text-transform:uppercase}
 .badge-spin b{font:900 1.5rem/1 var(--display);text-transform:uppercase}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media (max-width:560px){.badge-spin{width:104px;height:104px;left:-2%}.badge-spin text{font-size:12.5px}.pay{top:auto;bottom:34%;left:2%}.disticho{right:-3%}}
+@media (max-width:560px){.badge-spin{width:104px;height:104px;left:-2%}.badge-spin text{font-size:12.5px}.pay{top:auto;bottom:34%;left:2%}}
 
 /* Fitas cruzadas com texto a correr */
 .tapes{position:relative;padding-block:var(--s8);overflow:hidden;margin-block:calc(-1 * var(--s6))}
@@ -434,7 +434,7 @@ footer a:hover{color:var(--ink)}
 
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="/" aria-label="Década Ousada, página inicial">
+    <a class="logo" href="https://www.decadaousada.pt/" aria-label="Década Ousada, página inicial">
       <img src="https://www.decadaousada.pt/logo-decada-ousada-white.png" alt="Década Ousada">
     </a>
     <nav class="nav" aria-label="Secções">
@@ -771,10 +771,8 @@ footer a:hover{color:var(--ink)}
   <div class="wrap">
     <span>© 2026 Década Ousada · Operador TVDE certificado</span>
     <nav aria-label="Rodapé">
-      <a href="/tvde/viaturas">Viaturas TVDE</a>
-      <a href="/perguntas-frequentes">Perguntas frequentes</a>
-      <a href="/contactos">Contactos</a>
-      <a href="/tvde/minha-conta">Área do Motorista</a>
+      <a href="https://www.decadaousada.pt/sobre">Sobre nós</a>
+      <a href="https://wegest.pt/motorista/login">Área do Motorista</a>
       <a href="https://www.decadaousada.pt/termos">Termos</a>
       <a href="https://www.decadaousada.pt/privacidade">Privacidade</a>
       <a href="https://www.instagram.com/decada_ousada/" target="_blank" rel="noopener">Instagram</a>
@@ -806,8 +804,8 @@ const FORM_COPY = {
 };
 const INSTAGRAM = {
   username: "decada_ousada",
-  // Publicações lidas pelo servidor do site (src/services/instagram, docs/instagram.md).
-  feedUrl: "/api/instagram",
+  // URL do feed JSON (ex.: Behold.so → "JSON feed URL"). Vazio = mostra mosaico com ligação ao perfil.
+  feedUrl: "",
   limit: 8,
   refreshMinutes: 5
 };
@@ -1007,14 +1005,13 @@ function renderFallback(){
       <img src="https://www.decadaousada.pt/${i}" alt="" loading="lazy"><span class="cap">Ver publicações no Instagram</span></a>`).join("");
   statusEl.textContent = "Veja as últimas publicações em instagram.com/" + INSTAGRAM.username;
 }
-/* Resposta de /api/instagram: { ok, data: { posts: [{ url, image, caption, type }] } } */
-function normalise(body){
-  const list = (body && body.data && Array.isArray(body.data.posts)) ? body.data.posts : [];
+function normalise(data){
+  const list = Array.isArray(data) ? data : (data.posts || data.data || []);
   return list.map(p=>({
-    url: p.url,
-    img: p.image,
-    caption: p.caption || "",
-    type: p.type==="video" ? "VIDEO" : p.type==="album" ? "CAROUSEL_ALBUM" : "IMAGE"
+    url: p.permalink,
+    img: (p.sizes && (p.sizes.medium||p.sizes.large||{}).mediaUrl) || (p.mediaType==="VIDEO"||p.media_type==="VIDEO" ? (p.thumbnailUrl||p.thumbnail_url) : (p.mediaUrl||p.media_url)) || p.thumbnailUrl,
+    caption: p.prunedCaption || p.caption || "",
+    type: p.mediaType || p.media_type || ""
   })).filter(p=>p.img && p.url).slice(0, INSTAGRAM.limit);
 }
 async function loadInstagram(){

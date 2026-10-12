@@ -317,8 +317,11 @@ SPLIT BY SERVICE (same day, team request): the homepage panel shows only
 customer (Rent a Car) testimonials; the TVDE ones will go elsewhere on the
 site. Each testimonial carries `service`; TVDE = the three that talk
 explicitly about drivers/TVDE (Patricia Silva, Samuel Guimarães, Daiane
-Goulart), as the team confirmed. The panel stays after the TVDE band (no
-change requested); the reason above no longer applies to its content.
+Goulart), as the team confirmed.
+
+PLACEMENT, FINAL (same day, team request): the panel goes back between the
+Rent a Car section and the TVDE band, next to the service its testimonials
+talk about. This replaces the "after the TVDE band" placement above.
 
 SCOPE:
 Homepage content (`Testimonials`).
@@ -335,45 +338,126 @@ DATE:
 
 ```
 DECISION:
-Campaign landing for TVDE drivers at /motoristas, kept as a static HTML
-page (public/landing/motoristas.html), outside the design system.
-- Override of the token rule (AGENTS.md rule 3) and of the shared layout:
-  the page has its own fonts, colours and motion, as marketing (DASP RENT)
-  asked for a landing that does not follow the look of decadaousada.pt.
-  None of its CSS reaches src/; no component or token changed.
-- Served by src/proxy.ts: a LANDINGS map rewrites the public URL to the
-  file; `landing/` is excluded from the proxy matcher so the file is served
-  as a static asset, in both regions.
-- Content comes from decadaousada.pt (figures, awards, FAQ, contacts).
-  Photos of drivers and cities are Unsplash (Unsplash License) until the
-  team supplies its own.
-- The two candidatura buttons still open the WeGest forms (SLOT and TVDE
-  GERAL) in a new tab: WeGest sends X-Frame-Options: DENY, so they cannot
-  be embedded. Replacing them with forms posting to the API is the next
-  step.
-
-Instagram feed (new service src/services/instagram):
-- Read on the server only, from INSTAGRAM_ACCESS_TOKEN (official Instagram
-  API with Instagram Login, permission instagram_business_basic) or, failing
-  that, INSTAGRAM_FEED_URL (a JSON feed such as Behold, which manages the
-  token). Cached with cacheLife("minutes"); errors return an empty list.
-- GET /api/instagram serves the landing; `InstagramFeed` closes the
-  homepage. Without a source configured it renders nothing, so nothing
-  changes on the site until the account is connected.
-- Instagram CDN links expire, so images use next/image `unoptimized` and
-  no remotePatterns entry.
+Instagram on the homepage (team request): section "Siga-nos no Instagram"
+with the latest 8 posts of @decada_ousada, and the profile link in the
+footer. Posts come from the Instagram API with Instagram login
+(graph.instagram.com/me/media), read on the server with
+INSTAGRAM_ACCESS_TOKEN and cached with the `minutes` profile. No embed
+script and no third-party widget. Images go through next/image, with the
+Meta CDN hosts (*.cdninstagram.com, *.fbcdn.net) in remotePatterns.
 
 REASON:
-Requests from marketing (2026-10-12): publish the driver landing with the
-site and show the latest Instagram posts.
+The official API is the only source that keeps the posts current without
+scraping. Server-side keeps the token secret and adds no client script or
+tracking from Meta. Without a token the section shows only the profile
+button, never invented posts (AGENTS.md rule 4). No new dependency.
 
 SCOPE:
-public/landing/, src/proxy.ts, src/services/instagram, src/app/api/instagram,
-src/components/shared/instagram-feed.tsx, homepage (one section at the end),
-.env.example, docs/instagram.md.
+Homepage, footer, next.config images, env (INSTAGRAM_ACCESS_TOKEN).
 
 LEVEL:
-Override (landing) and Feature (Instagram).
+Content and integration (Level 3).
+
+DATE:
+2026-10-12
+```
+
+---
+
+```
+DECISION:
+WeGest real API wired in through the existing transport seam. The
+http-transport converts api.wegest.pt v1 responses into the Wg* DTOs the mock
+already produces, so mappers, pages and components stay unchanged. What the
+API lacks (customer records, per-customer booking and application lists,
+invoices, cancellation preview, TVDE documents) is kept per instance in the
+transport or answered as "not available online". A new switch,
+WEGEST_PEDIDOS_ONLINE (default off with the real API), gates the two write
+paths: the booking and application routes answer 503 and the vehicle pages
+show "Contactar a equipa" instead of "Reservar" / "Candidatar-me".
+Catalogue GETs are shared for 5 minutes per process (the API allows it) and
+429 honours Retry-After.
+
+REASON:
+The build against the real API hit the 120 requests/min limit and the
+English provisional paths answered 404. Writes create real bookings and
+applications in WeGest; with mock payments, an in-memory local store (lost
+between serverless invocations) and no CAPTCHA (required by the API for
+applications), turning them on would create unpaid or orphaned requests.
+Reading the catalogue has none of these risks.
+
+SCOPE:
+src/services/wegest (client, http-transport, api-types, types, mappers,
+index), booking and TVDE application API routes, vehicle pages,
+lib/static-params, .env.example, docs/wegest.
+
+LEVEL:
+Integration (Level 2).
+
+DATE:
+2026-10-12
+```
+
+---
+
+```
+DECISION:
+Driver recruitment page /motoristas, rebuilt from the team's standalone
+landing (landing-motoristas.html) with the site's components and tokens
+instead of publishing the HTML file. Applications go to the two forms hosted
+on WeGest (Aluguer and Slot), opened in a new tab (WeGest sends
+X-Frame-Options: DENY). The fleet section lists real TVDE models from the
+WeGest catalogue. The landing's motion (parallax, tapes, magnetic buttons,
+counters) was not carried over.
+
+CONTENT CONFIRMED BY THE TEAM (2026-10-12): 500+ active drivers; Top 5% PME
+2024 (2nd year); 1500 Maiores Empresas, Coimbra 2023; official Uber and Bolt
+partner; drivers' phone/WhatsApp +351 912 023 234 and
+motoristas.tvde@decadaousada.pt; call within 24 working hours; approval in
+24 to 48 working hours; support 7 days a week; all-risks insurance on 100%
+of vehicles; weekly payment; no minimum hours; Slot mode. Not confirmed and
+left out: "a empresa TVDE que mais cresce em Portugal".
+
+REASON:
+Team request. The hosted WeGest forms work today, while the site's own
+booking and application flows stay off (WEGEST_PEDIDOS_ONLINE).
+
+SCOPE:
+src/app/[region]/motoristas, src/domain/drivers, shared/cover-photo, header
+nav, footer, sitemap.
+
+LEVEL:
+Content and page (Level 3).
+
+DATE:
+2026-10-12
+```
+
+---
+
+```
+DECISION:
+Reconciling main with this branch (2026-10-12). The same day, main received
+a static /motoristas landing (public/landing/motoristas.html, a proxy.ts
+rewrite, GET /api/instagram and a second Instagram section), while this
+branch rebuilt the landing as a native page and added its own Instagram
+section. The native versions stay; the static landing, the rewrite, the API
+route and the duplicate component are removed. A static landing would have
+taken /motoristas away from the native page through the proxy.
+The Instagram service now also accepts INSTAGRAM_FEED_URL (a JSON feed such
+as Behold, which renews the Instagram access itself) when there is no
+INSTAGRAM_ACCESS_TOKEN; the token keeps priority.
+
+REASON:
+Production had been deployed from this branch while main held the static
+version: the two had to converge before the next deploy from main.
+
+SCOPE:
+src/services/instagram, docs/instagram.md, .env.example; removal of
+public/landing/, src/app/api/instagram and src/components/shared/instagram-feed.tsx.
+
+LEVEL:
+Infrastructure (repository alignment).
 
 DATE:
 2026-10-12

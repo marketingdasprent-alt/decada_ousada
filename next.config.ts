@@ -8,7 +8,12 @@ const nextConfig: NextConfig = {
   agentRules: false,
   images: {
     // Fotos das viaturas servidas pelo storage do WeGest (links temporários de 24 h)
-    remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "*.supabase.co" },
+      // Publicações do Instagram (CDN da Meta, links temporários)
+      { protocol: "https", hostname: "**.cdninstagram.com" },
+      { protocol: "https", hostname: "**.fbcdn.net" },
+    ],
   },
   async headers() {
     return [

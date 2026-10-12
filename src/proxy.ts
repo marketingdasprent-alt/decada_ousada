@@ -27,15 +27,8 @@ function resolveRegion(req: NextRequest): { region: Region; setDevCookie?: Regio
   return { region: isRegion(cookie) ? cookie : fromHost };
 }
 
-/** Landings de campanha em HTML estático (public/landing/, DECISIONS.md 2026-10-12): URL público → ficheiro. */
-const LANDINGS: Record<string, string> = { "/motoristas": "/landing/motoristas.html" };
-
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  const landing = LANDINGS[pathname.replace(/\/$/, "")];
-  if (landing) return NextResponse.rewrite(new URL(landing, req.url));
-
   const { region, setDevCookie } = resolveRegion(req);
 
   const headers = new Headers(req.headers);
@@ -60,5 +53,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/|brand/|landing/|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|svg|webp|avif|ico|txt|xml)$).*)"],
+  matcher: ["/((?!_next/|brand/|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|svg|webp|avif|ico|txt|xml)$).*)"],
 };

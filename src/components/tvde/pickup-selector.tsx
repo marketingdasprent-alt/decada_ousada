@@ -25,8 +25,11 @@ export function PickupSelector({
   locations,
   initialLocationId,
   initialPickupAt,
+  online = true,
 }: {
   vehicleId: string;
+  /** Candidaturas online ligadas (com a API real, só quando os pedidos estão prontos). */
+  online?: boolean;
   locations: Location[];
   /** Levantamento escolhido na pesquisa TVDE (local e "AAAA-MM-DDTHH:mm"). */
   initialLocationId?: string;
@@ -110,7 +113,12 @@ export function PickupSelector({
         {state.status === "error" && <Notice tone="danger">{state.error}</Notice>}
       </div>
 
-      {available ? (
+      {!online ? (
+        <>
+          <Notice tone="info">As candidaturas online ainda não estão disponíveis. Contacte-nos para se candidatar a esta viatura.</Notice>
+          <Link href="/contactos" className={buttonClass("primary", "lg", "mt-3 w-full")}>Contactar a equipa</Link>
+        </>
+      ) : available ? (
         <Link href={href} onClick={() => track("tvde_pickup_selected", { vehicleId })} className={buttonClass("primary", "lg", "w-full")}>
           <CalendarCheck className="size-5" aria-hidden /> Candidatar-me a esta viatura
         </Link>

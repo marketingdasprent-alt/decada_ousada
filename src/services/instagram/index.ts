@@ -2,110 +2,102 @@ import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
 
+import type { InstagramPost } from "@/domain/social";
+
 /**
- * Publicações recentes do Instagram da DÉCADA OUSADA, lidas só no servidor.
- *
- * Duas fontes, por esta ordem (docs/instagram.md):
- *   INSTAGRAM_ACCESS_TOKEN → API oficial (Instagram API with Instagram Login, `instagram_business_basic`)
+ * Publicações do próprio perfil, de uma de duas fontes (docs/instagram.md):
+ *   INSTAGRAM_ACCESS_TOKEN → Instagram API com login do Instagram (conta profissional)
  *   INSTAGRAM_FEED_URL     → feed JSON de um serviço que gere o token (ex.: Behold)
- * Sem nenhuma das duas, devolve uma lista vazia e as secções que a usam não aparecem.
- * O token nunca sai do servidor e nunca vai para os logs.
  */
+const MEDIA_URL = "https://graph.instagram.com/me/media";
+const FIELDS = "id,caption,media_type,media_url,thumbnail_url,permalink";
+const LIMIT = 8;
+const TIMEOUT = 8000;
 
-export type InstagramPostType = "image" | "video" | "album";
-
-export interface InstagramPost {
+interface IgMedia {
   id: string;
-  /** Ligação para a publicação no Instagram. */
-  url: string;
-  /** Imagem a mostrar (a miniatura, nos vídeos). Link do CDN do Instagram, temporário. */
-  image: string;
-  caption: string;
-  type: InstagramPostType;
-  postedAt: string | null;
+  caption?: string;
+  media_type: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM";
+  media_url?: string;
+  thumbnail_url?: string;
+  permalink: string;
 }
 
-export interface InstagramFeed {
-  username: string;
-  profileUrl: string;
-  posts: InstagramPost[];
+/** Publicação no feed JSON do Behold (v2; a v1 devolve a lista sem o objeto à volta). */
+interface FeedMedia {
+  id: string;
+  caption?: string;
+  prunedCaption?: string;
+  mediaType: IgMedia["media_type"];
+  /** Links originais do CDN do Instagram. As cópias redimensionadas (`sizes`) vêm de outro domínio e não se usam. */
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+  permalink: string;
 }
 
-const GRAPH_URL = "https://graph.instagram.com/me/media";
-const FIELDS = "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp";
-const TIMEOUT_MS = 8000;
+const TYPE: Record<IgMedia["media_type"], InstagramPost["type"]> = { IMAGE: "image", VIDEO: "video", CAROUSEL_ALBUM: "album" };
 
-export const instagramUsername = () => process.env.INSTAGRAM_USERNAME?.trim() || "decada_ousada";
-
-const toType = (raw: unknown): InstagramPostType => (raw === "VIDEO" ? "video" : raw === "CAROUSEL_ALBUM" ? "album" : "image");
-const str = (v: unknown) => (typeof v === "string" ? v : "");
-
-/** Resposta da API oficial: { data: [{ id, caption, media_type, media_url, thumbnail_url, permalink, timestamp }] } */
-function fromGraph(body: unknown): InstagramPost[] {
-  const list = (body as { data?: unknown[] })?.data;
-  if (!Array.isArray(list)) return [];
-  return list.map((p) => {
-    const r = p as Record<string, unknown>;
-    const type = toType(r.media_type);
-    return {
-      id: str(r.id),
-      url: str(r.permalink),
-      image: type === "video" ? str(r.thumbnail_url) || str(r.media_url) : str(r.media_url),
-      caption: str(r.caption),
-      type,
-      postedAt: str(r.timestamp) || null,
-    };
-  });
+/**
+ * Só imagens dos domínios em `images.remotePatterns` (next.config.ts): com outro domínio o
+ * `next/image` lança um erro e a página inteira falha, por isso a publicação fica de fora.
+ */
+function isAllowedImage(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url);
+    return protocol === "https:" && /(^|\.)(cdninstagram\.com|fbcdn\.net)$/.test(hostname);
+  } catch {
+    return false;
+  }
 }
 
-/** Feed JSON (Behold v2 `{ posts: [...] }` ou v1 `[...]`). */
-function fromFeed(body: unknown): InstagramPost[] {
-  const list = Array.isArray(body) ? body : (body as { posts?: unknown[] })?.posts;
-  if (!Array.isArray(list)) return [];
-  return list.map((p) => {
-    const r = p as Record<string, unknown>;
-    const sizes = r.sizes as Record<string, { mediaUrl?: string }> | undefined;
-    const type = toType(r.mediaType);
-    return {
-      id: str(r.id),
-      url: str(r.permalink),
-      image: sizes?.medium?.mediaUrl || sizes?.large?.mediaUrl || (type === "video" ? str(r.thumbnailUrl) : str(r.mediaUrl)),
-      caption: str(r.prunedCaption) || str(r.caption),
-      type,
-      postedAt: str(r.timestamp) || null,
-    };
-  });
+function toPost(m: IgMedia): InstagramPost | null {
+  // Nos vídeos a imagem é a capa; media_url seria o próprio vídeo
+  const image = m.media_type === "VIDEO" ? m.thumbnail_url : m.media_url;
+  if (!image || !m.permalink || !isAllowedImage(image)) return null;
+  return { id: m.id, url: m.permalink, image, caption: m.caption ?? "", type: TYPE[m.media_type] ?? "image" };
 }
 
-async function fetchJson(url: string): Promise<unknown> {
-  const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS), headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error(`Instagram respondeu ${res.status}`);
+function feedToPost(m: FeedMedia): InstagramPost | null {
+  const image = m.mediaType === "VIDEO" ? m.thumbnailUrl : m.mediaUrl;
+  if (!image || !m.permalink || !isAllowedImage(image)) return null;
+  return { id: m.id, url: m.permalink, image, caption: m.prunedCaption ?? m.caption ?? "", type: TYPE[m.mediaType] ?? "image" };
+}
+
+async function readJson(url: URL): Promise<unknown> {
+  const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT) });
+  if (!res.ok) throw new Error(`${res.status} ao ler publicações`);
   return res.json();
 }
 
-/** Últimas publicações (até `limit`). Nunca lança: em erro devolve lista vazia. */
-export async function getInstagramFeed(limit = 8): Promise<InstagramFeed> {
+/**
+ * Últimas publicações do Instagram, revistas a cada minuto (perfil `minutes`). Devolve null
+ * sem fonte configurada ou se a fonte falhar: a página mostra só a ligação ao perfil.
+ */
+export async function getInstagramPosts(): Promise<InstagramPost[] | null> {
   "use cache";
   cacheLife("minutes");
-  cacheTag("instagram:feed");
-
-  const username = instagramUsername();
-  const feed: InstagramFeed = { username, profileUrl: `https://www.instagram.com/${username}/`, posts: [] };
-  const token = process.env.INSTAGRAM_ACCESS_TOKEN?.trim();
-  const feedUrl = process.env.INSTAGRAM_FEED_URL?.trim();
-
+  cacheTag("instagram");
+  const token = process.env.INSTAGRAM_ACCESS_TOKEN;
+  const feedUrl = process.env.INSTAGRAM_FEED_URL;
   try {
-    let posts: InstagramPost[] = [];
+    let posts: (InstagramPost | null)[];
     if (token) {
-      const q = new URLSearchParams({ fields: FIELDS, limit: String(limit), access_token: token });
-      posts = fromGraph(await fetchJson(`${GRAPH_URL}?${q}`));
+      const url = new URL(MEDIA_URL);
+      url.searchParams.set("fields", FIELDS);
+      url.searchParams.set("limit", String(LIMIT));
+      url.searchParams.set("access_token", token);
+      const body = (await readJson(url)) as { data?: IgMedia[] };
+      posts = (body.data ?? []).map(toPost);
     } else if (feedUrl) {
-      posts = fromFeed(await fetchJson(feedUrl));
+      const body = (await readJson(new URL(feedUrl))) as FeedMedia[] | { posts?: FeedMedia[] };
+      posts = (Array.isArray(body) ? body : (body.posts ?? [])).map(feedToPost);
+    } else {
+      return null;
     }
-    feed.posts = posts.filter((p) => p.id && p.url.startsWith("https://") && p.image.startsWith("https://")).slice(0, limit);
+    return posts.filter((p): p is InstagramPost => p !== null).slice(0, LIMIT);
   } catch (err) {
     // Só a mensagem: o URL do pedido leva o token
-    console.error("[instagram] feed indisponível:", err instanceof Error ? err.message : "erro desconhecido");
+    console.error("[instagram] falha ao ler publicações", err instanceof Error ? err.message : "erro desconhecido");
+    return null;
   }
-  return feed;
 }
