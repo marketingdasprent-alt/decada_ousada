@@ -14,6 +14,7 @@ import { fillSpanClasses } from "@/lib/grid";
 import { regionFromParams, regionSwitchHref } from "@/lib/region";
 import { REGION_IMAGERY } from "@/lib/region-imagery";
 import { getStartingPrice, listLocations } from "@/services/wegest";
+import { InstagramFeed } from "@/components/shared/instagram-feed";
 
 /** Título da hero por região: a mesma promessa, dita para quem está em cada região. */
 const HOME_COPY: Record<Region, { title: string; description: string }> = {
@@ -101,6 +102,9 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
           ))}
         </ul>
       </Container></Section>
+
+      {/* Instagram: só aparece com a ligação configurada (docs/instagram.md) */}
+      <InstagramFeed />
     </>
   );
 }

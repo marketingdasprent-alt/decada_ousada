@@ -3,6 +3,18 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.10.0]: 2026-10-12
+
+### Added
+
+- `/motoristas`: landing for TVDE drivers (Aluguer or Slot), a static page
+  with its own look (`public/landing/motoristas.html`, served by `proxy.ts`).
+  The two candidatura buttons open the WeGest forms in a new tab for now.
+- Instagram: `src/services/instagram` reads the latest posts on the server
+  (official API token or a JSON feed), `GET /api/instagram` serves them and
+  `InstagramFeed` shows them at the end of the homepage. Hidden until the
+  account is connected (`docs/instagram.md`).
+
 ## [0.9.3]: 2026-10-12
 
 ### Added
