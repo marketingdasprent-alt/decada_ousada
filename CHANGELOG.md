@@ -3,6 +3,23 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.11.1]: 2026-10-12
+
+### Changed
+
+- Instagram also reads `INSTAGRAM_FEED_URL` (a JSON feed such as Behold,
+  which renews the access itself) when there is no `INSTAGRAM_ACCESS_TOKEN`
+  (`docs/instagram.md`).
+- A post whose image is not on the Instagram CDN (`images.remotePatterns`) is
+  left out instead of making `next/image` fail the whole page.
+
+### Removed
+
+- The static `/motoristas` landing (`public/landing/motoristas.html`, the
+  `proxy.ts` rewrite and `GET /api/instagram`) merged into `main` the same
+  day as 0.10.0: the native `/motoristas` page (0.11.0) replaces it, and its
+  Instagram section replaced the duplicate one.
+
 ## [0.11.0]: 2026-10-12
 
 ### Added

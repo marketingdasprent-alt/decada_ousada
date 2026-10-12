@@ -432,3 +432,33 @@ Content and page (Level 3).
 DATE:
 2026-10-12
 ```
+
+---
+
+```
+DECISION:
+Reconciling main with this branch (2026-10-12). The same day, main received
+a static /motoristas landing (public/landing/motoristas.html, a proxy.ts
+rewrite, GET /api/instagram and a second Instagram section), while this
+branch rebuilt the landing as a native page and added its own Instagram
+section. The native versions stay; the static landing, the rewrite, the API
+route and the duplicate component are removed. A static landing would have
+taken /motoristas away from the native page through the proxy.
+The Instagram service now also accepts INSTAGRAM_FEED_URL (a JSON feed such
+as Behold, which renews the Instagram access itself) when there is no
+INSTAGRAM_ACCESS_TOKEN; the token keeps priority.
+
+REASON:
+Production had been deployed from this branch while main held the static
+version: the two had to converge before the next deploy from main.
+
+SCOPE:
+src/services/instagram, docs/instagram.md, .env.example; removal of
+public/landing/, src/app/api/instagram and src/components/shared/instagram-feed.tsx.
+
+LEVEL:
+Infrastructure (repository alignment).
+
+DATE:
+2026-10-12
+```
