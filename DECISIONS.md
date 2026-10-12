@@ -330,3 +330,51 @@ DATE:
 2026-10-12
 ```
 
+
+---
+
+```
+DECISION:
+Campaign landing for TVDE drivers at /motoristas, kept as a static HTML
+page (public/landing/motoristas.html), outside the design system.
+- Override of the token rule (AGENTS.md rule 3) and of the shared layout:
+  the page has its own fonts, colours and motion, as marketing (DASP RENT)
+  asked for a landing that does not follow the look of decadaousada.pt.
+  None of its CSS reaches src/; no component or token changed.
+- Served by src/proxy.ts: a LANDINGS map rewrites the public URL to the
+  file; `landing/` is excluded from the proxy matcher so the file is served
+  as a static asset, in both regions.
+- Content comes from decadaousada.pt (figures, awards, FAQ, contacts).
+  Photos of drivers and cities are Unsplash (Unsplash License) until the
+  team supplies its own.
+- The two candidatura buttons still open the WeGest forms (SLOT and TVDE
+  GERAL) in a new tab: WeGest sends X-Frame-Options: DENY, so they cannot
+  be embedded. Replacing them with forms posting to the API is the next
+  step.
+
+Instagram feed (new service src/services/instagram):
+- Read on the server only, from INSTAGRAM_ACCESS_TOKEN (official Instagram
+  API with Instagram Login, permission instagram_business_basic) or, failing
+  that, INSTAGRAM_FEED_URL (a JSON feed such as Behold, which manages the
+  token). Cached with cacheLife("minutes"); errors return an empty list.
+- GET /api/instagram serves the landing; `InstagramFeed` closes the
+  homepage. Without a source configured it renders nothing, so nothing
+  changes on the site until the account is connected.
+- Instagram CDN links expire, so images use next/image `unoptimized` and
+  no remotePatterns entry.
+
+REASON:
+Requests from marketing (2026-10-12): publish the driver landing with the
+site and show the latest Instagram posts.
+
+SCOPE:
+public/landing/, src/proxy.ts, src/services/instagram, src/app/api/instagram,
+src/components/shared/instagram-feed.tsx, homepage (one section at the end),
+.env.example, docs/instagram.md.
+
+LEVEL:
+Override (landing) and Feature (Instagram).
+
+DATE:
+2026-10-12
+```
