@@ -3,6 +3,18 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.9.3]: 2026-10-12
+
+### Added
+
+- Homepage panel "O que dizem os nossos clientes" after the TVDE band: 14
+  DÉCADA OUSADA customer testimonials in an endless horizontally scrolling
+  row (after the last card comes the first) with arrows, a "4 de 14" counter, a position bar in the region colour, "Ler
+  tudo" for long texts and a staggered entrance (`Testimonials`).
+- `Testimonials` takes a `service`: the 3 TVDE testimonials are kept for a
+  separate TVDE panel and are not shown on the homepage.
+- Motion token `--stagger-step`; utilities `scrollbar-none` and `reveal-item`.
+
 ## [0.9.2]: 2026-10-09
 
 ### Changed

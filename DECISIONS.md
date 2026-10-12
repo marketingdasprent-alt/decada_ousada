@@ -281,3 +281,52 @@ DATE:
 2026-10-09
 ```
 
+---
+
+```
+DECISION:
+Reviews on the homepage (team request, 2026-10-12). A band with the Google
+rating of DASP RENT (same owner), named, was built and then removed at the
+team's request. Not done, on purpose: copying DASP RENT Google reviews (picked
+because they do not mention DASP RENT) into a panel on the DÉCADA OUSADA site
+as if they were DÉCADA OUSADA reviews. Reviews on the site must come from
+DÉCADA OUSADA customers (own Google profile, or testimonials collected with
+consent), or be clearly attributed to DASP RENT.
+
+REASON:
+Presenting reviews without making sure they come from customers of the
+service they describe is a prohibited commercial practice (Directive
+2019/2161 "Omnibus", Decreto-Lei 109-G/2021). Same owner allows naming the
+group company honestly; it does not make DASP RENT reviews DÉCADA OUSADA
+reviews. AGENTS.md rule 4 (no fabricated content).
+
+FOLLOW-UP (same day): the team supplied a panel of 17 testimonials and
+confirmed they are DÉCADA OUSADA customers, taken from another panel (not
+Google, no Google integration for now). Published in `Testimonials` without
+any "Google" label and without relative dates.
+
+PLACEMENT (same day): the panel sits after the TVDE band, not between Rent a
+Car and TVDE. About half of the testimonials talk about TVDE (motorista,
+convenção, mercado de TVDE); shown before the TVDE band they reached the
+reader before the service they describe. After both services they back both,
+and the light panel separates the dark TVDE band from the locations.
+New motion token `--stagger-step` (70 ms) for the staggered entrance; it was
+missing from the scale.
+
+SPLIT BY SERVICE (same day, team request): the homepage panel shows only
+customer (Rent a Car) testimonials; the TVDE ones will go elsewhere on the
+site. Each testimonial carries `service`; TVDE = the three that talk
+explicitly about drivers/TVDE (Patricia Silva, Samuel Guimarães, Daiane
+Goulart), as the team confirmed. The panel stays after the TVDE band (no
+change requested); the reason above no longer applies to its content.
+
+SCOPE:
+Homepage content (`Testimonials`).
+
+LEVEL:
+Content (Level 3).
+
+DATE:
+2026-10-12
+```
+
