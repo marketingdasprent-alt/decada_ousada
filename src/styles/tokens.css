@@ -202,6 +202,7 @@
 
   --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --stagger-step: 70ms;        /* delay between items of one entrance (testimonials) */
 
   /* ------------------------------------------------------------ */
   /* CONTAINERS                                                     */

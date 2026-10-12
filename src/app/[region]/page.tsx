@@ -4,6 +4,7 @@ import { RegionSwitch } from "@/components/layout/region-switch";
 import { RacIntro } from "@/components/rentacar/rac-intro";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
+import { Testimonials } from "@/components/shared/testimonials";
 import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { TvdeHighlights } from "@/components/tvde/tvde-highlights";
 import { TvdeProcess } from "@/components/tvde/tvde-process";
@@ -81,6 +82,9 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
       >
         <TvdeHighlights region={region} />
       </TvdeProcess>
+
+      {/* Depoimentos de clientes depois dos dois serviços (os de TVDE ficam para outro sítio; DECISIONS.md, 2026-10-12) */}
+      <Testimonials service="rentacar" />
 
       {/* Localizações (SEO regional, doc §109) */}
       <Section><Container>

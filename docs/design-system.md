@@ -108,9 +108,11 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 | Token | Value | Applies to |
 |---|---|---|
 | `--duration-fast` | 120 ms | Default for every Tailwind `transition-*` (theme `--default-transition-duration`), skip link |
-| `--duration-normal` / `--duration-slow` | 220 / 400 ms | Reserved; no component uses them yet |
+| `--duration-normal` | 220 ms | Reserved |
+| `--duration-slow` | 400 ms | Testimonials entrance (`reveal-item`) |
 | `--easing-standard` | `cubic-bezier(0.4, 0, 0.2, 1)` | Default Tailwind transition easing |
-| `--easing-emphasized` | `cubic-bezier(0.2, 0, 0, 1)` | Reserved |
+| `--easing-emphasized` | `cubic-bezier(0.2, 0, 0, 1)` | Testimonials entrance (`reveal-item`) |
+| `--stagger-step` | 70 ms | Delay between items of one entrance (`--reveal-index` × step) |
 
 | Element | Trigger | Animation |
 |---|---|---|
@@ -121,6 +123,8 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
 | `Spinner` (buttons with `loading`, uploads) | while busy | `animate-spin` |
 | `Skeleton` | while loading | `animate-pulse` |
 | Checkout step change | step button | scroll to the step top, smooth; instant with reduced motion |
+| Testimonials (heading, controls, cards, position bar) | section enters the viewport | `reveal-item`: fade + rise of `--space-md`, staggered; skipped with reduced motion or if the section is already on screen; content visible without JavaScript |
+| Testimonials row | arrows | scroll one view, smooth; instant with reduced motion; endless (wraps from the last card to the first and back) |
 
 `prefers-reduced-motion: reduce` cuts every CSS animation and transition to
 0.01 ms (`globals.css`); JavaScript scrolling checks the same media query.
@@ -158,6 +162,7 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   the Rent a Car one; its extra height goes to a "Como funciona" box (`flex-1`,
   the three steps and the note that the deposit is not an approval), so the card
   never shows an empty area.
+- `Testimonials` (`shared/testimonials.tsx`, client, `service: "rentacar" | "tvde"`): testimonials panel for one service; title, description and list label come from `COPY` ("O que dizem os nossos clientes" / "... motoristas"), ids from the service. On the homepage, `service="rentacar"` after `TvdeProcess`, on the light surface; the TVDE testimonials are kept in the data for another place. Lists the `TESTIMONIALS` of that service (DÉCADA OUSADA customers; text as written, stars, initials, name) in a horizontal scroll-snap row without a native scrollbar (`scrollbar-none`): one card and a peek on mobile, two from `sm`, three from `lg`. The quote mark in `text-brand` (region colour) is the graphic element; the quote is `text-body-large`, clamped to five lines with "Ler tudo" / "Mostrar menos" (`aria-expanded`) only when it overflows. Infinite: after hydration the list gets one copy on each side (`inert`, `aria-hidden`; the server HTML has the list once) and, when scrolling stops on a copy (`scrollend`, or 150 ms idle), the row jumps instantly by one list width back to the original, so the jump is invisible. Controls: counter of the leftmost card ("4 de 14", `aria-live`), previous/next arrows (one view, never disabled), focusable row for arrow keys, and a brand-colour position bar under the row. "Ler tudo" state is shared by a card and its copies. Entrance: `reveal-item` (see Motion). No relative dates.
 - `RacIntro` (`rentacar/rac-intro.tsx`, `region`, `from`): Rent a Car on the
   homepage: who it is for, the three advantages, the "desde" price, a region photo,
   "Ver categorias" and "Ver toda a frota". The homepage introduces the services;

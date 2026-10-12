@@ -195,3 +195,27 @@
 @utility z-toast {
   z-index: var(--z-toast);
 }
+
+/* Faixa com scroll horizontal próprio, sem barra nativa (há outro indicador de posição) */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
+ * Entrada em cascata: o contentor recebe data-reveal="pending" por JavaScript (nunca no
+ * HTML do servidor, para o conteúdo ficar visível sem JS) e "shown" quando aparece no
+ * ecrã. Cada item define --reveal-index. Só opacity e transform.
+ */
+@utility reveal-item {
+  transition-property: opacity, transform;
+  transition-duration: var(--duration-slow);
+  transition-timing-function: var(--easing-emphasized);
+  transition-delay: calc(var(--reveal-index, 0) * var(--stagger-step));
+  [data-reveal="pending"] & {
+    opacity: 0;
+    transform: translateY(var(--space-md));
+  }
+}
