@@ -1,15 +1,14 @@
 "use client";
 
-import { useId, useRef } from "react";
+import { useId, useRef, useState } from "react";
 
 import type { Location } from "@/domain/location";
+import { formatMoney, TVDE_RESERVATION_FEE } from "@/domain/pricing";
 import { cn } from "@/lib/cn";
 
 import { RentACarSearchForm } from "../rentacar/search-form";
 import { TvdeSearchForm } from "../tvde/tvde-search-form";
-import { useServiceSelection, type Product } from "./service-selection";
-
-export type { Product };
+export type Product = "rentacar" | "tvde";
 
 /**
  * O que distingue os dois serviços, dito no próprio formulário. Cada um tem a sua cor:
@@ -50,7 +49,7 @@ function ServiceIntro({ product }: { product: Product }) {
 const TVDE_STEPS = [
   "Escolha a viatura e a data de início.",
   "Submeta a candidatura com os documentos.",
-  "Reserve com o sinal. A equipa analisa a candidatura antes do levantamento.",
+  `Reserve com ${formatMoney(TVDE_RESERVATION_FEE)} de sinal, descontados na caução. A equipa analisa a candidatura antes do levantamento.`,
 ];
 
 function TvdeSteps({ className }: { className?: string }) {
@@ -89,7 +88,7 @@ function ProductForm({ product, racLocations, tvdeLocations }: { product: Produc
  * salta ao trocar de serviço.
  */
 export function HeroSearch({ racLocations, tvdeLocations, only }: { racLocations: Location[]; tvdeLocations: Location[]; only?: Product }) {
-  const [active, setActive] = useServiceSelection(only ?? "rentacar");
+  const [active, setActive] = useState<Product>(only ?? "rentacar");
   const id = useId();
   const tabRefs = useRef<Record<Product, HTMLButtonElement | null>>({ rentacar: null, tvde: null });
   const products: Product[] = ["rentacar", "tvde"];

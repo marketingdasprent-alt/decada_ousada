@@ -220,6 +220,9 @@ const AUDIT = `(() => {
     const small = [];
     for (const el of document.querySelectorAll("a[href], button, input:not([type=hidden]), select, textarea, [role=button], summary")) {
       if (!vis(el) || el.closest("[aria-hidden='true']")) continue;
+      // Conteúdo de um <details> fechado: o Chrome mede-o, mas não está à vista
+      const closed = el.closest("details:not([open])");
+      if (closed && !el.closest("summary")) continue;
       const er = el.getBoundingClientRect();
       if (er.right <= 0 || er.bottom <= 0 || er.left >= W) continue;
       let target = el;

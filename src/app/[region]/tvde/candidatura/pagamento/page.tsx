@@ -47,7 +47,7 @@ async function Payment({ region, searchParams }: { region: Region; searchParams:
     <ApplicationLayout
       step={3}
       title="Pagar o sinal"
-      description="Garanta a viatura enquanto analisamos a sua candidatura."
+      description="O sinal confirma a reserva da viatura e é descontado na caução quando a levantar. A candidatura continua sujeita a análise."
       asideLabel={tvdeSummaryLabel({ vehicleName: vehicle?.name, weeklyPrice: app.weeklyPrice, deposit: app.deposit, reservationAmount: app.reservationAmount })}
       aside={<TvdeSummary vehicle={vehicle} weeklyPrice={app.weeklyPrice} deposit={app.deposit} reservationAmount={app.reservationAmount} pickupAt={app.pickupAt} locationName={app.pickupLocation.name} reference={app.reference} />}
     >

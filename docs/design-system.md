@@ -154,12 +154,25 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   the destination ("Ver viaturas Rent a Car", "Ver viaturas TVDE"). Both panels
   share one grid cell and the inactive one is `invisible` and `inert`, so the
   card keeps the height of the taller panel and never jumps when switching.
-  Inside `ServiceSelectionProvider` (`shared/service-selection.tsx`, homepage)
-  the chosen tab is shared, and `ForService` shows the matching section under
-  the hero: Rent a Car categories or the TVDE band. The TVDE panel is shorter than
+  Each card keeps its own tab state. The TVDE panel is shorter than
   the Rent a Car one; its extra height goes to a "Como funciona" box (`flex-1`,
   the three steps and the note that the deposit is not an approval), so the card
   never shows an empty area.
+- `RacIntro` (`rentacar/rac-intro.tsx`, `region`, `from`): Rent a Car on the
+  homepage: who it is for, the three advantages, the "desde" price, a region photo,
+  "Ver categorias" and "Ver toda a frota". The homepage introduces the services;
+  fleet and categories live on the vehicle pages.
+- `TvdeRequirements` (`tvde/tvde-requirements.tsx`, `region`): two equal cards on
+  the TVDE page. "Para conduzir em TVDE": IMT requirements with the official link
+  (Continente) or the regional regime with the diploma link and a pending marker
+  (Açores). "Para alugar na DÉCADA OUSADA": company requirements as pending, and
+  "Ver viaturas TVDE" at the bottom. Links to official sources open in a new tab
+  with a visually hidden "(abre noutro separador)".
+- `TvdeHighlights` (`tvde/tvde-highlights.tsx`, `region`): "O que precisa de saber",
+  four cards inside the homepage TVDE band (children of `TvdeProcess`): the 50 €
+  fee, what each vehicle shows, the driver certificate (IMT, or the Azores
+  regional regime) and the online application, each ending in a link aligned to
+  the bottom. Confirmed information only.
 - `TvdeProcess` (`tvde/tvde-process.tsx`): dark band with the five TVDE steps
   (`TVDE_STEPS`) and the note that the deposit is not an approval. TVDE page: title
   only; homepage, before the pickup points: title, intro with the "desde" price
@@ -167,8 +180,8 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   vehicles.
 - `CategoryGrid` (`rentacar/category-grid.tsx`) with `rentACarCategories()`:
   category cards (cover photo, name, model count, "desde" per day from the API),
-  the whole card links to `/rent-a-car/viaturas?categoria=`. `dense` = four per
-  row (homepage); default three (Rent a Car page, grouped by family). No row is
+  the whole card links to `/rent-a-car/viaturas?categoria=`. Used on the Rent a
+  Car page (three per row, grouped by family); `dense` = four per row. No row is
   left with empty space: `fillSpans()` (`lib/grid.ts`) makes the first cards span
   two columns (or one card the whole row) and those cards turn horizontal, photo
   whole (never cropped) and sized to the row height, text stacked on the right.

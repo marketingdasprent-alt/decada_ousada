@@ -556,7 +556,7 @@ function seed(): MockState {
     pickup_location_name: "Leiria",
     weekly_rate: 275,
     deposit_amount: 750,
-    reservation_amount: 250,
+    reservation_amount: 50,
     documents: MOCK_APPLICATION_FORM.documents.slice(0, 4).map((d, i) => ({
       document_id: `DOC-${i + 1}`, doc_type: d.doc_type, file_name: `${d.doc_type}.pdf`, state: "UPLOADED", uploaded_at: "2026-10-05T18:20:00.000Z",
     })),

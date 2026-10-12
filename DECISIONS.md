@@ -218,3 +218,66 @@ Component system (Level 3).
 DATE:
 2026-10-08
 ```
+
+---
+
+```
+OVERRIDE:
+src/domain/pricing/index.ts rule "cauções e sinais vêm sempre da API (WeGest)"
+and AGENTS.md "Prices, totals, deposits... come from the API".
+
+DECISION:
+The TVDE reservation fee (sinal) is a fixed business rule of DÉCADA OUSADA:
+50 € per reservation, the same for every vehicle, paid to confirm the vehicle
+reservation and deducted from the deposit (caução) at pickup. It lives in one
+server-side constant, TVDE_RESERVATION_FEE (src/domain/pricing/index.ts); the
+WeGest mapper sets every TVDE offer's reservationAmount from it. Copy that
+mentions the amount reads the constant (formatMoney), never a typed "50 €".
+Paying the fee still does not mean approval: the application is analysed.
+
+REASON:
+The WeGest API has no reservation fee (docs/wegest/analise-gaps.md, gap 9).
+The team confirmed the rule on 2026-10-09.
+
+SCOPE:
+src/domain/pricing/index.ts, src/services/wegest/mappers.ts, mock data, TVDE
+copy (tvde-process, hero-search, application-steps, application-checklist,
+tvde-summary, pagamento page, FAQ).
+
+LEVEL:
+Project rule override (business rule).
+
+DATE:
+2026-10-09
+```
+
+---
+
+```
+DECISION:
+The homepage introduces the company's two services instead of showing the
+product (team feedback, João Bahia, 2026-10-09; homepages of Guerin, Bluwalk
+and RAU drive checked: none shows the fleet there). Order: hero with search;
+Rent a Car (who it is for, advantages, price from, photo, links to categories
+and fleet: RacIntro); TVDE band (process and "O que precisa de saber");
+pickup points. This supersedes the 2026-10-08 decision to show the Rent a Car
+categories (or the TVDE vehicles) under the hero following the hero tab:
+ServiceSelectionProvider / ForService are removed, and the categories stay on
+the Rent a Car page with the same CategoryGrid. The Rent a Car photo leaves the
+homepage hero slideshow so it does not appear twice.
+
+REASON:
+"A primeira página é para vender primeiro, não já mostrar o produto": the home
+should introduce the company, why TVDE and why Rent a Car.
+
+SCOPE:
+src/app/[region]/page.tsx, src/components/rentacar/rac-intro.tsx,
+src/components/shared/hero-search.tsx (service-selection.tsx removed).
+
+LEVEL:
+Page structure (Level 3).
+
+DATE:
+2026-10-09
+```
+

@@ -3,6 +3,39 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.9.2]: 2026-10-09
+
+### Changed
+
+- TVDE reservation fee: 50 € for every vehicle, confirms the vehicle
+  reservation and is deducted from the deposit at pickup (team rule; one
+  constant, `TVDE_RESERVATION_FEE`). Process steps, payment step, summary
+  ("Restante da caução") and FAQ say so.
+
+### Added
+
+- `docs/conteudo/prompt-mestre-informacao.md`: master prompt to research,
+  synthesise and apply TVDE and Rent a Car information, with the facts the
+  company has confirmed.
+- `docs/conteudo/pesquisa-tvde.md`: phase 1 of the master prompt (TVDE
+  requirements after Lei n.º 59/2026, Azores regime, market costs, drivers'
+  doubts, Rent a Car practice, questions for the company), with sources.
+- `docs/conteudo/mapa-informacao.md`: phase 2 (messages per decision stage,
+  site-ready FAQ tagged general / confirmed / pending, glossary, gaps).
+- Phase 3 of the master prompt on the site: TVDE page "Requisitos" (IMT
+  requirements with the official link; Azores regional regime; company
+  requirements pending), FAQ regrouped (TVDE: começar, valores, contrato e
+  viatura; Rent a Car) with the new answers and pending markers, and a
+  "Termos usados" glossary. FAQ is region-aware (Azores certificate answer).
+- Homepage TVDE band: "O que precisa de saber" (fee, what each vehicle shows,
+  certificate, online application), after team feedback that the homepage had
+  too little TVDE information. TVDE page "Requisitos" has the anchor
+  `#requisitos`.
+- Homepage restructured to introduce the services (team feedback): hero, Rent
+  a Car (who it is for, advantages, price from, links to categories and fleet),
+  TVDE band, pickup points. The Rent a Car categories and TVDE vehicles no
+  longer appear under the hero; categories stay on the Rent a Car page.
+
 ## [0.9.1]: 2026-10-09
 
 Team feedback on the homepage.

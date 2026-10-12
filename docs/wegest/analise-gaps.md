@@ -32,7 +32,7 @@ Fonte: `docs/wegest/openapi.json` (descarregado de https://api.wegest.pt/v1/open
 | 6 | Sem **faturas** nem **documentos**. | Doc §38, menus "Faturas"/"Documentos". | Ocultar secções na v1. |
 | 7 | Sem conceito de **região**; uma chave = uma organização. | Continente × Açores (doc §4–6). | **Pergunta:** os Açores são outra organização WeGest (outra chave)? Se sim, uma chave por região: já suportado pela arquitetura. Se não, filtrar por localização. |
 | 8 | **TVDE só tem catálogo e disponibilidade** (fase D1). A doc diz: "As candidaturas chegam na fase seguinte." Não há candidato, ficha dinâmica, documentos, estados, sinal, aprovação. | Fluxo TVDE (doc §49–71) não pode ir ao WeGest. | v1: candidatura recolhida pelo site (storage privado) + email à equipa; migra para o WeGest quando a fase seguinte sair. **Prazo da fase seguinte?** |
-| 9 | TVDE sem **local de levantamento** na disponibilidade; sem **sinal** (só caução). | Doc §45, §47–48. | Local escolhido no site e enviado na candidatura; sinal = regra comercial a confirmar. |
+| 9 | TVDE sem **local de levantamento** na disponibilidade; sem **sinal** (só caução). | Doc §45, §47–48. | Local escolhido no site e enviado na candidatura. Sinal: **confirmado pela equipa (2026-10-09)**, 50 € fixos que confirmam a reserva e são descontados na caução no levantamento (`TVDE_RESERVATION_FEE`). |
 | 10 | Uma **foto por modelo**, link temporário (24 h). | Galeria (doc §15). | Mostrar 1 foto; não guardar o link (cache ≤ 5 min). Ilustração quando `imagem_url = null`. |
 | 11 | **Sem sandbox**: testes na organização real; `POST /reservas` cria reservas verdadeiras. | Testes de escrita. | Chave só-leitura para dev; testes de reserva só com aviso à equipa e cancelamento imediato (script `--write`). |
 
