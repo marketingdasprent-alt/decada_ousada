@@ -397,3 +397,38 @@ Integration (Level 2).
 DATE:
 2026-10-12
 ```
+
+---
+
+```
+DECISION:
+Driver recruitment page /motoristas, rebuilt from the team's standalone
+landing (landing-motoristas.html) with the site's components and tokens
+instead of publishing the HTML file. Applications go to the two forms hosted
+on WeGest (Aluguer and Slot), opened in a new tab (WeGest sends
+X-Frame-Options: DENY). The fleet section lists real TVDE models from the
+WeGest catalogue. The landing's motion (parallax, tapes, magnetic buttons,
+counters) was not carried over.
+
+CONTENT CONFIRMED BY THE TEAM (2026-10-12): 500+ active drivers; Top 5% PME
+2024 (2nd year); 1500 Maiores Empresas, Coimbra 2023; official Uber and Bolt
+partner; drivers' phone/WhatsApp +351 912 023 234 and
+motoristas.tvde@decadaousada.pt; call within 24 working hours; approval in
+24 to 48 working hours; support 7 days a week; all-risks insurance on 100%
+of vehicles; weekly payment; no minimum hours; Slot mode. Not confirmed and
+left out: "a empresa TVDE que mais cresce em Portugal".
+
+REASON:
+Team request. The hosted WeGest forms work today, while the site's own
+booking and application flows stay off (WEGEST_PEDIDOS_ONLINE).
+
+SCOPE:
+src/app/[region]/motoristas, src/domain/drivers, shared/cover-photo, header
+nav, footer, sitemap.
+
+LEVEL:
+Content and page (Level 3).
+
+DATE:
+2026-10-12
+```

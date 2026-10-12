@@ -34,6 +34,7 @@ export function SiteFooter({ region }: { region: Region }) {
           <ul className="space-y-2 text-body-small max-md:space-y-0">
             <li><Link className="hover:text-on-dark max-md:tap-target" href="/tvde">Como funciona</Link></li>
             <li><Link className="hover:text-on-dark max-md:tap-target" href="/tvde/viaturas">Viaturas TVDE</Link></li>
+            <li><Link className="hover:text-on-dark max-md:tap-target" href="/motoristas">Trabalhar como motorista</Link></li>
             <li><Link className="hover:text-on-dark max-md:tap-target" href="/tvde/minha-conta">A minha candidatura</Link></li>
           </ul>
         </div>

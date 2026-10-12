@@ -3,6 +3,19 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.11.0]: 2026-10-12
+
+### Added
+
+- `/motoristas`: driver recruitment page rebuilt from the team's landing
+  (`landing-motoristas.html`) with the site's components and tokens: hero with
+  the Aluguer / Slot choice, numbers and awards over a photo, benefits, Aluguer
+  vs Slot, three real TVDE vehicles from WeGest, three steps, TVDE
+  testimonials, questions, application (WeGest hosted forms, new tab),
+  Instagram and the drivers' contacts. Facts confirmed by the team.
+- "Motoristas" in the header, "Trabalhar como motorista" in the footer, and
+  the page in the sitemap. New `CoverPhoto` (photo covering its block).
+
 ## [0.10.0]: 2026-10-12
 
 ### Added

@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Motoristas TVDE | Década Ousada</title>
+<meta name="description" content="Trabalhe como motorista TVDE com a Década Ousada. Alugue uma viatura ou trabalhe como Slot com a sua. Renda fixa semanal, pagamento semanal e suporte 7 dias.">
+<meta property="og:title" content="Motoristas TVDE | Década Ousada">
+<meta property="og:description" content="A empresa TVDE que mais cresce em Portugal. Candidate-se em 2 minutos.">
+<meta property="og:image" content="https://www.decadaousada.pt/black.png">
+<meta name="theme-color" content="#1A1D22">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: álbum de estrada — fotos arredondadas, sobrepostas e ligeiramente rodadas, colunas desencontradas,
+   painéis escuros flutuantes em vez de faixas de ponta a ponta. Vermelho do logotipo só nas ações. */
+:root{
+  --paper:#EEF0F2;
+  --surface:#FFFFFF;
+  --ink:#121418;
+  --asphalt:#1A1D22;
+  --asphalt-2:#262A31;
+  --red:#C3102A;
+  --red-deep:#9E0C21;
+  --muted:#565D67;
+  --muted-dark:#B3BAC4;
+  --line:#D3D8DE;
+  --shade:14,16,20;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --fs-xs:.78rem; --fs-sm:.92rem; --fs-base:1.0625rem; --fs-lg:1.2rem;
+  --fs-h3:1.75rem; --fs-h2:clamp(2.5rem,5.6vw,4.4rem); --fs-h1:clamp(3rem,8.6vw,7rem);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:112px;
+  --section:clamp(var(--s8),9vw,var(--s9));
+  --r-photo:24px; --r-panel:36px; --r-card:18px;
+  --wrap:1200px;
+  --header:68px;
+  --lift:0 24px 48px -28px rgba(18,20,24,.55);
+  --ease-out:cubic-bezier(.2,.7,.2,1);
+  --t-micro:160ms; --t-enter:560ms;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 var(--fs-base)/1.6 var(--body);-webkit-font-smoothing:antialiased;overflow-x:clip}
+img{max-width:100%;display:block}
+a{color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+section[id],[id="form-panel"]{scroll-margin-top:calc(var(--header) + var(--s4))}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-inline:20px}
+
+h1,h2,h3{font-family:var(--display);font-weight:900;line-height:.92;text-transform:uppercase;margin:0;text-wrap:balance}
+h1{font-size:var(--fs-h1)}
+h2{font-size:var(--fs-h2)}
+h3{font-size:var(--fs-h3);font-weight:800}
+p{margin:0}
+.eyebrow{font:600 var(--fs-xs)/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.lead{font-size:var(--fs-lg);color:var(--muted);max-width:46ch}
+.muted{color:var(--muted)}
+.section{padding-block:var(--section)}
+.head-split{display:grid;grid-template-columns:1fr 1fr;gap:var(--s5) var(--s7);align-items:end;margin-bottom:var(--s7)}
+.head-split p{color:var(--muted);font-size:var(--fs-lg);max-width:44ch}
+.head-stack{display:grid;gap:var(--s4);max-width:760px;margin-bottom:var(--s7)}
+.head-stack p{color:var(--muted);font-size:var(--fs-lg);max-width:54ch}
+.panel .head-split p,.panel .head-stack p{color:var(--muted-dark)}
+@media (max-width:760px){.head-split{grid-template-columns:1fr}}
+
+/* Fotos */
+.photo{position:relative;overflow:hidden;border-radius:var(--r-photo);background:var(--line)}
+.photo>img{width:100%;height:100%;object-fit:cover;transition:transform 900ms var(--ease-out)}
+.hover-zoom:hover .photo>img{transform:scale(1.05)}
+.tilt-l{transform:rotate(-2.5deg)}
+.tilt-r{transform:rotate(2deg)}
+.cap{font:500 var(--fs-xs)/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* Painéis escuros flutuantes (substituem faixas de ponta a ponta) */
+.panel{position:relative;isolation:isolate;overflow:hidden;background:var(--asphalt);color:#fff;border-radius:var(--r-panel);margin-inline:12px}
+.panel>.bg{position:absolute;left:0;top:-12%;width:100%;height:124%;object-fit:cover;z-index:-2}
+.panel>.shade{position:absolute;inset:0;z-index:-1}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s3);min-height:50px;padding:var(--s3) var(--s6);font:700 1rem/1.1 var(--body);text-decoration:none;border:2px solid transparent;border-radius:999px;cursor:pointer;transition:transform var(--t-micro) var(--ease-out),background-color var(--t-micro),color var(--t-micro),border-color var(--t-micro),box-shadow var(--t-micro)}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0) scale(.97);transition-duration:80ms}
+.btn-primary{background:var(--red);color:#fff;box-shadow:0 10px 24px -12px rgba(195,16,42,.8)}
+.btn-primary:hover{background:var(--red-deep)}
+.btn-secondary{border-color:currentColor;background:transparent}
+.btn-secondary:hover{background:var(--ink);border-color:var(--ink);color:#fff}
+.panel .btn-secondary:hover{background:#fff;border-color:#fff;color:var(--ink)}
+
+/* Header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rgba(26,29,34,.94);color:#fff;backdrop-filter:saturate(1.4) blur(8px)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:var(--s5);height:var(--header)}
+.logo{display:block;width:104px;height:48px;overflow:hidden;position:relative;flex:none}
+.logo img{position:absolute;width:112px;max-width:none;left:-3px;top:-32px}
+.nav{display:flex;gap:var(--s6);align-items:center}
+.nav a:not(.btn){text-decoration:none;font-weight:600;font-size:var(--fs-sm);color:#C9CED6;padding-block:var(--s3);transition:color var(--t-micro)}
+.nav a:not(.btn):hover{color:#fff}
+.nav .btn{min-height:44px;padding-inline:var(--s5);box-shadow:none}
+@media (max-width:900px){.nav a:not(.btn){display:none}}
+
+/* HERO com colagem */
+.hero{padding-block:var(--s8) var(--s9)}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s7);align-items:center}
+.hero-copy{display:grid;gap:var(--s5);min-width:0}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero-actions{display:grid;gap:var(--s4)}
+.choice-label{font-weight:600;color:var(--muted)}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);max-width:540px}
+.choice a{display:grid;gap:var(--s1);padding:var(--s4) var(--s5);min-height:96px;align-content:center;text-decoration:none;border-radius:var(--r-card);border:2px solid var(--ink);background:var(--surface);transition:transform var(--t-micro) var(--ease-out),background-color var(--t-micro),color var(--t-micro),border-color var(--t-micro),box-shadow var(--t-micro)}
+.choice a:hover{transform:translateY(-3px) rotate(-.6deg);box-shadow:var(--lift)}
+.choice a:active{transform:scale(.98)}
+.choice b{font:900 1.6rem/1 var(--display);text-transform:uppercase}
+.choice span{font-size:var(--fs-sm);line-height:1.35;opacity:.85}
+.choice .c-rent{background:var(--red);border-color:var(--red);color:#fff}
+.choice .c-rent:hover{background:var(--red-deep);border-color:var(--red-deep)}
+.choice .c-slot:hover{background:var(--ink);color:#fff}
+.trust{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3);font-size:var(--fs-sm);color:var(--muted)}
+.trust .logos{display:flex}
+.trust img{height:34px;width:34px;border-radius:50%;background:var(--ink);border:2px solid var(--paper)}
+.trust img+img{margin-left:-8px}
+
+.collage{position:relative;min-width:0;aspect-ratio:1/1.02;max-width:600px;justify-self:end;width:100%}
+.collage .c-main{position:absolute;inset:0 0 14% 12%;box-shadow:var(--lift)}
+.collage .c-car{position:absolute;left:0;bottom:0;width:52%;aspect-ratio:4/3;border:6px solid var(--paper);box-shadow:var(--lift)}
+.collage .c-main>img{object-position:62% 30%}
+.collage .c-city{position:absolute;right:-3%;bottom:-3%;width:30%;aspect-ratio:3/4;border:6px solid var(--paper);box-shadow:var(--lift)}
+.disticho{position:absolute;right:8%;top:-4%;background:var(--surface);border:3px solid var(--ink);border-radius:10px;padding:var(--s3) var(--s4);display:grid;gap:2px;box-shadow:6px 6px 0 var(--red);transform:rotate(-4deg);z-index:2}
+.disticho b{font:900 2.4rem/1 var(--display);letter-spacing:.06em}
+.disticho span{font:600 .66rem/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:900px){
+  .hero{padding-block:var(--s6) var(--s8)}
+  .hero-grid{grid-template-columns:1fr;gap:var(--s7)}
+  .collage{justify-self:center;max-width:520px}
+}
+
+/* Prova */
+.proof{padding-block:var(--s8) var(--s6)}
+.proof>.shade{background:linear-gradient(180deg,rgba(var(--shade),.5),rgba(var(--shade),.85))}
+.proof ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s5)}
+.proof li{display:grid;gap:var(--s2)}
+.proof li:nth-child(even){margin-top:18px}
+.proof b{font:900 clamp(2.6rem,5vw,3.8rem)/1 var(--display);font-variant-numeric:tabular-nums}
+.proof li span{color:#DDE2E8;font-size:var(--fs-sm);max-width:20ch}
+.proof .credit{position:absolute;right:var(--s6);top:var(--s5);font:500 .66rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.75)}
+.awards{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s5);margin-top:var(--s8)}
+.award{display:flex;gap:var(--s4);align-items:center;background:rgba(255,255,255,.1);border-radius:999px;padding:var(--s2) var(--s5) var(--s2) var(--s2)}
+.award img{width:48px;height:48px;object-fit:contain;flex:none;background:#fff;border-radius:50%;padding:4px}
+.award b{display:block;font:800 1.2rem/1.05 var(--display);text-transform:uppercase}
+.award span{font-size:var(--fs-xs);color:#DDE2E8}
+@media (max-width:760px){.proof ul{grid-template-columns:1fr 1fr;gap:var(--s6) var(--s5)}.award{border-radius:var(--r-card)}.proof .credit{right:var(--s5)}}
+
+/* Faixa de fotos em movimento */
+.strip{padding-block:var(--s8) 0;overflow:hidden}
+.strip-track{display:flex;gap:var(--s5);width:max-content;padding-block:var(--s5);will-change:transform}
+.strip figure{margin:0;flex:none;width:clamp(190px,22vw,280px);display:grid;gap:var(--s2)}
+.strip figure:nth-child(odd){transform:rotate(-2deg) translateY(10px)}
+.strip figure:nth-child(even){transform:rotate(1.6deg)}
+.strip figure:nth-child(3n){width:clamp(240px,28vw,360px)}
+.strip .photo{aspect-ratio:4/5;box-shadow:var(--lift)}
+.strip figure:nth-child(3n) .photo{aspect-ratio:4/3}
+.strip figcaption{padding-left:var(--s2)}
+@keyframes drift{to{transform:translateX(-50%)}}
+
+/* Benefícios: colunas desencontradas, texto fora da foto */
+.benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s6) var(--s5);align-items:start}
+.benefit{display:grid;gap:var(--s3)}
+.benefit .photo{aspect-ratio:4/5}
+.benefit:nth-child(3n+2){margin-top:var(--s9)}
+.benefit:nth-child(3n+3){margin-top:var(--s7)}
+.benefit:nth-child(2) .photo,.benefit:nth-child(4) .photo{aspect-ratio:1/1}
+.benefit:nth-child(6) .photo{aspect-ratio:4/3}
+.benefit h3{margin-top:var(--s2)}
+.benefit p{color:var(--muted);max-width:34ch}
+@media (max-width:900px){
+  .benefits{grid-template-columns:1fr 1fr}
+  .benefit:nth-child(n){margin-top:0}
+  .benefit:nth-child(even){margin-top:var(--s8)}
+}
+@media (max-width:560px){
+  .benefits{grid-template-columns:1fr;gap:var(--s7)}
+  .benefit:nth-child(even){margin-top:0;padding-left:var(--s7)}
+  .benefit:nth-child(n) .photo{aspect-ratio:4/3}
+}
+
+/* Aluguer vs Slot: foto + cartão a sobrepor */
+.modes-sec{padding-block:var(--section)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:var(--s7)}
+.mode{position:relative;display:grid}
+.mode:nth-child(2){margin-top:var(--s8)}
+.mode .photo{aspect-ratio:5/4}
+.mode .card{position:relative;margin:calc(-1 * var(--s9)) var(--s5) 0 var(--s7);background:var(--asphalt-2);border-radius:var(--r-card);padding:var(--s6);display:grid;gap:var(--s4);box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
+.mode:nth-child(2) .card{margin:calc(-1 * var(--s9)) var(--s7) 0 var(--s5)}
+.mode .tag{font-weight:600;color:var(--muted-dark)}
+.mode h3{font-size:clamp(2.6rem,5vw,3.4rem)}
+.mode ul{margin:0;padding:0 0 0 1.1em;display:grid;gap:var(--s2);color:#DDE2E8}
+.mode .btn{justify-self:start;margin-top:var(--s2)}
+@media (max-width:760px){
+  .modes{grid-template-columns:1fr;gap:var(--s8)}
+  .mode:nth-child(2){margin-top:0}
+  .mode .card,.mode:nth-child(2) .card{margin:calc(-1 * var(--s8)) var(--s3) 0;padding:var(--s5)}
+}
+
+/* Frota: sem caixas, alturas alternadas */
+.fleet{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s5);align-items:start}
+.car{display:grid;gap:var(--s3)}
+.car:nth-child(even){margin-top:var(--s7)}
+.car .photo{aspect-ratio:4/5}
+.car .photo img{object-position:60% 50%}
+.car h3{font-size:2rem;margin-top:var(--s2)}
+.car .sub{font-weight:700}
+.car p.muted{font-size:var(--fs-sm)}
+@media (max-width:980px){.fleet{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.fleet{gap:var(--s4)}.car h3{font-size:1.6rem}}
+
+/* Como funciona: escada com estrada desenhada atrás */
+.steps-wrap{position:relative}
+.road-line{position:absolute;inset:6% 0 auto 0;width:100%;height:80%;z-index:0;pointer-events:none;overflow:visible}
+.road-line path{fill:none;stroke:var(--ink);stroke-width:3;stroke-dasharray:14 12;stroke-linecap:round;opacity:.35}
+.steps{position:relative;z-index:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s6);align-items:start}
+.step{display:grid;gap:var(--s3)}
+.step:nth-child(2){margin-top:var(--s8)}
+.step:nth-child(3){margin-top:calc(var(--s8) * 2)}
+.step .photo{aspect-ratio:1/1;box-shadow:var(--lift)}
+.step .n{position:absolute;left:var(--s4);bottom:var(--s3);font:900 6rem/.8 var(--display);color:#fff;text-shadow:0 4px 24px rgba(0,0,0,.45)}
+.step:nth-child(3) .photo::after{content:"";position:absolute;inset:auto 0 0 0;height:8px;background:var(--red)}
+.step h3{margin-top:var(--s2)}
+.step p{color:var(--muted)}
+@media (max-width:760px){
+  .road-line{display:none}
+  .steps{grid-template-columns:1fr;gap:var(--s7)}
+  .step:nth-child(n){margin-top:0}
+  .step:nth-child(2){padding-left:var(--s7)}
+  .step:nth-child(3){padding-left:var(--s8)}
+}
+
+/* FAQ */
+.faq{display:grid;grid-template-columns:.85fr 1.15fr;gap:var(--s8);align-items:start}
+.faq-aside{display:grid;gap:var(--s5);position:sticky;top:calc(var(--header) + var(--s5))}
+.faq-photos{position:relative;aspect-ratio:1/1;max-width:440px;width:100%}
+.faq-photos .a{position:absolute;inset:0 22% 18% 0;box-shadow:var(--lift)}
+.faq-photos .b{position:absolute;right:0;bottom:0;width:52%;aspect-ratio:1/1;border:6px solid var(--paper);box-shadow:var(--lift)}
+.faq-list{display:grid;gap:var(--s3)}
+.faq details{background:var(--surface);border-radius:var(--r-card);transition:box-shadow 220ms}
+.faq details[open]{box-shadow:var(--lift)}
+.faq summary{list-style:none;cursor:pointer;padding:var(--s5) var(--s8) var(--s5) var(--s5);font-weight:700;font-size:var(--fs-lg);line-height:1.35;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:var(--s5);top:50%;margin-top:-.5em;font:500 1.7rem/1 var(--mono);color:var(--red);transition:transform 220ms var(--ease-out)}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{padding:0 var(--s8) var(--s5) var(--s5);color:var(--muted);max-width:65ch}
+.faq details[open] p{animation:drop 280ms var(--ease-out)}
+@media (max-width:900px){.faq{grid-template-columns:1fr;gap:var(--s7)}.faq-aside{position:static}.faq-photos{max-width:360px}}
+@media (max-width:480px){.faq summary{padding:var(--s4) var(--s7) var(--s4) var(--s4);font-size:var(--fs-base)}.faq details p{padding:0 var(--s4) var(--s4)}}
+
+/* Candidatura */
+.apply-sec{padding-block:var(--section);background:var(--surface);color:var(--ink)}
+.apply-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:var(--s7);align-items:start}
+.apply-side{display:grid;gap:var(--s5);min-width:0}
+.docs{display:grid;gap:var(--s3);background:var(--paper);border-radius:var(--r-card);padding:var(--s5)}
+.docs h3{font:700 var(--fs-base)/1.3 var(--body);text-transform:none}
+.docs ul{margin:0;padding-left:1.2em;display:grid;gap:var(--s2);color:var(--muted)}
+.apply-main{min-width:0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;padding:6px;background:var(--paper);border-radius:999px;position:relative}
+.tabs::before{content:"";position:absolute;top:6px;bottom:6px;left:6px;width:calc(50% - 6px);background:var(--ink);border-radius:999px;transition:transform 340ms var(--ease-out)}
+.tabs[data-active="slot"]::before{transform:translateX(100%)}
+.tab{appearance:none;border:0;background:transparent;padding:var(--s3) var(--s5);min-height:58px;font:700 1rem/1.2 var(--body);color:var(--ink);cursor:pointer;display:grid;gap:2px;text-align:center;position:relative;border-radius:999px;transition:color 240ms}
+.tab small{font:500 var(--fs-xs)/1.3 var(--body);color:var(--muted);transition:color 240ms}
+.tab[aria-selected="true"]{color:#fff}
+.tab[aria-selected="true"] small{color:var(--muted-dark)}
+.form-frame{margin-top:var(--s4)}
+.form-frame iframe{display:block;width:100%;height:900px;border:0;border-radius:var(--r-photo);background:var(--paper)}
+.form-card{position:relative;isolation:isolate;overflow:hidden;border-radius:var(--r-photo);min-height:460px;padding:clamp(var(--s6),5vw,var(--s7));display:grid;align-content:end;color:#fff;box-shadow:var(--lift)}
+.form-card>.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 900ms var(--ease-out)}
+.form-card:hover>.bg{transform:scale(1.04)}
+.form-card::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(var(--shade),0) 20%,rgba(var(--shade),.88) 100%)}
+.form-card .copy{display:grid;gap:var(--s4);justify-items:start}
+.form-card.swap .copy{animation:swap 320ms var(--ease-out)}
+.form-card h3{font-size:clamp(2rem,4vw,2.8rem)}
+.form-card p{color:#E4E8ED;max-width:46ch}
+.form-fallback{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--s3);margin-top:var(--s3);font-size:var(--fs-sm);color:var(--muted)}
+.form-fallback a{font-weight:700;color:var(--red)}
+@media (max-width:900px){.apply-grid{grid-template-columns:1fr;gap:var(--s6)}}
+@media (max-width:480px){.tab{padding:var(--s2) var(--s3);font-size:var(--fs-sm)}.form-card{min-height:400px;padding:var(--s5)}}
+
+/* Instagram */
+.social-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:var(--s5);margin-bottom:var(--s6)}
+.social-head .head-stack{margin:0}
+.social-links{display:flex;flex-wrap:wrap;gap:var(--s3)}
+.ig-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s4);align-items:start}
+.ig-grid>*:nth-child(even){margin-top:var(--s6)}
+.ig-post{position:relative;aspect-ratio:1;overflow:hidden;border-radius:var(--r-photo);background:var(--line);display:block}
+.ig-post img{width:100%;height:100%;object-fit:cover;transition:transform 600ms var(--ease-out)}
+.ig-post:hover img,.ig-post:focus-visible img{transform:scale(1.05)}
+.ig-post .cap{position:absolute;inset:auto 0 0 0;padding:var(--s6) var(--s4) var(--s4);background:linear-gradient(transparent,rgba(10,12,15,.85));color:#fff;font:400 .82rem/1.35 var(--body);text-transform:none;letter-spacing:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;opacity:0;transition:opacity 200ms}
+.ig-post:hover .cap,.ig-post:focus-visible .cap{opacity:1}
+.ig-post .type{position:absolute;top:var(--s3);right:var(--s3);background:rgba(10,12,15,.72);color:#fff;font:600 .65rem/1 var(--mono);padding:5px 8px;border-radius:999px;letter-spacing:.08em}
+.ig-status{margin-top:var(--s5);font-size:var(--fs-sm);color:var(--muted)}
+@media (max-width:760px){.ig-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* Contacto */
+.contact-sec{padding-block:var(--section);margin-bottom:12px}
+.contact-sec>.shade{background:linear-gradient(90deg,rgba(var(--shade),.94) 0%,rgba(var(--shade),.78) 50%,rgba(var(--shade),.2) 100%)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s7);align-items:center}
+.contact-copy{display:grid;gap:var(--s4);justify-items:start}
+.contact-copy p{color:#DDE2E8;font-size:var(--fs-lg);max-width:44ch}
+.contacts{display:grid;gap:var(--s3);max-width:440px}
+.contact{display:block;padding:var(--s3) var(--s5);background:rgba(18,20,24,.55);border:1px solid rgba(255,255,255,.18);border-radius:var(--r-card);text-decoration:none;color:#fff;backdrop-filter:blur(6px);transition:background-color var(--t-micro),transform var(--t-micro) var(--ease-out)}
+.contact:nth-child(2){margin-left:var(--s6)}
+.contact:hover{background:rgba(18,20,24,.8);transform:translateX(4px)}
+.contact small{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--muted-dark)}
+.contact b{font-weight:700;overflow-wrap:anywhere}
+@media (max-width:860px){.contact-grid{grid-template-columns:1fr;gap:var(--s6)}.contact-sec>.shade{background:rgba(var(--shade),.78)}.contact:nth-child(2){margin-left:var(--s5)}}
+
+footer{color:var(--muted);font-size:var(--fs-sm);padding-block:var(--s6) var(--s7)}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--s4);align-items:center}
+footer nav{display:flex;flex-wrap:wrap;gap:0 var(--s4)}
+footer a{text-decoration:none;display:inline-block;padding-block:var(--s3)}
+footer a:hover{color:var(--ink)}
+
+/* Barra fixa mobile */
+.dock{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;display:none;gap:var(--s2);padding:var(--s2);background:rgba(26,29,34,.94);border-radius:999px;box-shadow:0 18px 40px -16px rgba(0,0,0,.6);transform:translateY(160%);transition:transform 340ms var(--ease-out)}
+.dock.show{transform:none}
+.dock .btn{flex:1;box-shadow:none}
+.dock .btn-wa{flex:none;padding-inline:var(--s5);border:2px solid #3A3F47;color:#fff;background:transparent}
+@media (max-width:760px){.dock{display:flex}body{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}}
+
+/* ===== MOTION ===== */
+@keyframes rise{from{transform:translateY(22px);opacity:.01}to{transform:none;opacity:1}}
+@keyframes drop-in-l{from{transform:translateY(30px) rotate(-8deg);opacity:.01}to{transform:rotate(-2.5deg);opacity:1}}
+@keyframes drop-in-r{from{transform:translateY(-30px) rotate(9deg);opacity:.01}to{transform:rotate(2deg);opacity:1}}
+@keyframes main-in{from{transform:scale(.96);opacity:.01}to{transform:none;opacity:1}}
+@keyframes stamp{0%{transform:rotate(-16deg) scale(.8)}70%{transform:rotate(-2deg) scale(1.04)}100%{transform:rotate(-4deg) scale(1)}}
+@keyframes drop{from{transform:translateY(-6px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes swap{from{transform:translateX(14px);opacity:.35}to{transform:none;opacity:1}}
+.hero-copy>*{animation:rise var(--t-enter) var(--ease-out) both}
+.hero-copy>*:nth-child(2){animation-delay:70ms}
+.hero-copy>*:nth-child(3){animation-delay:140ms}
+.hero-copy>*:nth-child(4){animation-delay:210ms}
+.collage .c-main{animation:main-in 700ms var(--ease-out) both}
+.collage .c-car{animation:drop-in-l 700ms var(--ease-out) 180ms both}
+.collage .c-city{animation:drop-in-r 700ms var(--ease-out) 300ms both}
+.disticho{animation:stamp 560ms var(--ease-out) 520ms both}
+.js .reveal{transform:translateY(24px);opacity:.55;transition:transform 640ms var(--ease-out),opacity 640ms var(--ease-out);transition-delay:calc(var(--i,0) * 80ms)}
+.js .reveal.in{transform:none;opacity:1}
+
+/* ===== VIDA: camada de animação ===== */
+/* Barra de progresso de leitura no header */
+.progress{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--red);transform-origin:left;transform:scaleX(0)}
+
+/* Fotos entram com "abertura" (recorte) + zoom a assentar */
+.js .reveal .photo{clip-path:inset(9% 9% 9% 9% round var(--r-photo));transition:clip-path 1000ms var(--ease-out)}
+.js .reveal .photo>img{scale:1.18;transition:scale 1400ms var(--ease-out),transform 900ms var(--ease-out)}
+.js .reveal.in .photo{clip-path:inset(0 0 0 0 round var(--r-photo))}
+.js .reveal.in .photo>img{scale:1}
+
+/* Títulos palavra a palavra */
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.06em;margin-bottom:-.06em}
+.w>span{display:inline-block}
+.js .split .w>span{transform:translateY(105%) rotate(4deg);transition:transform 800ms var(--ease-out);transition-delay:calc(var(--wi,0) * 55ms)}
+.js .split.in .w>span{transform:none}
+
+/* Hero: elementos a flutuar */
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@keyframes float2{0%,100%{translate:0 0}50%{translate:0 8px}}
+.collage .layer{position:absolute;inset:0;pointer-events:none;transition:transform 600ms var(--ease-out)}
+.collage .layer>*{pointer-events:auto}
+.collage .c-city{animation:drop-in-r 700ms var(--ease-out) 300ms both,float 6s ease-in-out 1.2s infinite}
+.disticho{animation:stamp 560ms var(--ease-out) 520ms both,float2 5s ease-in-out 1.4s infinite}
+.pay{position:absolute;left:4%;top:18%;z-index:3;display:flex;align-items:center;gap:var(--s3);background:var(--surface);border-radius:999px;padding:var(--s2) var(--s4) var(--s2) var(--s2);box-shadow:var(--lift);font-size:var(--fs-sm);line-height:1.2;animation:pop 600ms cubic-bezier(.3,1.5,.5,1) 1100ms both,float 7s ease-in-out 2s infinite}
+.pay .dot{width:34px;height:34px;border-radius:50%;background:#1F9D55;display:grid;place-items:center;flex:none;position:relative}
+.pay .dot::before{content:"";width:12px;height:12px;border-radius:50%;background:#fff}
+.pay .dot::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #1F9D55;animation:ping 2.2s ease-out 1.8s infinite}
+.pay b{display:block;font-weight:700}
+.pay small{color:var(--muted)}
+@keyframes pop{from{transform:scale(.4) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+@keyframes ping{from{transform:scale(1);opacity:.9}to{transform:scale(1.9);opacity:0}}
+
+/* Selo giratório */
+.badge-spin{position:absolute;left:-4%;top:-6%;z-index:4;width:132px;height:132px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;text-decoration:none;box-shadow:0 18px 40px -16px rgba(195,16,42,.8);animation:pop 600ms cubic-bezier(.3,1.5,.5,1) 800ms both;transition:scale 200ms var(--ease-out)}
+.badge-spin:hover{scale:1.08}
+.badge-spin svg{position:absolute;inset:0;width:100%;height:100%;animation:spin 14s linear infinite}
+.badge-spin:hover svg{animation-duration:4s}
+.badge-spin text{font:700 11.5px var(--mono);letter-spacing:.2em;fill:#fff;text-transform:uppercase}
+.badge-spin b{font:900 1.5rem/1 var(--display);text-transform:uppercase}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:560px){.badge-spin{width:104px;height:104px;left:-2%}.badge-spin text{font-size:12.5px}.pay{top:auto;bottom:34%;left:2%}}
+
+/* Fitas cruzadas com texto a correr */
+.tapes{position:relative;padding-block:var(--s8);overflow:hidden;margin-block:calc(-1 * var(--s6))}
+.tape{display:flex;white-space:nowrap;padding-block:var(--s3);will-change:transform}
+.tape span{font:900 clamp(2.2rem,5vw,3.8rem)/1 var(--display);text-transform:uppercase;padding-inline:var(--s5);display:flex;align-items:center;gap:var(--s5)}
+.tape span::after{content:"";width:14px;height:14px;border-radius:50%;background:currentColor;opacity:.6}
+.tape-a{background:var(--red);color:#fff;transform:rotate(-3deg);width:110%;margin-left:-5%;position:relative;z-index:2;box-shadow:0 20px 40px -20px rgba(195,16,42,.7)}
+.tape-b{background:var(--ink);color:var(--paper);transform:rotate(2.2deg);width:110%;margin-left:-5%;margin-top:calc(-1 * var(--s5))}
+.tape-b span:nth-child(even){color:transparent;-webkit-text-stroke:1.5px var(--paper)}
+.tape-track{display:flex;will-change:transform}
+
+/* Carro a percorrer a estrada dos passos */
+.road-car{position:absolute;left:0;top:0;z-index:2;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:var(--red);border:5px solid #fff;box-shadow:0 6px 18px -4px rgba(195,16,42,.8);pointer-events:none}
+.road-car::after{content:"";position:absolute;inset:-12px;border-radius:50%;border:2px solid var(--red);opacity:.5;animation:ping 1.8s ease-out infinite}
+@media (max-width:760px){.road-car{display:none}}
+
+.btn{transition:transform var(--t-micro) var(--ease-out),translate 260ms var(--ease-out),background-color var(--t-micro),color var(--t-micro),border-color var(--t-micro),box-shadow var(--t-micro)}
+
+/* Cartões de escolha com inclinação 3D */
+.choice{perspective:900px}
+.choice a{transform-style:preserve-3d;will-change:transform}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition-property:color,background-color,border-color,opacity!important}
+  .js .reveal{transform:none!important;opacity:1!important}
+  .js .reveal .photo{clip-path:none!important}
+  .js .reveal .photo>img{scale:1!important}
+  .js .split .w>span{transform:none!important}
+  .strip{overflow-x:auto}
+  .pay,.badge-spin{opacity:1}
+  .road-car{display:none}
+}
+@media (max-width:480px){
+  .choice{gap:var(--s2)}
+  .choice a{padding:var(--s3);min-height:88px}
+  .choice b{font-size:1.35rem}
+  .choice span{font-size:.8rem}
+  .panel{margin-inline:8px;--r-panel:26px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="https://www.decadaousada.pt/" aria-label="Década Ousada, página inicial">
+      <img src="https://www.decadaousada.pt/logo-decada-ousada-white.png" alt="Década Ousada">
+    </a>
+    <nav class="nav" aria-label="Secções">
+      <a href="#modalidades">Aluguer ou Slot</a>
+      <a href="#frota">Frota</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#faq">Dúvidas</a>
+      <a class="btn btn-primary" href="#candidatura">Candidatar-me</a>
+    </nav>
+  </div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+</header>
+
+<main id="main">
+
+<!-- HERO -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">A empresa TVDE que mais cresce em Portugal</p>
+      <h1 id="hero-title">Conduza.<br>Fature.<br><em>Receba à semana.</em></h1>
+      <p class="lead">Renda fixa semanal, pagamento todas as semanas e suporte 7 dias. Já somos mais de 500 motoristas.</p>
+      <div class="hero-actions">
+        <p class="choice-label" id="choice-label">Como quer trabalhar?</p>
+        <div class="choice" role="group" aria-labelledby="choice-label">
+          <a class="c-rent" href="#alugar" data-tab="alugar"><b>Preciso de carro</b><span>Alugo uma viatura nossa</span></a>
+          <a class="c-slot" href="#slot" data-tab="slot"><b>Tenho carro</b><span>Trabalho como Slot</span></a>
+        </div>
+        <div class="trust">
+          <span class="logos"><img src="https://www.decadaousada.pt/images/logo-uber.png" alt="Uber"><img src="https://www.decadaousada.pt/images/logo-bolt.png" alt="Bolt"></span>
+          <span>Parceiro oficial Uber e Bolt · Top 5% PME 2024</span>
+        </div>
+      </div>
+    </div>
+    <div class="collage" id="collage">
+      <div class="layer" data-depth="8"><div class="photo c-main"><img src="https://images.unsplash.com/photo-1773063449875-332dff62b6e3?auto=format&fit=crop&w=1100&q=72" alt="" fetchpriority="high"></div></div>
+      <div class="layer" data-depth="22"><div class="photo c-car tilt-l"><img src="https://www.decadaousada.pt/black.png" alt=""></div></div>
+      <div class="layer" data-depth="30"><div class="photo c-city tilt-r"><img src="https://images.unsplash.com/photo-1616862890964-fd20e9dd106d?auto=format&fit=crop&w=500&q=70" alt=""></div></div>
+      <div class="layer" data-depth="16" aria-hidden="true">
+        <div class="pay"><span class="dot"></span><span><b>Pagamento da semana</b><small>Na sua conta, todas as semanas</small></span></div>
+      </div>
+      <div class="layer" data-depth="38">
+        <a class="badge-spin" href="#candidatura" aria-label="Candidate-se em 2 minutos">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><defs><path id="circ" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs><text><textPath href="#circ">Candidate-se · em 2 minutos · </textPath></text></svg>
+          <b aria-hidden="true">2 min</b>
+        </a>
+      </div>
+      <div class="layer" data-depth="26" aria-hidden="true"><div class="disticho"><span>Operador certificado</span><b>TVDE</b></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROVA -->
+<section class="panel proof" aria-label="A Década Ousada em números">
+  <img class="bg" src="https://images.unsplash.com/photo-1531259267539-a45cfb4fe070?auto=format&fit=crop&w=1800&q=70" alt="" loading="lazy">
+  <div class="shade"></div>
+  <span class="credit">Ponte 25 de Abril, Lisboa</span>
+  <div class="wrap">
+    <ul data-stagger>
+      <li class="reveal"><b>500+</b><span>motoristas ativos na nossa estrutura</span></li>
+      <li class="reveal"><b>100%</b><span>das viaturas com seguro contra todos os riscos</span></li>
+      <li class="reveal"><b>7 dias</b><span>de suporte por semana, fins de semana incluídos</span></li>
+      <li class="reveal"><b>24h</b><span>para lhe ligarmos depois da candidatura</span></li>
+    </ul>
+    <div class="awards">
+      <div class="award"><img src="https://www.decadaousada.pt/images/premio-scoring-top5.png" alt=""><div><b>Top 5% Melhores PME</b><span>Portugal 2024, 2.º ano consecutivo</span></div></div>
+      <div class="award"><img src="https://www.decadaousada.pt/images/premio-1500-maiores.png" alt=""><div><b>1500 Maiores Empresas</b><span>Distrito de Coimbra 2023</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAIXA DE FOTOS -->
+<div class="strip" aria-label="Fotografias de Portugal ao volante">
+  <div class="strip-track" id="strip-track">
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1658750424913-ee539cd2119a?auto=format&fit=crop&w=600&q=70" alt="Ribeira e Ponte Luís I, Porto" loading="lazy"></div><figcaption class="cap">Porto</figcaption></figure>
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1612709060421-596380268eaf?auto=format&fit=crop&w=600&q=70" alt="Motorista ao volante a sorrir" loading="lazy"></div><figcaption class="cap">Ao volante</figcaption></figure>
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1562002647-2615618762c5?auto=format&fit=crop&w=700&q=70" alt="Ponte de Santa Clara sobre o Mondego, Coimbra" loading="lazy"></div><figcaption class="cap">Coimbra</figcaption></figure>
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1707758283052-f1e3a2d42333?auto=format&fit=crop&w=600&q=70" alt="Carro elétrico a carregar à noite" loading="lazy"></div><figcaption class="cap">Categoria Green</figcaption></figure>
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1747345255403-0143c2d5ecd5?auto=format&fit=crop&w=600&q=70" alt="Rua de Lisboa com fachadas coloridas" loading="lazy"></div><figcaption class="cap">Lisboa</figcaption></figure>
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1762452494414-6b0b23f78ce0?auto=format&fit=crop&w=700&q=70" alt="Porto ao entardecer" loading="lazy"></div><figcaption class="cap">Porto ao fim do dia</figcaption></figure>
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1527593167147-e9c94a5883e6?auto=format&fit=crop&w=600&q=70" alt="Motorista com as mãos no volante" loading="lazy"></div><figcaption class="cap">Turno da manhã</figcaption></figure>
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1635893312205-6abda7db17a0?auto=format&fit=crop&w=600&q=70" alt="Torre da Universidade de Coimbra" loading="lazy"></div><figcaption class="cap">Coimbra</figcaption></figure>
+    <figure><div class="photo"><img src="https://images.unsplash.com/photo-1626455613245-066bf428283c?auto=format&fit=crop&w=700&q=70" alt="Lisboa ao pôr do sol com a ponte ao fundo" loading="lazy"></div><figcaption class="cap">Lisboa ao pôr do sol</figcaption></figure>
+  </div>
+</div>
+
+<!-- BENEFÍCIOS -->
+<section class="section" aria-labelledby="ben-title">
+  <div class="wrap">
+    <div class="head-split reveal">
+      <h2 id="ben-title">O que muda quando conduz connosco</h2>
+      <p>Sabe quanto paga, recebe todas as semanas e tem alguém do outro lado da linha sete dias por semana.</p>
+    </div>
+    <div class="benefits" data-stagger>
+      <article class="benefit hover-zoom reveal">
+        <div class="photo"><img src="https://images.unsplash.com/photo-1515086828834-023d61380316?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"></div>
+        <h3>Custos claros e fixos</h3><p>Renda fixa semanal. Sabe exatamente quanto paga antes de sair de casa.</p>
+      </article>
+      <article class="benefit hover-zoom reveal">
+        <div class="photo"><img src="https://images.unsplash.com/photo-1619190375868-3adc7d6c51ff?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"></div>
+        <h3>Pagamento semanal</h3><p>O dinheiro cai na sua conta todas as semanas.</p>
+      </article>
+      <article class="benefit hover-zoom reveal">
+        <div class="photo"><img src="https://images.unsplash.com/photo-1762095996527-126e49ef9d72?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"></div>
+        <h3>Suporte 7 dias</h3><p>Uma equipa disponível todos os dias, fins de semana incluídos.</p>
+      </article>
+      <article class="benefit hover-zoom reveal">
+        <div class="photo"><img src="https://images.unsplash.com/photo-1524114051012-0a2aa8dae4e1?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"></div>
+        <h3>Sem burocracia</h3><p>Tratamos da papelada. Você conduz e fatura.</p>
+      </article>
+      <article class="benefit hover-zoom reveal">
+        <div class="photo"><img src="https://images.unsplash.com/photo-1534708112740-cb40ecb0663e?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"></div>
+        <h3>Horário seu</h3><p>Trabalhe quando e quanto quiser, sem horários mínimos nem penalizações por folgas.</p>
+      </article>
+      <article class="benefit hover-zoom reveal">
+        <div class="photo"><img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=900&q=70" alt="" loading="lazy"></div>
+        <h3>Só precisa do certificado</h3><p>Sem empresa própria. Com a licença TVDE trabalha como independente e passa recibo verde à semana.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FITAS CRUZADAS -->
+<div class="tapes" aria-hidden="true">
+  <div class="tape tape-a"><div class="tape-track" data-dir="-1"><span>Conduza</span><span>Fature</span><span>Receba à semana</span><span>Uber</span><span>Bolt</span><span>Suporte 7 dias</span><span>Conduza</span><span>Fature</span><span>Receba à semana</span><span>Uber</span><span>Bolt</span><span>Suporte 7 dias</span></div></div>
+  <div class="tape tape-b"><div class="tape-track" data-dir="1"><span>Aluguer</span><span>Slot</span><span>X Saver</span><span>Comfort</span><span>Black</span><span>Green</span><span>Aluguer</span><span>Slot</span><span>X Saver</span><span>Comfort</span><span>Black</span><span>Green</span></div></div>
+</div>
+
+<!-- ALUGUER vs SLOT -->
+<section class="panel modes-sec" id="modalidades" aria-labelledby="mod-title">
+  <div class="wrap">
+    <div class="head-stack reveal">
+      <h2 id="mod-title">Aluguer ou Slot?</h2>
+      <p>No Aluguer, damos-lhe a viatura. No Slot, trabalha com a sua e usa a nossa estrutura de operador para estar nas plataformas.</p>
+    </div>
+    <div class="modes">
+      <article class="mode hover-zoom reveal">
+        <div class="photo"><img src="https://images.unsplash.com/photo-1533558701576-23c65e0272fb?auto=format&fit=crop&w=1100&q=70" alt="" loading="lazy"></div>
+        <div class="card">
+          <span class="tag">Não tenho carro</span>
+          <h3>Aluguer</h3>
+          <ul>
+            <li>Viatura pronta a trabalhar em Uber e Bolt</li>
+            <li>Renda fixa semanal, sem custos escondidos</li>
+            <li>Seguro contra todos os riscos incluído</li>
+            <li>X Saver, Comfort, Black ou Green</li>
+          </ul>
+          <a class="btn btn-primary" href="#alugar" data-tab="alugar">Candidatar-me ao Aluguer</a>
+        </div>
+      </article>
+      <article class="mode hover-zoom reveal">
+        <div class="photo"><img src="https://images.unsplash.com/photo-1578041262130-633307b3bfd6?auto=format&fit=crop&w=1100&q=70" alt="" loading="lazy"></div>
+        <div class="card">
+          <span class="tag">Já tenho carro</span>
+          <h3>Slot</h3>
+          <ul>
+            <li>Trabalha com o seu carro, como nosso parceiro</li>
+            <li>Usa a nossa estrutura de operador TVDE certificado</li>
+            <li>Pagamento semanal na sua conta</li>
+            <li>Apoio administrativo 7 dias por semana</li>
+          </ul>
+          <a class="btn btn-secondary" href="#slot" data-tab="slot">Candidatar-me como Slot</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FROTA -->
+<section class="section" id="frota" aria-labelledby="frota-title">
+  <div class="wrap">
+    <div class="head-split reveal">
+      <h2 id="frota-title">A frota</h2>
+      <p>Quatro categorias. Escolha pela forma como quer trabalhar e quanto quer faturar.</p>
+    </div>
+    <div class="fleet" data-stagger>
+      <article class="car hover-zoom reveal">
+        <div class="photo"><img src="https://www.decadaousada.pt/x-saver.png" alt="Viatura da categoria X Saver" loading="lazy"></div>
+        <h3>X Saver</h3><p class="sub">A mais escolhida</p><p class="muted">Consumo baixo, ideal para cidade e manutenção barata.</p>
+      </article>
+      <article class="car hover-zoom reveal">
+        <div class="photo"><img src="https://www.decadaousada.pt/comfort.png" alt="Viatura da categoria Comfort" loading="lazy"></div>
+        <h3>Comfort</h3><p class="sub">Mais espaço</p><p class="muted">Mais conforto para o passageiro e acesso a clientes premium.</p>
+      </article>
+      <article class="car hover-zoom reveal">
+        <div class="photo"><img src="https://www.decadaousada.pt/black.png" alt="Viatura da categoria Black" loading="lazy"></div>
+        <h3>Black</h3><p class="sub">Premium</p><p class="muted">Viaturas de luxo, clientes executivos e maior faturação.</p>
+      </article>
+      <article class="car hover-zoom reveal">
+        <div class="photo"><img src="https://www.decadaousada.pt/green.png" alt="Viatura elétrica da categoria Green" loading="lazy"></div>
+        <h3>Green</h3><p class="sub">100% elétrico</p><p class="muted">Zero emissões e o menor custo por quilómetro.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="section" id="como-funciona" aria-labelledby="passos-title" style="padding-top:0">
+  <div class="wrap">
+    <div class="head-stack reveal">
+      <h2 id="passos-title">Da candidatura à estrada</h2>
+      <p>Três passos, com aprovação em 24 a 48 horas úteis.</p>
+    </div>
+    <div class="steps-wrap">
+      <svg class="road-line" viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true">
+        <path id="road-path" d="M40 120 C 220 40, 300 260, 500 220 S 800 140, 960 360" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="road-car" id="road-car" aria-hidden="true"></div>
+      <ol class="steps" data-stagger>
+        <li class="step hover-zoom reveal">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1764347923709-fc48487f2486?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"><span class="n" aria-hidden="true">1</span></div>
+          <h3>Preencha o formulário</h3><p>Dois minutos. Diga-nos a sua situação e como quer trabalhar.</p>
+        </li>
+        <li class="step hover-zoom reveal">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1520088096110-20308c23a3cd?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"><span class="n" aria-hidden="true">2</span></div>
+          <h3>Nós ligamos-lhe</h3><p>Em menos de 24 horas úteis, para tratar dos documentos.</p>
+        </li>
+        <li class="step hover-zoom reveal">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1751498273591-1b93d0dd490a?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"><span class="n" aria-hidden="true">3</span></div>
+          <h3>Comece a faturar</h3><p>Aprovação em 24 a 48 horas úteis e apoio desde o primeiro dia.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq" aria-labelledby="faq-title" style="padding-top:var(--s7)">
+  <div class="wrap faq">
+    <div class="faq-aside reveal">
+      <div class="faq-photos">
+        <div class="photo a tilt-l"><img src="https://images.unsplash.com/photo-1776616528589-edb488b331d8?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy"></div>
+        <div class="photo b tilt-r"><img src="https://images.unsplash.com/photo-1611448746128-7c39e03b71e4?auto=format&fit=crop&w=500&q=70" alt="" loading="lazy"></div>
+      </div>
+      <h2 id="faq-title">Antes de se candidatar</h2>
+      <p class="muted">Não encontra a resposta? Escreva-nos no WhatsApp, respondemos todos os dias.</p>
+    </div>
+    <div class="faq-list">
+      <details><summary>Preciso de ter empresa para trabalhar convosco?</summary><p>Não. Trabalha como trabalhador independente com a sua licença TVDE e emite semanalmente um recibo verde para receber os seus ganhos. Damos apoio na parte administrativa.</p></details>
+      <details><summary>Como funciona o pagamento?</summary><p>O pagamento é feito todas as semanas, diretamente na sua conta bancária. Paga apenas um valor fixo de aluguer semanal, sem surpresas. As comissões das plataformas (Uber, Bolt) aplicam-se normalmente.</p></details>
+      <details><summary>Que documentos preciso para me candidatar?</summary><p>Licença TVDE válida, carta de condução, documento de identificação (CC ou passaporte), registo criminal, comprovativo de morada e IBAN para receber os pagamentos.</p></details>
+      <details><summary>Posso trabalhar quando quiser?</summary><p>Sim. Tem total flexibilidade de horários. Não há horários mínimos obrigatórios nem penalizações por dias de folga.</p></details>
+      <details><summary>E se não tiver licença TVDE?</summary><p>A licença TVDE é obrigatória por lei para exercer a atividade. Recomendamos que procure um centro de formação certificado na sua zona para a obter.</p></details>
+      <details><summary>Quanto tempo demora a aprovação?</summary><p>Depois de submeter a candidatura e os documentos, a aprovação demora normalmente 24 a 48 horas úteis.</p></details>
+      <details><summary>Que viaturas têm disponíveis?</summary><p>Temos viaturas para todas as categorias: X Saver, Comfort, Black, Green (elétricos), X Priority e mais.</p></details>
+      <details><summary>Qual é a diferença entre Aluguer e Slot?</summary><p>No Aluguer, fornecemos a viatura e você trabalha com ela. No Slot, já tem viatura própria e usa apenas a nossa estrutura e apoio para trabalhar nas plataformas.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- CANDIDATURA -->
+<section class="panel apply-sec" id="candidatura" aria-labelledby="cand-title">
+  <div class="wrap apply-grid">
+    <div class="apply-side">
+      <p class="eyebrow">Candidatura</p>
+      <h2 id="cand-title">Comece a faturar já</h2>
+      <p class="muted">Escolha a sua situação e preencha o formulário. Ligamos-lhe em menos de 24 horas. Somos Top 5% PME 2024 e trabalhamos com mais de 500 motoristas.</p>
+      <div class="docs">
+        <h3>Tenha à mão</h3>
+        <ul>
+          <li>Licença TVDE válida</li>
+          <li>Carta de condução</li>
+          <li>Cartão de Cidadão ou Passaporte</li>
+          <li>Registo criminal</li>
+          <li>Comprovativo de morada</li>
+          <li>IBAN para receber os pagamentos</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="apply-main">
+      <div class="tabs" role="tablist" aria-label="Tipo de candidatura" data-active="alugar">
+        <button class="tab" role="tab" id="tab-alugar" aria-controls="form-panel" aria-selected="true" data-tab="alugar">Preciso de carro<small>Aluguer de viatura</small></button>
+        <button class="tab" role="tab" id="tab-slot" aria-controls="form-panel" aria-selected="false" tabindex="-1" data-tab="slot">Tenho carro<small>Trabalhar como Slot</small></button>
+      </div>
+      <div class="form-frame" id="form-panel" role="tabpanel" aria-labelledby="tab-alugar">
+        <iframe id="form-iframe" title="Formulário de candidatura" loading="lazy" hidden></iframe>
+        <div class="form-card" id="form-card">
+          <img class="bg" id="form-card-img" src="https://images.unsplash.com/photo-1533558701576-23c65e0272fb?auto=format&fit=crop&w=1200&q=70" alt="" loading="lazy">
+          <div class="copy">
+            <h3 id="form-card-title">Candidatura para alugar uma viatura TVDE</h3>
+            <p>Abre o formulário numa nova janela. São cerca de 2 minutos e não tem compromisso.</p>
+            <a class="btn btn-primary" id="form-card-btn" href="https://www.wegest.pt/formulario/4588f264-ce79-40fa-9827-b985af4ee68e" target="_blank" rel="noopener">Candidatar-me</a>
+          </div>
+        </div>
+      </div>
+      <div class="form-fallback" id="form-fallback" hidden>
+        <span>O formulário não aparece?</span>
+        <a id="form-link" href="https://www.wegest.pt/formulario/4588f264-ce79-40fa-9827-b985af4ee68e" target="_blank" rel="noopener">Abrir numa nova janela</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTAGRAM / FACEBOOK -->
+<section class="section" id="redes" aria-labelledby="ig-title">
+  <div class="wrap">
+    <div class="social-head">
+      <div class="head-stack reveal">
+        <h2 id="ig-title">@decada_ousada</h2>
+        <p>Novidades da frota, motoristas e bastidores.</p>
+      </div>
+      <div class="social-links">
+        <a class="btn btn-secondary" href="https://www.instagram.com/decada_ousada/" target="_blank" rel="noopener">Seguir no Instagram</a>
+        <a class="btn btn-secondary" href="https://www.facebook.com/decada.ousada/" target="_blank" rel="noopener">Facebook</a>
+      </div>
+    </div>
+    <div class="ig-grid" id="ig-grid" aria-live="polite"></div>
+    <p class="ig-status" id="ig-status">A carregar publicações…</p>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="panel contact-sec" id="contactos" aria-labelledby="ct-title">
+  <img class="bg" src="https://images.unsplash.com/photo-1612709060421-596380268eaf?auto=format&fit=crop&w=1800&q=70" alt="" loading="lazy" style="object-position:70% 40%">
+  <div class="shade"></div>
+  <div class="wrap contact-grid">
+    <div class="contact-copy reveal">
+      <h2 id="ct-title">Prefere falar com alguém?</h2>
+      <p>Tire dúvidas sobre viaturas, valores ou documentos antes de se candidatar. Atendemos 7 dias por semana.</p>
+      <a class="btn btn-primary" href="#candidatura">Candidatar-me</a>
+    </div>
+    <div class="contacts" data-stagger>
+      <a class="contact reveal" href="https://wa.me/351912023234" target="_blank" rel="noopener"><small>WhatsApp</small><b>+351 912 023 234</b></a>
+      <a class="contact reveal" href="tel:+351912023234"><small>Telefone</small><b>+351 912 023 234</b></a>
+      <a class="contact reveal" href="mailto:motoristas.tvde@decadaousada.pt"><small>Email</small><b>motoristas.tvde@decadaousada.pt</b></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Década Ousada · Operador TVDE certificado</span>
+    <nav aria-label="Rodapé">
+      <a href="https://www.decadaousada.pt/sobre">Sobre nós</a>
+      <a href="https://wegest.pt/motorista/login">Área do Motorista</a>
+      <a href="https://www.decadaousada.pt/termos">Termos</a>
+      <a href="https://www.decadaousada.pt/privacidade">Privacidade</a>
+      <a href="https://www.instagram.com/decada_ousada/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.facebook.com/decada.ousada/" target="_blank" rel="noopener">Facebook</a>
+    </nav>
+  </div>
+</footer>
+
+<div class="dock" id="dock" aria-hidden="true">
+  <a class="btn btn-primary" href="#candidatura" tabindex="-1">Candidatar-me</a>
+  <a class="btn btn-wa" href="https://wa.me/351912023234" target="_blank" rel="noopener" tabindex="-1">WhatsApp</a>
+</div>
+
+<script>
+document.documentElement.classList.add("js");
+
+/* ===== CONFIGURAÇÃO ===== */
+const FORMS = {
+  alugar: "https://www.wegest.pt/formulario/4588f264-ce79-40fa-9827-b985af4ee68e", // TVDE GERAL (precisa alugar)
+  slot:   "https://www.wegest.pt/formulario/e5aa523d-ae86-43bf-8985-780c1fc943b8"  // SLOT
+};
+// O WeGest envia hoje "X-Frame-Options: DENY", que impede o formulário de aparecer dentro da página.
+// Quando o WeGest permitir decadaousada.pt (frame-ancestors), mudar para true e o formulário passa a ficar incorporado.
+const FORMS_EMBED = false;
+const UNSPLASH = id => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=70`;
+const FORM_COPY = {
+  alugar: {title:"Candidatura para alugar uma viatura TVDE", img:UNSPLASH("1533558701576-23c65e0272fb")},
+  slot:   {title:"Candidatura para trabalhar como Slot",     img:UNSPLASH("1578041262130-633307b3bfd6")}
+};
+const INSTAGRAM = {
+  username: "decada_ousada",
+  // URL do feed JSON (ex.: Behold.so → "JSON feed URL"). Vazio = mostra mosaico com ligação ao perfil.
+  feedUrl: "",
+  limit: 8,
+  refreshMinutes: 5
+};
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+new Image().src = FORM_COPY.slot.img;
+
+/* ===== FAIXA DE FOTOS: duplica para ciclo contínuo ===== */
+const track = document.getElementById("strip-track");
+if(!reduceMotion){
+  [...track.children].forEach(f=>{ const c=f.cloneNode(true); c.setAttribute("aria-hidden","true"); track.appendChild(c); });
+}
+
+/* ===== REVELAÇÃO AO SCROLL ===== */
+document.querySelectorAll("[data-stagger]").forEach(group=>{
+  [...group.children].forEach((el,i)=>el.style.setProperty("--i", i % 3));
+});
+const revealIO = "IntersectionObserver" in window ? new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); revealIO.unobserve(e.target); } });
+},{rootMargin:"0px 0px -8% 0px"}) : null;
+document.querySelectorAll(".reveal").forEach(el=> revealIO ? revealIO.observe(el) : el.classList.add("in"));
+
+/* ===== VIDA ===== */
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const finePointer = matchMedia("(pointer:fine)").matches;
+
+/* Títulos entram palavra a palavra */
+document.querySelectorAll("main h2").forEach(h=>{
+  const text = h.textContent.trim();
+  h.setAttribute("aria-label", text);
+  h.innerHTML = text.split(/\s+/).map((w,i)=>`<span class="w" aria-hidden="true" style="--wi:${i}"><span>${w.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</span></span>`).join(" ");
+  h.classList.add("split");
+  revealIO ? revealIO.observe(h) : h.classList.add("in");
+});
+
+/* Números a contar */
+if(!reduceMotion && "IntersectionObserver" in window){
+  const countIO = new IntersectionObserver(entries=>entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    countIO.unobserve(e.target);
+    const el = e.target, m = el.dataset.final.match(/^(\d+)(.*)$/);
+    if(!m) return;
+    const to = +m[1], suf = m[2], t0 = performance.now(), dur = 1500;
+    const tick = t=>{ const p = clamp((t-t0)/dur,0,1); el.textContent = Math.round(to*(1-Math.pow(1-p,3))) + suf; if(p<1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }),{threshold:.6});
+  document.querySelectorAll(".proof li b").forEach(b=>{ b.dataset.final = b.textContent; countIO.observe(b); });
+}
+
+/* Botões magnéticos e cartões com inclinação 3D */
+if(!reduceMotion && finePointer){
+  document.querySelectorAll(".btn-primary").forEach(b=>{
+    b.addEventListener("pointermove",e=>{ const r=b.getBoundingClientRect(); b.style.translate=`${(e.clientX-r.left-r.width/2)*.18}px ${(e.clientY-r.top-r.height/2)*.3}px`; });
+    b.addEventListener("pointerleave",()=>{ b.style.translate=""; });
+  });
+  document.querySelectorAll(".choice a").forEach(c=>{
+    c.addEventListener("pointermove",e=>{ const r=c.getBoundingClientRect(); const px=(e.clientX-r.left)/r.width-.5, py=(e.clientY-r.top)/r.height-.5; c.style.transform=`translateY(-4px) rotateY(${px*16}deg) rotateX(${-py*16}deg)`; });
+    c.addEventListener("pointerleave",()=>{ c.style.transform=""; });
+  });
+}
+
+/* Parallax: cada coluna a uma velocidade diferente */
+const SPEEDS = [-.035,.06,-.015];
+document.querySelectorAll(".benefits>.benefit,.fleet>.car,.steps>.step,.ig-grid").forEach((el,i)=>{ if(!el.classList.contains("ig-grid")) el.dataset.speed = SPEEDS[i%3]; });
+document.querySelectorAll(".panel>.bg").forEach(el=>el.dataset.speed = .12);
+document.querySelectorAll(".faq-photos .a").forEach(el=>el.dataset.speed = -.05);
+document.querySelectorAll(".faq-photos .b").forEach(el=>el.dataset.speed = .07);
+const parallaxEls = [...document.querySelectorAll("[data-speed]")];
+
+/* Loop único de animação */
+const progressBar = document.getElementById("progress");
+const tapes = [...document.querySelectorAll(".tape-track")].map(el=>({el, dir:+el.dataset.dir, x:0, w:0}));
+const stripState = {el:track, x:0, w:0, paused:false, dir:-1};
+track.parentElement.addEventListener("pointerenter",()=>stripState.paused=true);
+track.parentElement.addEventListener("pointerleave",()=>stripState.paused=false);
+const layers = [...document.querySelectorAll("#collage .layer")];
+const road = document.getElementById("road-path");
+const roadSvg = document.querySelector(".road-line");
+const roadCar = document.getElementById("road-car");
+const stepsWrap = document.querySelector(".steps-wrap");
+const roadLen = road ? road.getTotalLength() : 0;
+let mx=0, my=0, cmx=0, cmy=0, lastY=scrollY, vel=0;
+if(finePointer) document.querySelector(".hero").addEventListener("pointermove",e=>{ mx=(e.clientX/innerWidth-.5)*2; my=(e.clientY/innerHeight-.5)*2; });
+const wrapX = (x,w)=>((x % w) - w) % w;
+
+function frame(){
+  const y = scrollY, dy = y-lastY; lastY = y;
+  vel = vel*.88 + dy*.12;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  progressBar.style.transform = `scaleX(${max>0 ? y/max : 0})`;
+
+  if(!reduceMotion){
+    const boost = Math.min(Math.abs(vel)*.35, 14);
+    tapes.forEach(t=>{
+      if(!t.w) t.w = t.el.scrollWidth/2;
+      t.x = wrapX(t.x + t.dir*(.7 + boost) * (vel<0 ? -1 : 1), t.w);
+      t.el.style.transform = `translate3d(${t.x}px,0,0)`;
+    });
+    if(!stripState.w) stripState.w = track.scrollWidth/2;
+    if(!stripState.paused || boost>1){
+      stripState.x = wrapX(stripState.x - (.45 + boost*.6), stripState.w);
+      track.style.transform = `translate3d(${stripState.x}px,0,0)`;
+    }
+
+    cmx += (mx-cmx)*.07; cmy += (my-cmy)*.07;
+    if(y < innerHeight*1.2) layers.forEach(l=>{
+      const d = +l.dataset.depth;
+      l.style.transform = `translate3d(${-cmx*d*.6}px,${-cmy*d*.6 - y*d*.012}px,0)`;
+    });
+
+    const vh = innerHeight;
+    parallaxEls.forEach(el=>{
+      const r = el.getBoundingClientRect();
+      if(r.bottom < -200 || r.top > vh+200) return;
+      el.style.translate = `0 ${((r.top + r.height/2) - vh/2) * +el.dataset.speed}px`;
+    });
+
+    if(road && stepsWrap && roadCar){
+      const r = stepsWrap.getBoundingClientRect();
+      if(r.bottom > 0 && r.top < vh){
+        const p = clamp((vh*.8 - r.top) / (r.height*.85), 0, 1);
+        const pt = road.getPointAtLength(p*roadLen), sr = roadSvg.getBoundingClientRect();
+        roadCar.style.transform = `translate(${sr.left - r.left + pt.x/1000*sr.width}px,${sr.top - r.top + pt.y/400*sr.height}px)`;
+      }
+    }
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+addEventListener("resize",()=>{ tapes.forEach(t=>t.w=0); stripState.w=0; });
+
+/* ===== FORMULÁRIOS (separadores) ===== */
+const iframe = document.getElementById("form-iframe");
+const formLink = document.getElementById("form-link");
+const panel = document.getElementById("form-panel");
+const tabsEl = document.querySelector(".tabs");
+const card = document.getElementById("form-card");
+const cardImg = document.getElementById("form-card-img");
+const tabs = [...document.querySelectorAll(".tab")];
+
+function selectForm(key, scroll){
+  if(!FORMS[key]) return;
+  const changed = tabsEl.dataset.active !== key;
+  tabsEl.dataset.active = key;
+  tabs.forEach(t=>{
+    const on = t.dataset.tab===key;
+    t.setAttribute("aria-selected", String(on));
+    t.tabIndex = on ? 0 : -1;
+  });
+  panel.setAttribute("aria-labelledby","tab-"+key);
+  formLink.href = FORMS[key];
+  document.getElementById("form-card-btn").href = FORMS[key];
+  document.getElementById("form-card-title").textContent = FORM_COPY[key].title;
+  cardImg.src = FORM_COPY[key].img;
+  if(changed && !reduceMotion){ card.classList.remove("swap"); void card.offsetWidth; card.classList.add("swap"); }
+  if(FORMS_EMBED && iframe.src!==FORMS[key]) iframe.src = FORMS[key];
+  if(scroll) panel.scrollIntoView({behavior: reduceMotion ? "auto" : "smooth", block:"start"});
+}
+if(FORMS_EMBED){
+  iframe.hidden = false;
+  card.hidden = true;
+  document.getElementById("form-fallback").hidden = false;
+  iframe.src = FORMS.alugar;
+}
+document.querySelectorAll("[data-tab]").forEach(el=>{
+  el.addEventListener("click", e=>{
+    e.preventDefault();
+    const isTab = el.classList.contains("tab");
+    selectForm(el.dataset.tab, !isTab);
+    if(!isTab) history.replaceState(null,"","#"+el.dataset.tab);
+  });
+});
+tabsEl.addEventListener("keydown", e=>{
+  if(e.key!=="ArrowRight" && e.key!=="ArrowLeft") return;
+  const next = tabs[(tabs.findIndex(t=>t.getAttribute("aria-selected")==="true")+1)%2];
+  selectForm(next.dataset.tab); next.focus();
+});
+if(FORMS[location.hash.slice(1)]) selectForm(location.hash.slice(1), true);
+
+/* ===== BARRA FIXA MOBILE ===== */
+const dock = document.getElementById("dock");
+if("IntersectionObserver" in window){
+  const state = {hero:true, apply:false};
+  const update = ()=> dock.classList.toggle("show", !state.hero && !state.apply);
+  new IntersectionObserver(([e])=>{ state.hero = e.isIntersecting; update(); }).observe(document.querySelector(".choice"));
+  new IntersectionObserver(([e])=>{ state.apply = e.isIntersecting; update(); }).observe(document.getElementById("candidatura"));
+}
+
+/* ===== INSTAGRAM ===== */
+const grid = document.getElementById("ig-grid");
+const statusEl = document.getElementById("ig-status");
+const profileUrl = `https://www.instagram.com/${INSTAGRAM.username}/`;
+const esc = s => String(s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderFallback(){
+  const imgs = ["black.png","x-saver.png","comfort.png","green.png"];
+  grid.innerHTML = imgs.map(i=>`<a class="ig-post" href="${profileUrl}" target="_blank" rel="noopener">
+      <img src="https://www.decadaousada.pt/${i}" alt="" loading="lazy"><span class="cap">Ver publicações no Instagram</span></a>`).join("");
+  statusEl.textContent = "Veja as últimas publicações em instagram.com/" + INSTAGRAM.username;
+}
+function normalise(data){
+  const list = Array.isArray(data) ? data : (data.posts || data.data || []);
+  return list.map(p=>({
+    url: p.permalink,
+    img: (p.sizes && (p.sizes.medium||p.sizes.large||{}).mediaUrl) || (p.mediaType==="VIDEO"||p.media_type==="VIDEO" ? (p.thumbnailUrl||p.thumbnail_url) : (p.mediaUrl||p.media_url)) || p.thumbnailUrl,
+    caption: p.prunedCaption || p.caption || "",
+    type: p.mediaType || p.media_type || ""
+  })).filter(p=>p.img && p.url).slice(0, INSTAGRAM.limit);
+}
+async function loadInstagram(){
+  if(!INSTAGRAM.feedUrl){ renderFallback(); return; }
+  try{
+    const res = await fetch(INSTAGRAM.feedUrl, {cache:"no-store"});
+    if(!res.ok) throw new Error(res.status);
+    const posts = normalise(await res.json());
+    if(!posts.length) throw new Error("vazio");
+    grid.innerHTML = posts.map(p=>`<a class="ig-post" href="${esc(p.url)}" target="_blank" rel="noopener">
+        <img src="${esc(p.img)}" alt="${esc(p.caption.slice(0,120))}" loading="lazy">
+        ${p.type==="VIDEO"?'<span class="type">VÍDEO</span>':p.type==="CAROUSEL_ALBUM"?'<span class="type">ÁLBUM</span>':""}
+        <span class="cap">${esc(p.caption)}</span></a>`).join("");
+    statusEl.textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"});
+  }catch(err){
+    if(!grid.children.length) renderFallback();
+  }
+}
+loadInstagram();
+if(INSTAGRAM.feedUrl) setInterval(loadInstagram, INSTAGRAM.refreshMinutes*60000);
+</script>
+</body>
+</html>
