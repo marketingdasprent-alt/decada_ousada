@@ -746,3 +746,30 @@ DATE:
 2026-10-13
 ```
 
+---
+
+```
+DECISION:
+In the popup the WeGest embed URL gets a new `v` value on every opening.
+`&origem=site` alone did not hold: a browser that had cached a blocking
+answer for that exact URL (X-Frame-Options or frame-ancestors) kept showing
+ERR_BLOCKED_BY_RESPONSE, because WeGest revalidates with 304 and a 304
+cannot remove a cached header. A URL that never repeats is never served
+from such a cache entry. WeGest's page is max-age=0, so nothing is lost.
+Verified in a real headless Chrome: both buttons open the popup and WeGest
+sends its height.
+
+REASON:
+The team saw "www.wegest.pt está bloqueado" in the popup while a clean
+browser loaded the form.
+
+SCOPE:
+src/components/drivers/driver-form-embed.tsx, docs/motoristas-formularios.md.
+
+LEVEL:
+Fix (integration).
+
+DATE:
+2026-10-13
+```
+
