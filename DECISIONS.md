@@ -716,3 +716,33 @@ DATE:
 2026-10-13
 ```
 
+---
+
+```
+DECISION:
+The application buttons of /motoristas open the WeGest form in a popup on
+the same page again (team request with a flow diagram, 2026-10-13), now that
+WeGest allows framing (?embed=1 answers frame-ancestors * and no
+X-Frame-Options). DRIVER_FORM_OPEN = "popup". The popup shows the chosen
+form straight away (title "Preciso de carro" / "Tenho carro", no switch
+inside), loaded eagerly. The embed URL carries `&origem=site`: browsers that
+had cached WeGest's old answer kept X-Frame-Options: DENY, because WeGest
+revalidates with 304 and a 304 cannot remove a cached header; a new URL
+forces a fresh request. Verified in a real headless Chrome (the app's
+browser pane does not paint cross-origin iframes): both buttons open the
+popup, WeGest sends its height (605 px), no fallback.
+
+REASON:
+Keep the visitor on the landing page while applying.
+
+SCOPE:
+src/components/drivers/driver-form-embed.tsx, driver-apply-dialog.tsx,
+src/domain/drivers, docs/motoristas-formularios.md.
+
+LEVEL:
+Feature (interaction).
+
+DATE:
+2026-10-13
+```
+

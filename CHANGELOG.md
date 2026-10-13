@@ -3,6 +3,19 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.15.0]: 2026-10-13
+
+### Changed
+
+- `/motoristas`: every application button opens the WeGest form in a popup
+  on the same page, with the chosen form already loaded (WeGest now allows
+  embedding). `DRIVER_FORM_OPEN = "popup"`.
+
+### Fixed
+
+- The embed URL carries `&origem=site`, so browsers that cached WeGest's old
+  `X-Frame-Options: DENY` answer load the form again.
+
 ## [0.14.2]: 2026-10-13
 
 ### Changed
