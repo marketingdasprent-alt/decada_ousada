@@ -503,3 +503,30 @@ DATE:
 2026-10-13
 ```
 
+---
+
+```
+DECISION:
+Production builds run in one process (next.config.ts, experimental.cpus: 1).
+Each build process keeps its own catalogue cache and the Rent a Car listing
+asks WeGest for the detail of every model (GET /modelos/{id}). With 50
+models and 11 processes the build sent about 660 requests in seconds,
+WeGest answered 429 LIMITE_EXCEDIDO (120 requests per minute per key) and
+the Vercel build failed collecting /[region]/rent-a-car/viatura/[slug].
+In one process the cache is shared: a real-API build makes about 70
+requests and takes under 30 s (278 pages).
+
+REASON:
+The deploy of 0.12.0 failed on 2026-10-13, the first build after WeGest
+published its Rent a Car fleet (the catalogue was empty before).
+
+SCOPE:
+next.config.ts.
+
+LEVEL:
+Infrastructure.
+
+DATE:
+2026-10-13
+```
+

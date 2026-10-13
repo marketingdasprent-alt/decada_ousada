@@ -30,6 +30,11 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    // Build num só processo: cada processo tem a sua cache do catálogo e pede o detalhe de
+    // cada modelo ao WeGest; com 11 em paralelo passava o limite de 120 pedidos/min (DECISIONS.md 2026-10-13)
+    cpus: 1,
+  },
   turbopack: {
     root: path.resolve(__dirname),
     rules: {
