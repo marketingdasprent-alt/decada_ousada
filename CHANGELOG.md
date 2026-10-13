@@ -3,6 +3,15 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.13.1]: 2026-10-13
+
+### Added
+
+- `/motoristas`: three TVDE testimonials from drivers' messages to the team
+  (Antonio Dias, Felipe Frascione, Gabriela), with their authorisation. They
+  have no star rating, so `Testimonials` now shows stars only when a
+  testimonial has one.
+
 ## [0.13.0]: 2026-10-13
 
 ### Added

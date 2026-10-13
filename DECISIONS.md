@@ -608,3 +608,29 @@ DATE:
 2026-10-13
 ```
 
+---
+
+```
+DECISION:
+Three more TVDE testimonials on /motoristas, from WhatsApp messages drivers
+sent to the team (Antonio Dias, Felipe Frascione, Gabriela), published with
+their full names because they authorised it (team confirmation,
+2026-10-13). Excerpts kept word for word; parts naming other people or
+companies (a former manager, another operator) were left out. These
+messages carry no star rating, so `rating` became optional and the card
+shows stars only when there is one: giving them five stars would invent a
+rating.
+
+REASON:
+Team request: real driver feedback on the drivers page.
+
+SCOPE:
+src/components/shared/testimonials.tsx.
+
+LEVEL:
+Content (Level 3).
+
+DATE:
+2026-10-13
+```
+
