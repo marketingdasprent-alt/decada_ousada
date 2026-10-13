@@ -24,7 +24,9 @@ export type AnalyticsEvent =
   | "tvde_payment_completed"
   | "tvde_application_submitted"
   | "tvde_application_approved"
-  | "tvde_application_rejected";
+  | "tvde_application_rejected"
+  /** Pedido de contacto enviado em /motoristas (dados: `mode`, nunca dados pessoais). */
+  | "drivers_lead_submitted";
 
 export type AnalyticsData = Record<string, string | number | boolean | undefined>;
 

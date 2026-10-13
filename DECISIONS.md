@@ -530,3 +530,81 @@ DATE:
 2026-10-13
 ```
 
+---
+
+```
+DECISION:
+The two driver forms of /motoristas (Aluguer = TVDE GERAL, Slot = SLOT) live
+on the site and create the same leads as WeGest's public forms (team
+choice, 2026-10-13).
+- Same fields as the WeGest forms (fetched from formulario_publico_por_id):
+  name, email, phone/WhatsApp, plus "Tem licença TVDE?" and notes (Aluguer)
+  or "Atualmente trabalha como TVDE?" and the vehicle (Slot).
+- WeGest's public API has no leads endpoint (only full applications,
+  POST /tvde/candidaturas, about 18 fields and no Slot). The server inserts
+  the lead into `leads_dasprent` exactly as the WeGest public form does
+  (same columns, `formulario_id`, campaign tag, answers in `observacoes`,
+  plus an "Origem" line), with WeGest's public anon key
+  (WEGEST_LEADS_URL / WEGEST_LEADS_KEY). Not the documented API: when WeGest
+  adds a leads endpoint, only src/services/leads changes.
+- Anti-spam: Cloudflare Turnstile when TURNSTILE_SECRET_KEY is set (the
+  script is loaded from challenges.cloudflare.com, no npm dependency) and a
+  honeypot field always. Personal data never goes to logs or analytics
+  (`drivers_lead_submitted` carries only the mode).
+- Without WEGEST_LEADS_URL and WEGEST_LEADS_KEY in http mode the page keeps
+  the buttons to the WeGest-hosted forms (`HostedForms`), so it never shows
+  a form that cannot send. If sending fails, the error offers the hosted
+  form as an alternative.
+- Aluguer without a TVDE licence cannot be sent (same rule as WeGest). Slot
+  with "Não" can: the question is about current work, not the licence.
+
+REASON:
+Thiago's request: the two candidatura forms inside the site, not in a new
+tab on wegest.pt.
+
+SCOPE:
+src/components/drivers/driver-lead-form.tsx, hosted-forms.tsx,
+src/app/api/motoristas/lead, src/services/leads, src/services/captcha,
+src/lib/validation.ts, src/lib/analytics.ts, src/domain/drivers,
+src/app/[region]/motoristas/page.tsx, .env.example,
+docs/motoristas-formularios.md.
+
+LEVEL:
+Feature (integration).
+
+DATE:
+2026-10-13
+```
+
+---
+
+```
+DECISION:
+/motoristas shows the WeGest forms embedded (?embed=1) instead of the site's
+own forms, as a test asked by the team (Thiago, 2026-10-13). One constant
+switches between the two: DRIVER_FORM_KIND in src/domain/drivers ("embed"
+now, "site" for DriverLeadForm, kept).
+- `DriverFormEmbed`: same Aluguer/Slot switch (`ModeSwitch`, shared with
+  DriverLeadForm), the iframe height follows postMessage
+  { tipo: "wegest-formulario:altura", altura }, accepted only from
+  https://www.wegest.pt and from that iframe.
+- On 2026-10-13 WeGest still answers ?embed=1 with X-Frame-Options: DENY,
+  so browsers do not show it. If no height message arrives 8 s after the
+  form is on screen, the iframe gives way to a button that opens the form in
+  a new tab. It starts working without a deploy once WeGest allows framing.
+
+REASON:
+Team test of WeGest's embed mode.
+
+SCOPE:
+src/components/drivers/driver-form-embed.tsx, mode-switch.tsx,
+driver-lead-form.tsx, src/domain/drivers, /motoristas page,
+docs/motoristas-formularios.md.
+
+LEVEL:
+Feature (integration).
+
+DATE:
+2026-10-13
+```
+
