@@ -3,6 +3,22 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.13.0]: 2026-10-13
+
+### Added
+
+- `/motoristas`: the WeGest forms embedded in the page (`?embed=1`,
+  `DriverFormEmbed`), with the Preciso de carro / Tenho carro switch and the
+  height following the form. While WeGest still refuses framing, a button
+  opens the form in a new tab after 8 s on screen.
+- Site-made forms, ready behind `DRIVER_FORM_KIND = "site"`: the two forms
+  inside the page, with the fields of the WeGest forms. They create the same TVDE GERAL
+  and SLOT leads in WeGest (`POST /api/motoristas/lead`, `src/services/leads`),
+  with Cloudflare Turnstile and a honeypot against bots. The "Candidatar-me"
+  buttons open the right form. Until `WEGEST_LEADS_URL`/`WEGEST_LEADS_KEY`
+  are set, the page keeps the buttons to the WeGest-hosted forms
+  (`docs/motoristas-formularios.md`).
+
 ## [0.12.1]: 2026-10-13
 
 ### Fixed

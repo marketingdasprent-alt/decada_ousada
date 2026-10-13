@@ -15,13 +15,32 @@ export const DRIVER_CONTACT = {
 export type DriverMode = "aluguer" | "slot";
 
 /**
- * Formulários de candidatura alojados no WeGest. Abrem noutro separador: o WeGest envia
- * X-Frame-Options: DENY, por isso não podem ficar dentro da página.
+ * Formulários alojados no WeGest: a alternativa enquanto a ligação dos leads não está
+ * configurada, ou se o envio no site falhar. Abrem noutro separador (o WeGest envia
+ * X-Frame-Options: DENY, por isso não podem ficar dentro da página).
  */
 export const DRIVER_FORMS: Record<DriverMode, string> = {
   aluguer: "https://www.wegest.pt/formulario/4588f264-ce79-40fa-9827-b985af4ee68e",
   slot: "https://www.wegest.pt/formulario/e5aa523d-ae86-43bf-8985-780c1fc943b8",
 };
+
+/**
+ * Formulários de motoristas no site (DECISIONS.md 2026-10-13): os mesmos campos dos formulários
+ * do WeGest e o lead entra no WeGest com o mesmo formulário e a mesma campanha, para a equipa o
+ * ver no mesmo sítio. `formId` é o id desses formulários.
+ */
+export const DRIVER_LEAD_FORMS: Record<DriverMode, { formId: string; campaign: string }> = {
+  aluguer: { formId: "4588f264-ce79-40fa-9827-b985af4ee68e", campaign: "TVDE GERAL" },
+  slot: { formId: "e5aa523d-ae86-43bf-8985-780c1fc943b8", campaign: "SLOT" },
+};
+
+/**
+ * Que formulário mostra /motoristas:
+ *   "embed" → os formulários do WeGest incorporados (?embed=1), com o botão para os abrir
+ *             noutro separador se o WeGest não deixar incorporar (teste da equipa, 2026-10-13)
+ *   "site"  → os formulários do próprio site, que gravam o lead no WeGest (DriverLeadForm)
+ */
+export const DRIVER_FORM_KIND: "embed" | "site" = "embed";
 
 /** Área do motorista no WeGest (para quem já trabalha com a DÉCADA OUSADA). */
 export const DRIVER_AREA_URL = "https://wegest.pt/motorista/login";

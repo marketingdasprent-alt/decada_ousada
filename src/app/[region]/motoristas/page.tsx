@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 
 import { CountUp } from "@/components/drivers/count-up";
+import { DriverFormEmbed } from "@/components/drivers/driver-form-embed";
+import { DriverLeadForm } from "@/components/drivers/driver-lead-form";
 import { DriversHero } from "@/components/drivers/drivers-hero";
+import { HostedForms } from "@/components/drivers/hosted-forms";
 import { Marquee } from "@/components/drivers/marquee";
 import { CoverPhoto } from "@/components/shared/cover-photo";
 import { InstagramFeed } from "@/components/shared/instagram";
 import { Testimonials } from "@/components/shared/testimonials";
 import { ButtonLink, buttonClass, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
-import { DRIVER_CONTACT, DRIVER_FORMS, type DriverMode } from "@/domain/drivers";
+import { DRIVER_CONTACT, DRIVER_FORM_KIND, type DriverMode } from "@/domain/drivers";
 import { getOffer } from "@/domain/vehicle";
 import { cn } from "@/lib/cn";
 import { regionFromParams } from "@/lib/region";
+import { driverLeadsReady } from "@/services/leads";
 import { listVehicles } from "@/services/wegest";
 
 export const metadata: Metadata = {
@@ -103,16 +106,6 @@ const FAQ = [
   { q: "Que viaturas têm disponíveis?", a: "Viaturas para as categorias X Saver, Comfort, Black, Green (elétricos), X Priority e outras." },
   { q: "Qual é a diferença entre Aluguer e Slot?", a: "No Aluguer, fornecemos a viatura e você trabalha com ela. No Slot, já tem viatura própria e usa a nossa estrutura e apoio para trabalhar nas plataformas." },
 ];
-
-/** Link para fora do site: abre noutro separador e di-lo a quem usa leitor de ecrã. */
-function ExternalButton({ href, children, variant = "primary", className }: { href: string; children: ReactNode; variant?: "primary" | "light" | "outline" | "onDark"; className?: string }) {
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={buttonClass(variant, "lg", className)}>
-      {children}
-      <span className="sr-only">(abre noutro separador)</span>
-    </a>
-  );
-}
 
 export default async function DriversPage({ params }: PageProps<"/[region]/motoristas">) {
   const region = await regionFromParams(params);
@@ -215,7 +208,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
                       <li key={p} className="border-l-2 border-brand pl-3">{p}</li>
                     ))}
                   </ul>
-                  <ExternalButton href={DRIVER_FORMS[m.id]} variant={m.id === "aluguer" ? "primary" : "outline"} className="mt-6 w-full sm:w-auto">{m.cta}</ExternalButton>
+                  <a href={`#candidatura-${m.id}`} className={buttonClass(m.id === "aluguer" ? "primary" : "outline", "lg", "mt-6 w-full sm:w-auto")}>{m.cta}</a>
                 </div>
               </article>
             ))}
@@ -292,27 +285,35 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
         </Container>
       </Section>
 
-      {/* Candidatura: documentos à mão e os dois formulários do WeGest */}
+      {/* Candidatura: os dois formulários (Aluguer e Slot) no site, com os documentos à mão ao lado */}
       <Section id="candidatura" surface aria-labelledby="candidatura-titulo" className="scroll-mt-16">
-        <Container className="grid gap-10 lg:grid-cols-2 lg:items-start">
-          <div>
+        {/* Âncoras dos botões "Candidatar-me": escolhem o formulário certo */}
+        <span id="candidatura-aluguer" className="block scroll-mt-16" aria-hidden />
+        <span id="candidatura-slot" className="block scroll-mt-16" aria-hidden />
+        <Container className="grid gap-10 lg:grid-cols-5 lg:items-start">
+          <div className="lg:col-span-2">
             <h2 id="candidatura-titulo" className="display text-h2">Comece a faturar já</h2>
             <p className="mt-3 text-copy-secondary">
-              Escolha a sua situação e preencha o formulário: são cerca de 2 minutos e não tem compromisso. Ligamos-lhe em menos de 24 horas.
+              Escolha a sua situação e deixe-nos o contacto: são cerca de 2 minutos e não tem compromisso. Ligamos-lhe em menos de 24 horas para tratar do resto.
             </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <ExternalButton href={DRIVER_FORMS.aluguer}>Preciso de carro</ExternalButton>
-              <ExternalButton href={DRIVER_FORMS.slot} variant="outline">Tenho carro (Slot)</ExternalButton>
+            <div className="mt-8 rounded-panel border border-line bg-panel p-6">
+              <h3 className="font-bold">Tenha à mão para depois</h3>
+              <ul className="mt-4 grid gap-y-2 text-copy-secondary">
+                {DOCUMENTS.map((d) => (
+                  <li key={d} className="border-l-2 border-brand pl-3">{d}</li>
+                ))}
+              </ul>
             </div>
-            <p className="mt-3 text-body-small text-copy-muted">O formulário abre noutro separador, no sistema de gestão da DÉCADA OUSADA.</p>
           </div>
-          <div className="rounded-panel border border-line bg-panel p-6 sm:p-8">
-            <h3 className="font-bold">Tenha à mão</h3>
-            <ul className="mt-4 grid gap-x-6 gap-y-2 text-copy-secondary sm:grid-cols-2">
-              {DOCUMENTS.map((d) => (
-                <li key={d} className="border-l-2 border-brand pl-3">{d}</li>
-              ))}
-            </ul>
+          <div className="lg:col-span-3">
+            {/* Formulários do WeGest incorporados, ou os do site (DRIVER_FORM_KIND, docs/motoristas-formularios.md) */}
+            {DRIVER_FORM_KIND === "embed" ? (
+              <DriverFormEmbed />
+            ) : driverLeadsReady() ? (
+              <DriverLeadForm siteKey={process.env.TURNSTILE_SITE_KEY || undefined} />
+            ) : (
+              <HostedForms />
+            )}
           </div>
         </Container>
       </Section>

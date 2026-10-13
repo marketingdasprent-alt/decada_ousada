@@ -62,3 +62,42 @@ export const bookingRequestSchema = quoteRequestSchema.extend({
 });
 
 export type CustomerFormValues = z.input<typeof customerSchema>;
+
+// ───────────────────────────── Motoristas (/motoristas) ─────────────────────────────
+
+const leadContact = {
+  name: z.string().trim().min(3, "Indique o nome.").max(120, "O nome é demasiado longo."),
+  email: z.string().trim().min(1, "Indique o email.").max(254).pipe(z.email("Indique um email válido, por exemplo nome@exemplo.pt.")),
+  phone: z.string().trim().min(1, "Indique o telefone ou WhatsApp.").regex(/^\+?[0-9 ]{9,16}$/, "Indique um telefone com 9 dígitos, ou com o indicativo do país (+351)."),
+  yesNo: z.enum(["sim", "nao"], "Escolha Sim ou Não."),
+};
+
+/**
+ * Pedido de contacto de motorista: os campos dos formulários do WeGest (TVDE GERAL e SLOT).
+ * `website` é um campo escondido: quem o preenche é um robô. `captcha` é o token do Turnstile.
+ */
+export const driverLeadSchema = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("aluguer"),
+    name: leadContact.name,
+    email: leadContact.email,
+    phone: leadContact.phone,
+    hasTvdeLicense: leadContact.yesNo.refine((v) => v === "sim", "A licença TVDE é obrigatória por lei para trabalhar como motorista TVDE."),
+    notes: z.string().trim().max(1000, "Use no máximo 1000 caracteres.").default(""),
+    website: z.string().default(""),
+    captcha: z.string().default(""),
+  }),
+  z.object({
+    mode: z.literal("slot"),
+    name: leadContact.name,
+    email: leadContact.email,
+    phone: leadContact.phone,
+    worksTvde: leadContact.yesNo,
+    vehicle: z.string().trim().min(2, "Indique a sua viatura, ou escreva que não tem.").max(120, "Use no máximo 120 caracteres."),
+    website: z.string().default(""),
+    captcha: z.string().default(""),
+  }),
+]);
+
+export type DriverLeadInput = z.infer<typeof driverLeadSchema>;
+
