@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { CountUp } from "@/components/drivers/count-up";
+import { DriverApplyDialog } from "@/components/drivers/driver-apply-dialog";
 import { DriverFormEmbed } from "@/components/drivers/driver-form-embed";
 import { DriverLeadForm } from "@/components/drivers/driver-lead-form";
 import { DriversHero } from "@/components/drivers/drivers-hero";
@@ -208,7 +209,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
                       <li key={p} className="border-l-2 border-brand pl-3">{p}</li>
                     ))}
                   </ul>
-                  <a href={`#candidatura-${m.id}`} className={buttonClass(m.id === "aluguer" ? "primary" : "outline", "lg", "mt-6 w-full sm:w-auto")}>{m.cta}</a>
+                  <a href={`#candidatura-${m.id}`} data-candidatura={m.id} className={buttonClass(m.id === "aluguer" ? "primary" : "outline", "lg", "mt-6 w-full sm:w-auto")}>{m.cta}</a>
                 </div>
               </article>
             ))}
@@ -349,6 +350,9 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
           </ul>
         </Container>
       </section>
+
+      {/* Popup da candidatura: abre com os botões data-candidatura da página */}
+      <DriverApplyDialog />
     </>
   );
 }

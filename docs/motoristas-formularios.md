@@ -18,6 +18,11 @@ depois de o formulário estar à vista, o site troca o iframe por um botão que
 abre o formulário noutro separador. Quando o WeGest permitir, passa a
 aparecer sem novo deploy.
 
+Os botões "Preciso de carro" e "Tenho carro" (topo, secção Aluguer ou Slot,
+selo "2 min") abrem o formulário num popup (`DriverApplyDialog`), sem sair do
+sítio. Qualquer link com `data-candidatura="aluguer"` ou `"slot"` abre-o; sem
+JavaScript, o link leva à secção do formulário.
+
 Para voltar aos formulários do próprio site, `DRIVER_FORM_KIND = "site"`
 (secções abaixo).
 

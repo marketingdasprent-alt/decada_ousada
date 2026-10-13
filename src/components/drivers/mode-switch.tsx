@@ -13,9 +13,13 @@ const MODES: Array<{ id: DriverMode; title: string; text: string }> = [
 /** Âncoras que escolhem o formulário ao chegar (botões "Candidatar-me" da página). */
 const HASH_MODE: Record<string, DriverMode> = { "#candidatura-aluguer": "aluguer", "#candidatura-slot": "slot" };
 
-/** Os botões da página levam a #candidatura-aluguer / #candidatura-slot: escolhe o formulário certo. */
-export function useModeFromHash(onMode: (mode: DriverMode) => void) {
+/**
+ * Os botões da página levam a #candidatura-aluguer / #candidatura-slot: escolhe o formulário
+ * certo. `enabled` desliga-o no popup, que recebe a modalidade de quem o abriu.
+ */
+export function useModeFromHash(onMode: (mode: DriverMode) => void, enabled = true) {
   useEffect(() => {
+    if (!enabled) return;
     const sync = () => {
       const m = HASH_MODE[window.location.hash];
       if (m) onMode(m);
@@ -26,7 +30,7 @@ export function useModeFromHash(onMode: (mode: DriverMode) => void) {
       window.clearTimeout(first);
       window.removeEventListener("hashchange", sync);
     };
-  }, [onMode]);
+  }, [onMode, enabled]);
 }
 
 /** A escolha que muda o formulário: com ou sem carro. */
