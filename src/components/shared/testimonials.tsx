@@ -15,7 +15,8 @@ interface Testimonial {
   text: string;
   author: string;
   initials: string;
-  rating: 1 | 2 | 3 | 4 | 5;
+  /** Nota do painel de avaliações. Mensagens enviadas à equipa não têm nota: sem estrelas. */
+  rating?: 1 | 2 | 3 | 4 | 5;
 }
 
 /**
@@ -24,8 +25,13 @@ interface Testimonial {
  * ("há 1 ano"): numa página estática ficariam erradas com o tempo. Nunca juntar aqui
  * avaliações de outra empresa (DECISIONS.md, 2026-10-12). TVDE: as três que falam
  * explicitamente de motoristas/TVDE (indicação da equipa); as restantes são de clientes.
+ * As três primeiras TVDE são mensagens que motoristas enviaram à equipa por WhatsApp,
+ * publicadas com autorização deles (2026-10-13): excertos sem edição, sem nota em estrelas.
  */
 const TESTIMONIALS: Testimonial[] = [
+  { service: "tvde", author: "Antonio Dias", initials: "AD", text: "Já tenho o carro na minha posse. É para agradecer uma vez mais pela atenção." },
+  { service: "tvde", author: "Felipe Frascione", initials: "FF", text: "Passando só para agradecer o que você e a empresa fez por mim ... muito obrigado pela ajuda e acima de tudo pela consideração ... Obrigado de coração !!" },
+  { service: "tvde", author: "Gabriela", initials: "G", text: "Queria te agradecer ali pelo dinheiro da campanha que entrou. Ajuda bastante 🙏🙏🙏🙏 vocês são feras" },
   { service: "tvde", author: "Patricia Silva", initials: "PS", rating: 5, text: "Ótima! Me fez pensar de uma forma diferente e ter mais ânimo para continuar como motorista" },
   { service: "tvde", author: "Samuel Guimarães", initials: "SG", rating: 5, text: "Muito esclarecedor. A primeira impressão, é de que estão dispostos a realmente dar valor ao mercado de TVDE." },
   { service: "tvde", author: "Daiane Goulart", initials: "DG", rating: 5, text: "Muito boa convenção hoje pela manhã, para mais convencimento e tirar todas suas dúvidas." },
@@ -112,9 +118,9 @@ function TestimonialCard({ t, expanded, onToggle }: { t: Testimonial; expanded: 
       <div className="flex items-start justify-between gap-3">
         {/* Aspas como marca gráfica, na cor da região */}
         <span className="display -mt-1 h-8 text-h1 text-brand" aria-hidden>“</span>
-        <Stars rating={t.rating} />
+        {t.rating && <Stars rating={t.rating} />}
       </div>
-      <span className="sr-only">{t.rating} em 5 estrelas</span>
+      {t.rating && <span className="sr-only">{t.rating} em 5 estrelas</span>}
       <blockquote ref={quote} id={id} className={cn("mt-3 text-body-large text-copy", !expanded && "line-clamp-5")}>
         {t.text}
       </blockquote>
