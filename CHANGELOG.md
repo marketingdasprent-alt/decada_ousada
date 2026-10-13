@@ -3,6 +3,14 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.14.2]: 2026-10-13
+
+### Changed
+
+- `/motoristas`: the "Comece a faturar já" section shows the same direct
+  buttons as the hero (`ApplyChoice`) instead of the embedded WeGest form,
+  which stayed blank for a few seconds (`DRIVER_FORM_KIND = "links"`).
+
 ## [0.14.1]: 2026-10-13
 
 ### Changed
