@@ -57,7 +57,7 @@ export function DriverApplyDialog() {
       <button type="button" tabIndex={-1} aria-label="Fechar candidatura" className="absolute inset-0 cursor-default bg-overlay" onClick={() => setMode(null)} />
       <div ref={panel} className="relative flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-t-panel bg-panel shadow-overlay sm:rounded-panel">
         <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-3 sm:px-6">
-          <h2 id="candidatura-popup-titulo" className="display text-h3">Candidatura</h2>
+          <h2 id="candidatura-popup-titulo" className="display text-h3">{mode === "aluguer" ? "Preciso de carro" : "Tenho carro"}</h2>
           <button
             type="button"
             onClick={() => setMode(null)}
@@ -67,7 +67,7 @@ export function DriverApplyDialog() {
             <X className="size-5" aria-hidden />
           </button>
         </div>
-        <div className="overflow-y-auto px-5 py-5 sm:px-6">
+        <div className="overflow-y-auto">
           <DriverFormEmbed key={mode} initialMode={mode} inDialog />
         </div>
       </div>

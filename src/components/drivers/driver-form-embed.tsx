@@ -71,15 +71,18 @@ export function DriverFormEmbed({ initialMode = "aluguer", inDialog = false }: {
     return () => window.clearTimeout(timer);
   }, [visible, mode, height]);
 
-  const src = `${DRIVER_FORMS[mode]}?embed=1`;
+  // `origem` também muda o endereço: os browsers que guardaram a resposta antiga do WeGest
+  // (X-Frame-Options: DENY) pedem-na de novo; um 304 não apaga esse cabeçalho da cache
+  const src = `${DRIVER_FORMS[mode]}?embed=1&origem=site`;
 
   return (
     <div className={inDialog ? undefined : "rounded-panel border border-line bg-panel p-6 sm:p-8"}>
-      <ModeSwitch mode={mode} onChange={choose} labelId={`${uid}-modo`} />
+      {/* No popup a escolha já foi feita no botão: mostra logo o formulário */}
+      {!inDialog && <ModeSwitch mode={mode} onChange={choose} labelId={`${uid}-modo`} />}
 
-      <div ref={box} className="mt-6">
+      <div ref={box} className={inDialog ? undefined : "mt-6"}>
         {blocked ? (
-          <div className="rounded-panel bg-panel-alt p-5">
+          <div className={inDialog ? "m-5 rounded-panel bg-panel-alt p-5" : "rounded-panel bg-panel-alt p-5"}>
             <p className="font-semibold">O formulário abre noutro separador.</p>
             <p className="mt-1 text-body-small text-copy-secondary">É o formulário de candidatura da DÉCADA OUSADA, no sistema de gestão. São cerca de 2 minutos.</p>
             <a href={DRIVER_FORMS[mode]} target="_blank" rel="noopener noreferrer" className={buttonClass("primary", "lg", "mt-4")}>
@@ -93,7 +96,7 @@ export function DriverFormEmbed({ initialMode = "aluguer", inDialog = false }: {
             ref={frame}
             src={src}
             title={TITLE[mode]}
-            loading="lazy"
+            loading={inDialog ? "eager" : "lazy"}
             className="block min-h-150 w-full border-0"
             style={height ? { height } : undefined}
           />

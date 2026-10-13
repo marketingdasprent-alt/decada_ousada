@@ -1,10 +1,22 @@
 # Formulários de motoristas (/motoristas)
 
-## Hoje: botões diretos para os formulários do WeGest
+## Hoje: o formulário do WeGest num popup
 
-`DRIVER_FORM_KIND = "links"` (`src/domain/drivers`). A secção "Comece a
-faturar já" mostra os mesmos dois cartões do topo (`ApplyChoice`): "Preciso de
-carro" abre o formulário TVDE GERAL e "Tenho carro" o SLOT, noutro separador.
+`DRIVER_FORM_OPEN = "popup"` (`src/domain/drivers`). Todos os botões de
+candidatura (os cartões do topo e da secção "Comece a faturar já", os botões
+da secção Aluguer ou Slot e o selo "2 min") abrem um popup na mesma página com
+o formulário do WeGest já carregado: "Preciso de carro" o TVDE GERAL, "Tenho
+carro" o SLOT. O WeGest permite a incorporação desde 2026-10-13
+(`frame-ancestors *`).
+
+O endereço do embed leva `&origem=site`. Além de identificar a origem, força
+os browsers que guardaram a resposta antiga do WeGest (com
+`X-Frame-Options: DENY`) a pedi-la de novo: o WeGest responde 304 quando o
+HTML não muda, e um 304 não apaga esse cabeçalho da cache. Se um dia voltar a
+acontecer, mudar o valor do parâmetro.
+
+Com `DRIVER_FORM_OPEN = "tab"` os mesmos botões abrem o formulário noutro
+separador. A secção mostra os cartões (`DRIVER_FORM_KIND = "links"`).
 
 ## Formulários do WeGest incorporados (`DRIVER_FORM_KIND = "embed"`)
 
