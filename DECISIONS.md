@@ -462,3 +462,44 @@ Infrastructure (repository alignment).
 DATE:
 2026-10-12
 ```
+
+---
+
+```
+DECISION:
+/motoristas joins the original landing (landing-motoristas.html) with the
+native page (team request, 2026-10-13). Taken from the original, rebuilt
+with the site's components and tokens (src/components/drivers):
+- Light hero with a photo collage (`DriversHero`): driver and passenger as
+  the main photo, an EV charging and a regional photo tilted on top, the
+  "Operador TVDE certificado" `SlantTag`, a "Pagamento da semana" note with
+  a pulsing dot and a rotating "2 min" badge linking to #candidatura. The
+  brand red of the title now sits on the light page (AA); on the old dark
+  photo hero it failed contrast. Nothing covers a face.
+- Photo strip (Continente only: its captions name Continente cities) and
+  crossed tapes, both through `Marquee`: moves on its own, speeds up with
+  scroll, reverses when scrolling up; paused and scrollable with reduced
+  motion.
+- Numbers count up when they come into view (`CountUp`); the server HTML and
+  screen readers always get the final value.
+Kept from the original look on purpose: tilts, overlap and motion. Not
+kept: its large radii, fonts and colours (the site's tokens apply).
+New tokens: --line-height-display-loose (1.05; at 0.95 the accent of
+"À" touched the line above) and --duration-orbit (16 s) with the utilities
+leading-display-loose and animate-orbit.
+
+REASON:
+The native page read flat next to the original, and its red title failed
+contrast on the dark photo.
+
+SCOPE:
+src/app/[region]/motoristas/page.tsx, src/components/drivers/,
+src/styles/tokens.css, src/styles/tailwind.css.
+
+LEVEL:
+Page design (Level 3) and two new tokens (Level 1 addition).
+
+DATE:
+2026-10-13
+```
+
