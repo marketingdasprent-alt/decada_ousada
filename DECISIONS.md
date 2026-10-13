@@ -691,3 +691,28 @@ DATE:
 2026-10-13
 ```
 
+---
+
+```
+DECISION:
+The application section of /motoristas ("Comece a faturar já") shows the
+same two direct buttons as the hero instead of the embedded WeGest form
+(team request, 2026-10-13): the embed stayed blank for a few seconds before
+offering a button. `DRIVER_FORM_KIND` gains "links" (now the default); the
+two cards live in one component (`ApplyChoice`) used by the hero and the
+section. "embed" and "site" stay available.
+
+REASON:
+One click to the form, everywhere on the page.
+
+SCOPE:
+src/components/drivers/apply-choice.tsx, hosted-forms.tsx, drivers-hero.tsx,
+src/domain/drivers, /motoristas page, docs/motoristas-formularios.md.
+
+LEVEL:
+Feature (interaction).
+
+DATE:
+2026-10-13
+```
+

@@ -311,10 +311,10 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
             </div>
           </div>
           <div className="lg:col-span-3">
-            {/* Formulários do WeGest incorporados, ou os do site (DRIVER_FORM_KIND, docs/motoristas-formularios.md) */}
+            {/* Botões diretos, formulários do WeGest incorporados ou os do site (DRIVER_FORM_KIND, docs/motoristas-formularios.md) */}
             {DRIVER_FORM_KIND === "embed" ? (
               <DriverFormEmbed />
-            ) : driverLeadsReady() ? (
+            ) : DRIVER_FORM_KIND === "site" && driverLeadsReady() ? (
               <DriverLeadForm siteKey={process.env.TURNSTILE_SITE_KEY || undefined} />
             ) : (
               <HostedForms />

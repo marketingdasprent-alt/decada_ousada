@@ -1,8 +1,14 @@
 # Formulários de motoristas (/motoristas)
 
-## Hoje: formulários do WeGest incorporados (teste da equipa)
+## Hoje: botões diretos para os formulários do WeGest
 
-`DRIVER_FORM_KIND = "embed"` (`src/domain/drivers`). A secção mostra o
+`DRIVER_FORM_KIND = "links"` (`src/domain/drivers`). A secção "Comece a
+faturar já" mostra os mesmos dois cartões do topo (`ApplyChoice`): "Preciso de
+carro" abre o formulário TVDE GERAL e "Tenho carro" o SLOT, noutro separador.
+
+## Formulários do WeGest incorporados (`DRIVER_FORM_KIND = "embed"`)
+
+A secção mostra o
 formulário do WeGest dentro da página (`?embed=1`), com a escolha "Preciso de
 carro" / "Tenho carro". A altura acompanha o formulário: o WeGest envia
 `{ tipo: "wegest-formulario:altura", altura }` por postMessage e o site só

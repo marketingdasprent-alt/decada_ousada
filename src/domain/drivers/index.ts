@@ -35,12 +35,14 @@ export const DRIVER_LEAD_FORMS: Record<DriverMode, { formId: string; campaign: s
 };
 
 /**
- * Que formulário mostra /motoristas:
+ * O que mostra a secção de candidatura de /motoristas:
+ *   "links" → os botões diretos para os formulários do WeGest, iguais aos do topo (pedido da
+ *             equipa, 2026-10-13)
  *   "embed" → os formulários do WeGest incorporados (?embed=1), com o botão para os abrir
- *             noutro separador se o WeGest não deixar incorporar (teste da equipa, 2026-10-13)
+ *             noutro separador se o WeGest não deixar incorporar
  *   "site"  → os formulários do próprio site, que gravam o lead no WeGest (DriverLeadForm)
  */
-export const DRIVER_FORM_KIND: "embed" | "site" = "embed";
+export const DRIVER_FORM_KIND: "links" | "embed" | "site" = "links";
 
 /**
  * Como abrem os botões de candidatura de /motoristas (data-candidatura):
