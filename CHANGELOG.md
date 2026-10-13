@@ -3,6 +3,22 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.12.0]: 2026-10-13
+
+### Changed
+
+- `/motoristas` joins the original landing with the native page: light hero
+  with a tilted photo collage, the "Operador TVDE certificado" tag, a
+  "Pagamento da semana" note and a rotating "2 min" badge (`DriversHero`); a
+  photo strip of Continente cities and two crossed tapes that move with the
+  scroll (`Marquee`); numbers that count up (`CountUp`).
+
+### Fixed
+
+- `/motoristas` title: the brand red now sits on a light background (it
+  failed contrast on the dark photo) and the two lines no longer touch (new
+  token `--line-height-display-loose`).
+
 ## [0.11.1]: 2026-10-12
 
 ### Changed

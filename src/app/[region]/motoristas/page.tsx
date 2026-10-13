@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { CountUp } from "@/components/drivers/count-up";
+import { DriversHero } from "@/components/drivers/drivers-hero";
+import { Marquee } from "@/components/drivers/marquee";
 import { CoverPhoto } from "@/components/shared/cover-photo";
-import { Hero } from "@/components/shared/hero";
 import { InstagramFeed } from "@/components/shared/instagram";
 import { Testimonials } from "@/components/shared/testimonials";
 import { ButtonLink, buttonClass, Container, Section, SectionHeading } from "@/components/shared/ui";
@@ -11,7 +13,6 @@ import { DRIVER_CONTACT, DRIVER_FORMS, type DriverMode } from "@/domain/drivers"
 import { getOffer } from "@/domain/vehicle";
 import { cn } from "@/lib/cn";
 import { regionFromParams } from "@/lib/region";
-import { REGION_IMAGERY } from "@/lib/region-imagery";
 import { listVehicles } from "@/services/wegest";
 
 export const metadata: Metadata = {
@@ -29,6 +30,22 @@ const PROOF = [
   { value: "7 dias", label: "de suporte por semana, fins de semana incluídos" },
   { value: "24 h", label: "para lhe ligarmos depois da candidatura" },
 ];
+
+/** Faixa de fotos (Continente): lugares e momentos ao volante. Fotos do Unsplash, legenda só com o que mostram. */
+const STRIP = [
+  { id: "photo-1658750424913-ee539cd2119a", caption: "Porto" },
+  { id: "photo-1612709060421-596380268eaf", caption: "Ao volante" },
+  { id: "photo-1562002647-2615618762c5", caption: "Coimbra", wide: true },
+  { id: "photo-1707758283052-f1e3a2d42333", caption: "Categoria Green" },
+  { id: "photo-1747345255403-0143c2d5ecd5", caption: "Lisboa" },
+  { id: "photo-1762452494414-6b0b23f78ce0", caption: "Porto ao fim do dia", wide: true },
+  { id: "photo-1527593167147-e9c94a5883e6", caption: "Turno da manhã" },
+  { id: "photo-1635893312205-6abda7db17a0", caption: "Coimbra" },
+  { id: "photo-1626455613245-066bf428283c", caption: "Lisboa ao pôr do sol", wide: true },
+];
+
+const TAPE_PROMISE = ["Conduza", "Fature", "Receba à semana", "Uber", "Bolt", "Suporte 7 dias"];
+const TAPE_FLEET = ["Aluguer", "Slot", "X Saver", "Comfort", "Black", "Green"];
 
 const BENEFITS = [
   { title: "Custos claros e fixos", text: "Renda fixa semanal. Sabe exatamente quanto paga antes de sair de casa." },
@@ -103,27 +120,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
 
   return (
     <>
-      <Hero
-        region={region}
-        images={[REGION_IMAGERY[region].tvde, { id: "photo-1773063449875-332dff62b6e3", x: 50, y: 40, subject: "Motorista ao volante" }]}
-        title={<>Conduza. Fature.<br /><span className="text-brand">Receba à semana.</span></>}
-        description="Renda fixa semanal, pagamento todas as semanas e suporte 7 dias. Já somos mais de 500 motoristas."
-        crumbs={[{ label: "Motoristas" }]}
-      >
-        {/* A escolha que muda a candidatura: com ou sem carro */}
-        <p className="font-semibold" id="modalidade-titulo">Como quer trabalhar?</p>
-        <div className="mt-3 grid max-w-xl gap-3 sm:grid-cols-2" role="group" aria-labelledby="modalidade-titulo">
-          <a href="#aluguer" className="rounded-panel bg-brand px-5 py-4 text-on-brand transition-colors hover:bg-brand-hover">
-            <span className="block font-bold">Preciso de carro</span>
-            <span className="text-body-small">Alugo uma viatura vossa</span>
-          </a>
-          <a href="#slot" className="rounded-panel border border-on-dark/40 px-5 py-4 text-on-dark transition-colors hover:bg-on-dark/10">
-            <span className="block font-bold">Tenho carro</span>
-            <span className="text-body-small text-on-dark/80">Trabalho como Slot</span>
-          </a>
-        </div>
-        <p className="mt-5 text-body-small text-on-dark/80">Parceiro oficial Uber e Bolt · Top 5% PME 2024</p>
-      </Hero>
+      <DriversHero region={region} />
 
       {/* Números sobre uma foto da estrada, não sobre fundo liso */}
       <section aria-label="A DÉCADA OUSADA em números" className="relative isolate overflow-hidden bg-panel-dark text-on-dark">
@@ -132,7 +129,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
           <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {PROOF.map((p) => (
               <li key={p.value} className="border-t border-on-dark/30 pt-4">
-                <p className="display text-h1 tabular">{p.value}</p>
+                <p className="display text-h1 tabular"><CountUp value={p.value} /></p>
                 <p className="mt-1 text-on-dark/85">{p.label}</p>
               </li>
             ))}
@@ -143,6 +140,19 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
           </ul>
         </Container>
       </section>
+
+      {region === "mainland" && (
+        <Marquee pauseOnHover className="py-12" trackClassName="gap-6 pr-6">
+          {STRIP.map((p, i) => (
+            <figure key={`${p.id}-${i}`} className={cn("shrink-0", p.wide ? "w-72 sm:w-96" : "w-48 sm:w-64", i % 2 === 0 ? "-rotate-2" : "rotate-2")}>
+              <div className={cn("relative overflow-hidden rounded-panel bg-panel-sunken shadow-floating", p.wide ? "aspect-4/3" : "aspect-4/5")}>
+                <CoverPhoto src={photo(p.id)} sizes="(min-width: 640px) 24rem, 18rem" />
+              </div>
+              <figcaption className="mt-2 pl-1 text-caption font-semibold tracking-wider text-copy-muted uppercase">{p.caption}</figcaption>
+            </figure>
+          ))}
+        </Marquee>
+      )}
 
       {/* Benefícios: texto à esquerda, foto a ocupar a coluna da direita */}
       <Section>
@@ -163,6 +173,26 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
           </div>
         </Container>
       </Section>
+
+      {/* Fitas cruzadas: a promessa e as modalidades, a correr em sentidos opostos */}
+      <div className="overflow-hidden py-12" aria-hidden>
+        <Marquee speed={0.7} className="relative z-10 -mx-8 -rotate-2 bg-brand py-3 text-on-brand shadow-floating">
+          {TAPE_PROMISE.map((t) => (
+            <span key={t} className="display flex items-center gap-6 px-6 text-h2">
+              {t}
+              <span className="size-3 rounded-pill bg-on-brand/60" />
+            </span>
+          ))}
+        </Marquee>
+        <Marquee direction={1} speed={0.7} className="-mx-8 -mt-4 rotate-1 bg-panel-dark py-3 text-on-dark">
+          {TAPE_FLEET.map((t) => (
+            <span key={t} className="display flex items-center gap-6 px-6 text-h2">
+              {t}
+              <span className="size-3 rounded-pill bg-on-dark/60" />
+            </span>
+          ))}
+        </Marquee>
+      </div>
 
       {/* Aluguer ou Slot: as duas portas de entrada, cada uma com o seu formulário */}
       <Section surface aria-labelledby="modalidades-titulo">

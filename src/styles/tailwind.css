@@ -219,3 +219,18 @@
     transform: translateY(var(--space-md));
   }
 }
+
+/* Títulos display com acentos em duas linhas (página de motoristas): entrelinha um pouco mais aberta */
+@utility leading-display-loose {
+  line-height: var(--line-height-display-loose);
+}
+
+/* Rotação contínua lenta (selo da página de motoristas). Com movimento reduzido usar motion-reduce:animate-none */
+@utility animate-orbit {
+  animation: orbit var(--duration-orbit) linear infinite;
+}
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}

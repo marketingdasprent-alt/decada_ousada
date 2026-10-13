@@ -117,6 +117,7 @@
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
   --line-height-tight: 0.95;
+  --line-height-display-loose: 1.05; /* display em duas linhas com acentos (À, É): 0.95 encostava o acento à linha de cima */
   --line-height-heading: 1.2;
   --line-height-body: 1.6;
 
@@ -203,6 +204,7 @@
   --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
   --stagger-step: 70ms;        /* delay between items of one entrance (testimonials) */
+  --duration-orbit: 16s;       /* rotação contínua lenta: selo da página de motoristas */
 
   /* ------------------------------------------------------------ */
   /* CONTAINERS                                                     */
