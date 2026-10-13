@@ -23,9 +23,9 @@ const TITLE: Record<DriverMode, string> = {
  * Enquanto o WeGest enviar X-Frame-Options: DENY o browser não mostra o iframe; aí não chega
  * nenhuma mensagem e aparece o botão para abrir o formulário noutro separador.
  */
-export function DriverFormEmbed() {
+export function DriverFormEmbed({ initialMode = "aluguer", inDialog = false }: { initialMode?: DriverMode; inDialog?: boolean }) {
   const uid = useId();
-  const [mode, setMode] = useState<DriverMode>("aluguer");
+  const [mode, setMode] = useState<DriverMode>(initialMode);
   const [height, setHeight] = useState<number | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -37,7 +37,7 @@ export function DriverFormEmbed() {
     setHeight(null);
     setBlocked(false);
   }, []);
-  useModeFromHash(choose);
+  useModeFromHash(choose, !inDialog);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -74,7 +74,7 @@ export function DriverFormEmbed() {
   const src = `${DRIVER_FORMS[mode]}?embed=1`;
 
   return (
-    <div className="rounded-panel border border-line bg-panel p-6 sm:p-8">
+    <div className={inDialog ? undefined : "rounded-panel border border-line bg-panel p-6 sm:p-8"}>
       <ModeSwitch mode={mode} onChange={choose} labelId={`${uid}-modo`} />
 
       <div ref={box} className="mt-6">

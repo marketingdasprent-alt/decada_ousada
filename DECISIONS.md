@@ -634,3 +634,34 @@ DATE:
 2026-10-13
 ```
 
+---
+
+```
+DECISION:
+The application buttons of /motoristas open the WeGest form in a popup
+(`DriverApplyDialog`) instead of scrolling to another section (Thiago,
+2026-10-13). Any link with `data-candidatura="aluguer|slot"` opens it: the
+hero cards, the Aluguer/Slot CTAs and the "2 min" badge. One document click
+listener, so the buttons stay in server components; without JavaScript the
+link still goes to the form section. Same dialog pattern as the vehicle
+filters (role="dialog", aria-modal, overlay, useFocusTrap: Esc closes, focus
+stays inside and returns to the button), page scroll locked while open.
+Full height on phones. "Tenho carro" opens the Slot form the same way, for
+consistency.
+
+REASON:
+Jumping between sections lost the visitor; the team wanted the form to open
+where the click happens.
+
+SCOPE:
+src/components/drivers/driver-apply-dialog.tsx, driver-form-embed.tsx,
+mode-switch.tsx, drivers-hero.tsx, /motoristas page,
+docs/motoristas-formularios.md.
+
+LEVEL:
+Feature (interaction).
+
+DATE:
+2026-10-13
+```
+

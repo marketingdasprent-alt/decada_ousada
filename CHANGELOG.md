@@ -3,6 +3,14 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.14.0]: 2026-10-13
+
+### Changed
+
+- `/motoristas`: "Preciso de carro" and "Tenho carro" (hero, Aluguer/Slot
+  section, "2 min" badge) open the WeGest form in a popup instead of jumping
+  to another section (`DriverApplyDialog`, any `data-candidatura` link).
+
 ## [0.13.1]: 2026-10-13
 
 ### Added
