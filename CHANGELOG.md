@@ -3,6 +3,14 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.14.1]: 2026-10-13
+
+### Changed
+
+- `/motoristas`: the application buttons open the WeGest form directly in a
+  new tab, without the popup (`DRIVER_FORM_OPEN = "tab"`; "popup" brings it
+  back once WeGest allows embedding).
+
 ## [0.14.0]: 2026-10-13
 
 ### Changed

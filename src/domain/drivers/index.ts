@@ -42,5 +42,13 @@ export const DRIVER_LEAD_FORMS: Record<DriverMode, { formId: string; campaign: s
  */
 export const DRIVER_FORM_KIND: "embed" | "site" = "embed";
 
+/**
+ * Como abrem os botões de candidatura de /motoristas (data-candidatura):
+ *   "tab"   → o formulário do WeGest diretamente, noutro separador (pedido da equipa, 2026-10-13:
+ *             enquanto o WeGest não deixar incorporar, o popup só acrescentava um passo)
+ *   "popup" → o formulário incorporado num popup (DriverApplyDialog)
+ */
+export const DRIVER_FORM_OPEN: "tab" | "popup" = "tab";
+
 /** Área do motorista no WeGest (para quem já trabalha com a DÉCADA OUSADA). */
 export const DRIVER_AREA_URL = "https://wegest.pt/motorista/login";

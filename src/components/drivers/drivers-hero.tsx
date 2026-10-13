@@ -5,6 +5,8 @@ import { CoverPhoto } from "../shared/cover-photo";
 import { Breadcrumbs } from "../shared/page-header";
 import { Container, Section, SlantTag } from "../shared/ui";
 
+import { applyLink, opensNewTab } from "./apply-link";
+
 const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&q=70`;
 
 /** Foto pequena da região na colagem: Lisboa no Continente, estrada açoriana nos Açores. */
@@ -34,24 +36,24 @@ export function DriversHero({ region }: { region: Region }) {
             Renda fixa semanal, pagamento todas as semanas e suporte 7 dias. Já somos mais de 500 motoristas.
           </p>
 
-          {/* A escolha que muda a candidatura: com ou sem carro (abre o popup, DriverApplyDialog) */}
+          {/* A escolha que muda a candidatura: com ou sem carro (abre o formulário, applyLink) */}
           <p className="mt-8 font-semibold" id="modalidade-titulo">Como quer trabalhar?</p>
           <div className="mt-3 grid max-w-xl grid-cols-2 gap-3" role="group" aria-labelledby="modalidade-titulo">
             <a
-              href="#candidatura-aluguer"
-              data-candidatura="aluguer"
+              {...applyLink("aluguer")}
               className="rounded-panel bg-brand px-5 py-4 text-on-brand transition hover:-translate-y-1 hover:bg-brand-hover hover:shadow-floating motion-reduce:hover:translate-y-0"
             >
               <span className="display block text-h3">Preciso de carro</span>
               <span className="text-body-small">Alugo uma viatura vossa</span>
+              {opensNewTab && <span className="sr-only">(abre noutro separador)</span>}
             </a>
             <a
-              href="#candidatura-slot"
-              data-candidatura="slot"
+              {...applyLink("slot")}
               className="rounded-panel border-2 border-copy bg-panel px-5 py-4 transition hover:-translate-y-1 hover:bg-panel-dark hover:text-on-dark hover:shadow-floating motion-reduce:hover:translate-y-0"
             >
               <span className="display block text-h3">Tenho carro</span>
               <span className="text-body-small">Trabalho como Slot</span>
+              {opensNewTab && <span className="sr-only">(abre noutro separador)</span>}
             </a>
           </div>
           <p className="mt-5 text-body-small text-copy-muted">Parceiro oficial Uber e Bolt · Top 5% PME 2024</p>
@@ -99,8 +101,7 @@ function DriversCollage({ region }: { region: Region }) {
 
       {/* Selo a girar: leva à candidatura */}
       <a
-        href="#candidatura-aluguer"
-        data-candidatura="aluguer"
+        {...applyLink("aluguer")}
         className="absolute -top-8 -left-2 flex size-28 items-center justify-center rounded-pill bg-brand text-on-brand shadow-floating transition-transform hover:scale-105 sm:size-32"
       >
         <svg viewBox="0 0 120 120" className="absolute inset-0 size-full animate-orbit motion-reduce:animate-none" aria-hidden>
@@ -112,7 +113,7 @@ function DriversCollage({ region }: { region: Region }) {
           </text>
         </svg>
         <span className="display text-h3" aria-hidden>2 min</span>
-        <span className="sr-only">Candidatar-me: são cerca de 2 minutos</span>
+        <span className="sr-only">Candidatar-me: são cerca de 2 minutos{opensNewTab && " (abre noutro separador)"}</span>
       </a>
     </div>
   );

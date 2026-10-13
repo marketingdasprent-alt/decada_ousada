@@ -665,3 +665,29 @@ DATE:
 2026-10-13
 ```
 
+---
+
+```
+DECISION:
+The application buttons of /motoristas open the WeGest form directly in a
+new tab, without the popup (team request, 2026-10-13). While WeGest refuses
+framing, the popup only added a step: a blank frame, then a button to open
+the form. `DRIVER_FORM_OPEN` (src/domain/drivers) chooses: "tab" now,
+"popup" brings back `DriverApplyDialog` once embedding works. The links
+always point at the WeGest form (`applyLink`), so they also work without
+JavaScript; in popup mode the dialog intercepts the click.
+
+REASON:
+One click to the form.
+
+SCOPE:
+src/components/drivers/apply-link.ts, drivers-hero.tsx, src/domain/drivers,
+/motoristas page, docs/motoristas-formularios.md.
+
+LEVEL:
+Feature (interaction).
+
+DATE:
+2026-10-13
+```
+

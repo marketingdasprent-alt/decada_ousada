@@ -19,9 +19,10 @@ abre o formulário noutro separador. Quando o WeGest permitir, passa a
 aparecer sem novo deploy.
 
 Os botões "Preciso de carro" e "Tenho carro" (topo, secção Aluguer ou Slot,
-selo "2 min") abrem o formulário num popup (`DriverApplyDialog`), sem sair do
-sítio. Qualquer link com `data-candidatura="aluguer"` ou `"slot"` abre-o; sem
-JavaScript, o link leva à secção do formulário.
+selo "2 min") abrem o formulário do WeGest diretamente, noutro separador
+(`DRIVER_FORM_OPEN = "tab"`, `applyLink`). Quando o WeGest deixar incorporar,
+`DRIVER_FORM_OPEN = "popup"` faz os mesmos botões abrirem o formulário num
+popup (`DriverApplyDialog`) em vez de outro separador.
 
 Para voltar aos formulários do próprio site, `DRIVER_FORM_KIND = "site"`
 (secções abaixo).
