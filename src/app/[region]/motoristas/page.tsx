@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { CountUp } from "@/components/drivers/count-up";
+import { applyLink, opensNewTab } from "@/components/drivers/apply-link";
 import { DriverApplyDialog } from "@/components/drivers/driver-apply-dialog";
 import { DriverFormEmbed } from "@/components/drivers/driver-form-embed";
 import { DriverLeadForm } from "@/components/drivers/driver-lead-form";
@@ -12,7 +13,7 @@ import { InstagramFeed } from "@/components/shared/instagram";
 import { Testimonials } from "@/components/shared/testimonials";
 import { ButtonLink, buttonClass, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
-import { DRIVER_CONTACT, DRIVER_FORM_KIND, type DriverMode } from "@/domain/drivers";
+import { DRIVER_CONTACT, DRIVER_FORM_KIND, DRIVER_FORM_OPEN, type DriverMode } from "@/domain/drivers";
 import { getOffer } from "@/domain/vehicle";
 import { cn } from "@/lib/cn";
 import { regionFromParams } from "@/lib/region";
@@ -209,7 +210,10 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
                       <li key={p} className="border-l-2 border-brand pl-3">{p}</li>
                     ))}
                   </ul>
-                  <a href={`#candidatura-${m.id}`} data-candidatura={m.id} className={buttonClass(m.id === "aluguer" ? "primary" : "outline", "lg", "mt-6 w-full sm:w-auto")}>{m.cta}</a>
+                  <a {...applyLink(m.id)} className={buttonClass(m.id === "aluguer" ? "primary" : "outline", "lg", "mt-6 w-full sm:w-auto")}>
+                    {m.cta}
+                    {opensNewTab && <span className="sr-only">(abre noutro separador)</span>}
+                  </a>
                 </div>
               </article>
             ))}
@@ -351,8 +355,8 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
         </Container>
       </section>
 
-      {/* Popup da candidatura: abre com os botões data-candidatura da página */}
-      <DriverApplyDialog />
+      {/* Popup da candidatura: só com DRIVER_FORM_OPEN = "popup" (senão os botões abrem o WeGest) */}
+      {DRIVER_FORM_OPEN === "popup" && <DriverApplyDialog />}
     </>
   );
 }
