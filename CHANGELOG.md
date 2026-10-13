@@ -3,6 +3,14 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.12.1]: 2026-10-13
+
+### Fixed
+
+- Production builds no longer fail with WeGest `429 LIMITE_EXCEDIDO` now that
+  the Rent a Car catalogue has 50 models: the build runs in one process, so
+  the catalogue cache is shared (`experimental.cpus: 1`).
+
 ## [0.12.0]: 2026-10-13
 
 ### Changed
