@@ -3,6 +3,14 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.15.1]: 2026-10-13
+
+### Fixed
+
+- `/motoristas` popup: the WeGest form URL changes on every opening (`&v=…`),
+  so a browser that cached an old blocking answer from WeGest no longer shows
+  "www.wegest.pt está bloqueado" (`ERR_BLOCKED_BY_RESPONSE`).
+
 ## [0.15.0]: 2026-10-13
 
 ### Changed

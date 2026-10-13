@@ -71,9 +71,11 @@ export function DriverFormEmbed({ initialMode = "aluguer", inDialog = false }: {
     return () => window.clearTimeout(timer);
   }, [visible, mode, height]);
 
-  // `origem` também muda o endereço: os browsers que guardaram a resposta antiga do WeGest
-  // (X-Frame-Options: DENY) pedem-na de novo; um 304 não apaga esse cabeçalho da cache
-  const src = `${DRIVER_FORMS[mode]}?embed=1&origem=site`;
+  // No popup o endereço muda a cada abertura (`v`): um browser que guardou uma resposta do WeGest
+  // com bloqueio (X-Frame-Options / frame-ancestors) nunca a reutiliza. O WeGest revalida com 304,
+  // e um 304 não apaga da cache o cabeçalho antigo. A página do WeGest já é max-age=0: não se perde cache.
+  const [openedAt] = useState(() => Date.now().toString(36));
+  const src = `${DRIVER_FORMS[mode]}?embed=1&origem=site${inDialog ? `&v=${openedAt}` : ""}`;
 
   return (
     <div className={inDialog ? undefined : "rounded-panel border border-line bg-panel p-6 sm:p-8"}>
