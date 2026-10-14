@@ -6,9 +6,9 @@
 
 /** Contactos da equipa de motoristas (diferentes dos contactos gerais por região). */
 export const DRIVER_CONTACT = {
-  phone: "+351 912 023 234",
-  phoneHref: "tel:+351912023234",
-  whatsappHref: "https://wa.me/351912023234",
+  phone: "+351 910 102 454",
+  phoneHref: "tel:+351910102454",
+  whatsappHref: "https://wa.me/351910102454",
   email: "motoristas.tvde@decadaousada.pt",
 } as const;
 

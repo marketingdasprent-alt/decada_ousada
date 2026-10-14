@@ -1,9 +1,10 @@
 import { Images, Play } from "lucide-react";
 import Image from "next/image";
 
-import { INSTAGRAM, type InstagramPost } from "@/domain/social";
+import { FACEBOOK, INSTAGRAM, type InstagramPost } from "@/domain/social";
 import { getInstagramPosts } from "@/services/instagram";
 
+import { FacebookIcon } from "./facebook-icon";
 import { InstagramIcon } from "./instagram-icon";
 import { buttonClass, Container, Section, SectionHeading } from "./ui";
 
@@ -60,10 +61,16 @@ export async function InstagramFeed() {
             title={<span id="instagram-titulo">Siga-nos no Instagram</span>}
             description={hasPosts ? `As últimas publicações de @${INSTAGRAM.handle}.` : `Acompanhe a DÉCADA OUSADA em @${INSTAGRAM.handle}.`}
           />
-          <a href={INSTAGRAM.url} target="_blank" rel="noopener noreferrer" className={buttonClass("outline")}>
-            <InstagramIcon className="size-5" />
-            Seguir no Instagram
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a href={INSTAGRAM.url} target="_blank" rel="noopener noreferrer" className={buttonClass("outline")}>
+              <InstagramIcon className="size-5" />
+              Seguir no Instagram
+            </a>
+            <a href={FACEBOOK.url} target="_blank" rel="noopener noreferrer" className={buttonClass("outline")}>
+              <FacebookIcon className="size-5" />
+              Facebook
+            </a>
+          </div>
         </div>
         {hasPosts && (
           <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label={`Publicações de @${INSTAGRAM.handle} no Instagram`}>

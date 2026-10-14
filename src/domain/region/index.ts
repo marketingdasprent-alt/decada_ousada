@@ -32,8 +32,8 @@ export const REGION_CONFIG: Record<Region, RegionConfig> = {
       dark: "/brand/mainland-dark.png",
       square: "/brand/mainland-square.png",
     },
-    // TODO(conteúdo): contactos reais a fornecer pela DÉCADA OUSADA
-    contact: { phone: null, email: null, address: null },
+    // Telefone e email confirmados pela equipa (2026-10-14); morada ainda por fornecer
+    contact: { phone: "+351 910 102 454", email: "motoristas.tvde@decadaousada.pt", address: null },
     seo: {
       title: "DÉCADA OUSADA | Rent a Car e TVDE em Portugal Continental",
       description:
@@ -51,7 +51,8 @@ export const REGION_CONFIG: Record<Region, RegionConfig> = {
       dark: "/brand/azores-dark.png",
       square: "/brand/azores-square.png",
     },
-    contact: { phone: null, email: null, address: null },
+    // Os mesmos contactos do Continente (confirmados pela equipa, 2026-10-14)
+    contact: { phone: "+351 910 102 454", email: "motoristas.tvde@decadaousada.pt", address: null },
     seo: {
       title: "DÉCADA OUSADA Açores | Rent a Car e TVDE",
       description:

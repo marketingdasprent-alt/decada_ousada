@@ -773,3 +773,25 @@ DATE:
 2026-10-13
 ```
 
+
+---
+
+```
+DECISION:
+Contacts confirmed by the team (2026-10-14): phone and WhatsApp
++351 910 102 454 replace +351 912 023 234 on /motoristas, and become the
+site's general phone in both regions, with the email
+motoristas.tvde@decadaousada.pt. The address is still to be provided.
+
+REASON:
+Team request (message with the new number).
+
+SCOPE:
+src/domain/drivers (DRIVER_CONTACT), src/domain/region (REGION_CONFIG.contact).
+
+LEVEL:
+Content (Level 3).
+
+DATE:
+2026-10-14
+```
