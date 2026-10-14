@@ -3,6 +3,20 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.18.3]: 2026-10-14
+
+### Changed
+
+- Pickup points: one component, `PickupPoints`, on the home page,
+  /rent-a-car ("Os nossos balcões") and /contactos ("Balcões"). A list
+  instead of cards, because the WeGest API returns only the name today: title
+  on the left, points on the right with a brand-colour location icon and the
+  name in display type, each linking to its page. Address, opening hours,
+  "Apenas levantamento" and "Ver no mapa" (/contactos) show only when the API
+  has them. No points, no section.
+- Review prompt and report: `PROMPT-MASTER-REVISAO-PONTOS-E-MORADA.md`,
+  `docs/design/revisao-pontos-morada.md`.
+
 ## [0.18.2]: 2026-10-14
 
 ### Changed

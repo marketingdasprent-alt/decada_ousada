@@ -1,18 +1,16 @@
-import Link from "next/link";
-
 import { RegionSwitch } from "@/components/layout/region-switch";
 import { RacIntro } from "@/components/rentacar/rac-intro";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
 import { InstagramFeed } from "@/components/shared/instagram";
+import { PickupPoints } from "@/components/shared/pickup-points";
 import { PriceDisplay } from "@/components/shared/price-display";
 import { Testimonials } from "@/components/shared/testimonials";
-import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
+import { ButtonLink } from "@/components/shared/ui";
 import { TvdeHighlights } from "@/components/tvde/tvde-highlights";
 import { TvdeProcess } from "@/components/tvde/tvde-process";
 import { formatMoney, TVDE_RESERVATION_FEE } from "@/domain/pricing";
 import type { Region } from "@/domain/region";
-import { fillSpanClasses } from "@/lib/grid";
 import { regionFromParams, regionSwitchHref } from "@/lib/region";
 import { REGION_IMAGERY } from "@/lib/region-imagery";
 import { getStartingPrice, listLocations } from "@/services/wegest";
@@ -39,7 +37,6 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
   ]);
   const regionHrefs: Record<Region, string> = { mainland: regionSwitchHref("mainland"), azores: regionSwitchHref("azores") };
 
-  const locationSpans = fillSpanClasses(locations.length, { lg: 4 });
   return (
     <>
       {/* Hero: foto da região, a pesquisa com um separador por serviço (doc §7: os dois com o mesmo peso) */}
@@ -102,21 +99,8 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
       {/* Instagram: últimas publicações de @decada_ousada (pedido da equipa, DECISIONS.md 2026-10-12) */}
       <InstagramFeed />
 
-      {/* Localizações (SEO regional, doc §109): só os pontos que a API devolve; sem nenhum, a secção não aparece */}
-      {locations.length > 0 && <Section><Container>
-        <SectionHeading title={region === "azores" ? "Pontos de levantamento nos Açores" : "Pontos de levantamento"} />
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {locations.map((l, i) => (
-            <li key={l.id} className={locationSpans[i]}>
-              <Link href={`/rent-a-car/${l.slug}`} className="block h-full rounded-panel border border-line bg-panel p-5 transition-colors hover:border-brand">
-                <p className="font-bold">{l.name}</p>
-                {l.address && <p className="mt-1 text-body-small text-copy-secondary">{l.address}</p>}
-                {l.openingHours && <p className="mt-3 text-caption text-copy-muted">{l.openingHours}</p>}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Container></Section>}
+      {/* Localizações (SEO regional, doc §109): só os pontos que a API devolve */}
+      <PickupPoints title={region === "azores" ? "Pontos de levantamento nos Açores" : "Pontos de levantamento"} locations={locations} />
     </>
   );
 }
