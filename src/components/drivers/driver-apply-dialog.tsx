@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import type { DriverMode } from "@/domain/drivers";
+import { track } from "@/lib/analytics";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 
 import { DriverFormEmbed } from "./driver-form-embed";
@@ -34,6 +35,7 @@ export function DriverApplyDialog() {
       e.preventDefault();
       trigger.current = el;
       setMode(m);
+      track("drivers_apply_opened", { mode: m });
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);

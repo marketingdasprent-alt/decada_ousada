@@ -1,8 +1,8 @@
 /**
  * Eventos do funil (doc §106), com os nomes exatos do documento.
- * Ainda sem fornecedor: `track()` só guarda o evento em memória, emite
- * `do:analytics` na window e escreve na consola em desenvolvimento. Ligar um
- * fornecedor (com consentimento de cookies) é escutar esse evento.
+ * `track()` guarda o evento em memória, emite `do:analytics` na window e escreve
+ * na consola em desenvolvimento. O Meta Pixel escuta esse evento, só com
+ * consentimento de marketing (src/components/shared/cookie-consent.tsx).
  * Nunca enviar dados pessoais: só ids, valores e escolhas.
  */
 export type AnalyticsEvent =
@@ -25,6 +25,8 @@ export type AnalyticsEvent =
   | "tvde_application_submitted"
   | "tvde_application_approved"
   | "tvde_application_rejected"
+  /** Popup da candidatura aberto em /motoristas (o envio acontece no formulário do WeGest, que o site não vê). */
+  | "drivers_apply_opened"
   /** Pedido de contacto enviado em /motoristas (dados: `mode`, nunca dados pessoais). */
   | "drivers_lead_submitted";
 

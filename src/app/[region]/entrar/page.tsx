@@ -1,10 +1,13 @@
+import { ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { AuthShell } from "@/components/account/auth-shell";
 import { LoginForm } from "@/components/account/auth-forms";
-import { ButtonLink, Skeleton } from "@/components/shared/ui";
+import { LoginTypeSwitch } from "@/components/account/login-type-switch";
+import { ButtonLink, buttonClass, Skeleton } from "@/components/shared/ui";
+import { DRIVER_AREA_URL } from "@/domain/drivers";
 import type { Region } from "@/domain/region";
 import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
@@ -28,7 +31,8 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[r
 }
 
 async function Login({ region, searchParams }: { region: Region; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const next = firstParam((await searchParams).next);
+  const query = await searchParams;
+  const next = firstParam(query.next);
   if (await getSession()) redirect(next?.startsWith("/") ? next : "/minha-conta");
 
   // Vindo de "Candidatar-me": quase sempre um motorista novo, por isso criar conta vem primeiro
@@ -46,8 +50,29 @@ async function Login({ region, searchParams }: { region: Region; searchParams: P
     );
   }
 
+  // Motorista TVDE: a conta vive no WeGest, por isso o login é o do painel do motorista de lá
+  if (firstParam(query.tipo) === "motorista") {
+    return (
+      <AuthShell region={region} title="Entrar" description="Aceda ao painel do motorista TVDE.">
+        <LoginTypeSwitch current="motorista" next={next} />
+        <p className="text-copy-secondary">
+          O painel do motorista abre no WeGest. Entre com o email e a password da sua conta de motorista.
+        </p>
+        <a href={DRIVER_AREA_URL} className={buttonClass("primary", "lg", "mt-6 w-full")}>
+          Ir para o painel do motorista
+          <ExternalLink className="size-4" aria-hidden />
+        </a>
+        <div className="mt-8 border-t border-line pt-5 text-center">
+          <p className="text-body-small text-copy-secondary">Ainda não trabalha connosco?</p>
+          <ButtonLink href="/motoristas" variant="outline" size="lg" className="mt-3 w-full">Candidatar-me como motorista</ButtonLink>
+        </div>
+      </AuthShell>
+    );
+  }
+
   return (
-    <AuthShell region={region} title="Entrar" description="Aceda à sua área de cliente.">
+    <AuthShell region={region} title="Entrar" description="Aceda à sua área de cliente Rent a Car.">
+      <LoginTypeSwitch current="rentacar" next={next} />
       <LoginForm next={next} />
     </AuthShell>
   );

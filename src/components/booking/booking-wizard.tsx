@@ -420,7 +420,7 @@ export function BookingWizard({
       </div>
 
       {/* Mobile: total, resumo expansível e ação do passo sempre à vista */}
-      <div data-action-bar className="fixed inset-x-0 bottom-0 z-sticky border-t border-line bg-panel shadow-overlay lg:hidden">
+      <div data-action-bar className="fixed inset-x-0 z-sticky border-t border-line bg-panel shadow-overlay lg:hidden">
         {summaryOpen && (
           <div id="resumo-mobile" className="max-h-96 overflow-y-auto border-b border-line p-4">
             {summary}

@@ -3,8 +3,10 @@ import Link from "next/link";
 
 import { REGION_CONFIG, type Region } from "@/domain/region";
 import { FACEBOOK, INSTAGRAM } from "@/domain/social";
+import { META_PIXEL_ID } from "@/lib/meta-pixel";
 import { regionSwitchHref } from "@/lib/region";
 
+import { CookieSettingsButton } from "../shared/cookie-consent";
 import { FacebookIcon } from "../shared/facebook-icon";
 import { InstagramIcon } from "../shared/instagram-icon";
 import { ContactValue } from "../shared/pending";
@@ -43,7 +45,7 @@ export function SiteFooter({ region }: { region: Region }) {
           <h2 className="mb-3 text-body-small font-semibold uppercase tracking-wider text-on-dark">Contactos</h2>
           <ul className="space-y-2 text-body-small max-md:space-y-0">
             <li className="flex items-center gap-2"><Phone className="size-4" aria-hidden /><ContactValue kind="phone" value={cfg.contact.phone} className="hover:text-on-dark max-md:tap-target" /></li>
-            <li className="flex items-center gap-2"><Mail className="size-4" aria-hidden /><ContactValue kind="email" value={cfg.contact.email} className="hover:text-on-dark max-md:tap-target" /></li>
+            <li className="flex items-center gap-2"><Mail className="size-4" aria-hidden /><ContactValue kind="email" value={cfg.contact.email} className="wrap-anywhere hover:text-on-dark max-md:tap-target" /></li>
             <li className="flex items-center gap-2"><MapPin className="size-4" aria-hidden /><ContactValue kind="address" value={cfg.contact.address} /></li>
             <li className="flex items-center gap-2">
               <InstagramIcon />
@@ -60,10 +62,12 @@ export function SiteFooter({ region }: { region: Region }) {
           </ul>
         </div>
       </Container>
-      <Container className="flex flex-col gap-3 border-t border-on-dark/10 py-6 text-caption sm:flex-row sm:items-center sm:justify-between">
+      <Container className="flex flex-col gap-3 border-t border-on-dark/10 py-6 text-caption lg:flex-row lg:items-center lg:justify-between">
         <p>© 2026 DÉCADA OUSADA. Todos os direitos reservados.</p>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
           <Link className="hover:text-on-dark max-md:tap-target" href="/perguntas-frequentes">Perguntas frequentes</Link>
+          <Link className="hover:text-on-dark max-md:tap-target" href="/privacidade">Privacidade</Link>
+          {META_PIXEL_ID && <CookieSettingsButton className="hover:text-on-dark max-md:tap-target" />}
           <a className="hover:text-on-dark max-md:tap-target" href={regionSwitchHref(other)}>{REGION_CONFIG[other].label}</a>
         </div>
       </Container>

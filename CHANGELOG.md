@@ -3,6 +3,54 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.17.1]: 2026-10-14
+
+### Changed
+
+- Cookie banner shorter (196 px at 375, was 263), 44 px buttons, and first in
+  the keyboard order. "Gerir preferências" and "Política de cookies" are
+  text links under the two buttons.
+- While the banner is open the page keeps room for it: nothing focused ends
+  up under the banner and the mobile checkout bar ("Continuar") sits above it
+  instead of behind it.
+- Footer: "Cookies" is now "Preferências de cookies", a link to
+  /privacidade#cookies that opens the preferences when JavaScript runs; the
+  bottom row stacks below `lg` and wrapped links keep a gap.
+- /privacidade on mobile lists each cookie as a block (De quem, Para quê,
+  Duração) instead of a table cut at the edge.
+- /entrar: "Ir para o painel do motorista" shows an external-link icon.
+- `npm run qa:layout` also checks /privacidade and /entrar?tipo=motorista.
+
+### Fixed
+
+- Horizontal scroll at 768 px on every page: the footer email
+  (motoristas.tvde@decadaousada.pt) now wraps inside its column.
+
+## [0.17.0]: 2026-10-14
+
+### Added
+
+- Meta Pixel (Facebook and Instagram), id in `NEXT_PUBLIC_META_PIXEL_ID`.
+  It only loads after the visitor accepts marketing cookies and receives
+  page views plus the funnel steps (search, vehicle view, checkout, booking
+  with the API total, TVDE application, driver lead), never personal data.
+- Cookie banner (Aceitar tudo / Só necessários / Gerir preferências) and a
+  preferences dialog, also opened from "Cookies" in the footer. Withdrawing
+  consent stops the pixel and deletes its cookie.
+- /privacidade: cookie list and privacy policy, with the legal text marked
+  as pending until DÉCADA OUSADA provides it. Linked in the footer and the
+  sitemap.
+
+## [0.16.0]: 2026-10-14
+
+### Added
+
+- /entrar has two logins: "Rent a Car" (the site account, as before) and
+  "Motorista TVDE", which sends the driver to the WeGest driver panel
+  (www.wegest.pt/motorista/login), with a link to apply on /motoristas for
+  anyone not yet working with DÉCADA OUSADA. The choice is a link
+  (`?tipo=motorista`), so it works without JavaScript.
+
 ## [0.15.2]: 2026-10-14
 
 ### Changed

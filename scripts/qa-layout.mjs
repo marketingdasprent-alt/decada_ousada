@@ -287,8 +287,8 @@ async function prepare(region) {
 
   const publicRoutes = [
     "/", "/rent-a-car", city, "/rent-a-car/viaturas", `/rent-a-car/viaturas?${q}`, racVehicle,
-    "/tvde", "/tvde/viaturas", tvdeVehicles[0], "/perguntas-frequentes", "/contactos",
-    "/entrar", "/registar", "/recuperar-password", "/pagina-que-nao-existe",
+    "/tvde", "/tvde/viaturas", tvdeVehicles[0], "/perguntas-frequentes", "/contactos", "/privacidade",
+    "/entrar", "/entrar?tipo=motorista", "/registar", "/recuperar-password", "/pagina-que-nao-existe",
   ].filter(Boolean);
 
   // Sessão da conta de demonstração

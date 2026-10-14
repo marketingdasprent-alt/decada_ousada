@@ -21,11 +21,24 @@
     }
   }
 
-  /* Barra de ação fixa em baixo (checkout em mobile): o espaço vai para o fim da página, depois do rodapé */
+  /* Aviso de cookies aberto: --consent-banner-h é a altura dele (cookie-consent.tsx). O foco e o
+     fim da página não ficam por baixo da faixa (WCAG 2.4.11) */
+  html {
+    scroll-padding-bottom: var(--consent-banner-h, 0px);
+  }
+  body {
+    padding-bottom: var(--consent-banner-h, 0px);
+  }
+
+  /* Barra de ação fixa em baixo (checkout em mobile): o espaço vai para o fim da página, depois do
+     rodapé; com o aviso de cookies aberto, a barra fica por cima dele */
+  [data-action-bar] {
+    bottom: var(--consent-banner-h, 0px);
+  }
   body:has([data-action-bar]) {
-    padding-bottom: var(--layout-action-bar);
+    padding-bottom: calc(var(--layout-action-bar) + var(--consent-banner-h, 0px));
     @media (width >= 64rem) {
-      padding-bottom: 0;
+      padding-bottom: var(--consent-banner-h, 0px);
     }
   }
 
