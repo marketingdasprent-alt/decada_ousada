@@ -29,12 +29,12 @@ export function DriversHero({ region }: { region: Region }) {
         <div className="min-w-0">
           <Breadcrumbs crumbs={[{ label: "Motoristas" }]} className="mb-5" />
           <h1 id="motoristas-titulo" className="display text-display leading-display-loose">
-            Conduza. Fature.
+            Trabalhe em TVDE.
             <br />
-            <span className="text-brand">Receba à semana.</span>
+            <span className="text-brand">Com o nosso apoio.</span>
           </h1>
           <p className="mt-4 max-w-xl text-body-large text-copy-secondary">
-            Renda fixa semanal, pagamento todas as semanas e suporte 7 dias. Já somos mais de 500 motoristas.
+            Alugue uma viatura da nossa frota ou trabalhe com a sua através da modalidade Slot. Escolha como quer conduzir com a DÉCADA OUSADA.
           </p>
 
           {/* A escolha que muda a candidatura: com ou sem carro (abre o formulário, ApplyChoice) */}
