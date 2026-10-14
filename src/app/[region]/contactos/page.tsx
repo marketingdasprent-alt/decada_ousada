@@ -21,10 +21,9 @@ export default async function ContactsPage({ params }: PageProps<"/[region]/cont
   return (
     <>
       <PageHeader title="Contactos" description="Fale connosco para reservas, candidaturas TVDE ou apoio durante o aluguer." crumbs={[{ label: "Contactos" }]} />
-      <Section><Container className="grid gap-4 md:grid-cols-3">
+      <Section><Container className="grid gap-4 md:grid-cols-2">
         <Card className="p-6"><Phone className="size-6 text-brand" aria-hidden /><p className="mt-3 font-semibold">Telefone</p><ContactValue kind="phone" value={cfg.contact.phone} className="text-copy-secondary hover:text-copy" /></Card>
         <Card className="p-6"><Mail className="size-6 text-brand" aria-hidden /><p className="mt-3 font-semibold">Email</p><ContactValue kind="email" value={cfg.contact.email} className="text-copy-secondary hover:text-copy" /></Card>
-        <Card className="p-6"><MapPin className="size-6 text-brand" aria-hidden /><p className="mt-3 font-semibold">Sede</p><p className="text-copy-secondary"><ContactValue kind="address" value={cfg.contact.address} /></p></Card>
       </Container></Section>
       <Section><Container>
         <h2 className="display text-h2">Balcões</h2>

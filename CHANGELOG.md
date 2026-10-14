@@ -3,6 +3,16 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.18.2]: 2026-10-14
+
+### Changed
+
+- Home, "Pontos de levantamento": the section is hidden when the WeGest API
+  returns no pickup points (it showed only the heading before). The cards
+  already came from the API; Leiria, Lisboa, Porto and Faro are mock data.
+- Footer and /contactos: no address line. The "Morada a confirmar"
+  placeholder and the "Sede" card are gone (client request).
+
 ## [0.18.1]: 2026-10-14
 
 ### Fixed
