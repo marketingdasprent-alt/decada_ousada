@@ -284,6 +284,15 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   the step action; restores choices from `extras`/`cobertura`/`passo`),
   `BookingSummary`,
   `CustomerForm`, `ReservationStatus`.
+- Locations: `PickupPoints` (`title`, `description`, `locations`, `showMap`),
+  the only way to list pickup points (home, /rent-a-car, /contactos). A list,
+  not cards, because the API may return only the name: title on the left (5
+  of 12 columns from `lg`, on top below it), points on the right between
+  dividers, each a link to `/rent-a-car/<point>` with a brand-colour `MapPin`
+  and the name in display type; address, opening hours and "Apenas
+  levantamento" only when the API has them. `showMap` adds "Ver no mapa" as
+  its own link under the text (never inside the point's link) when the API
+  returns coordinates. No points, no section.
 - TVDE: `TvdeSearchForm` (location, start date and time; leads to
   `/tvde/viaturas?local=&inicio=`), `PickupSelector` (re-checks availability on
   every change; `initialLocationId` and `initialPickupAt` from the search),

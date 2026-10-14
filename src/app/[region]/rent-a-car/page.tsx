@@ -1,13 +1,11 @@
-import { Clock, MapPin } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { CategoryGrid, rentACarCategories, type CategoryEntry } from "@/components/rentacar/category-grid";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
+import { PickupPoints } from "@/components/shared/pickup-points";
 import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { FAMILY_LABEL, type VehicleFamily } from "@/domain/vehicle";
-import { fillSpanClasses } from "@/lib/grid";
 import { regionFromParams } from "@/lib/region";
 import { REGION_IMAGERY } from "@/lib/region-imagery";
 import { listCategories, listLocations, listVehicles } from "@/services/wegest";
@@ -31,7 +29,6 @@ export default async function RentACarPage({ params }: PageProps<"/[region]/rent
     byFamily.set(entry.family, [...(byFamily.get(entry.family) ?? []), entry]);
   }
 
-  const locationSpans = fillSpanClasses(locations.length, { lg: 4 });
   return (
     <>
       <Hero
@@ -57,21 +54,7 @@ export default async function RentACarPage({ params }: PageProps<"/[region]/rent
         <ButtonLink href="/rent-a-car/viaturas" variant="outline">Ver toda a frota</ButtonLink>
       </Container></Section>
 
-      <Section><Container>
-        <SectionHeading title="Os nossos balcões" />
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {locations.map((l, i) => (
-            <li key={l.id} className={locationSpans[i]}>
-              <Link href={`/rent-a-car/${l.slug}`} className="block h-full rounded-panel border border-line bg-panel p-5 transition-colors hover:border-brand">
-                <p className="font-bold">Rent a Car {l.name}</p>
-                {l.address && <p className="mt-2 flex gap-2 text-body-small text-copy-secondary"><MapPin className="mt-0.5 size-4 shrink-0 text-copy-muted" aria-hidden />{l.address}</p>}
-                {l.openingHours && <p className="mt-2 flex gap-2 text-body-small text-copy-secondary"><Clock className="mt-0.5 size-4 shrink-0 text-copy-muted" aria-hidden />{l.openingHours}</p>}
-                {!l.returnAvailable && <p className="mt-2 text-caption text-caution">Apenas levantamento</p>}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Container></Section>
+      <PickupPoints title="Os nossos balcões" locations={locations} />
     </>
   );
 }
