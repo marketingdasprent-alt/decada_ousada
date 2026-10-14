@@ -66,8 +66,10 @@ Validate at: 320, 375, 430, 768, 1024, 1280, 1440, 1920px.
 - [ ] Manage preferences opens the native dialog from the banner, and
       separately from the footer's "Preferências de cookies" link, on any
       page. Without JavaScript that link goes to /privacidade#cookies.
-- [ ] No request to facebook.net / facebook.com before marketing is
-      accepted.
+- [ ] The pixel sends a PageView on the first visit with the banner still
+      open. "Só necessários" (or marketing off in the preferences) stops
+      it and deletes `_fbp`/`_fbc`; after a reload there is no request to
+      facebook.net / facebook.com.
 - [ ] The necessary category shows as checked and disabled; the optional
       category is a real, labeled checkbox.
 - [ ] `Escape`, the close button, and Save all close the dialog and

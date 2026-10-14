@@ -41,3 +41,5 @@ yarn-error.log*
 next-env.d.ts
 
 !.env.example
+# Id público do Meta Pixel para os builds de produção (DECISIONS.md 2026-10-14)
+!.env.production

@@ -49,6 +49,9 @@ Produção (depois, com a API e os fornecedores escolhidos):
 | `STORAGE_URL`, `STORAGE_SECRET` | storage privado dos documentos TVDE |
 | `APP_URL` / `AZORES_APP_URL` | `https://www.decadaousada.pt` / `https://acores.decadaousada.pt` |
 
+O id do Meta Pixel (`NEXT_PUBLIC_META_PIXEL_ID`) já vem no `.env.production` do
+repositório. Só é preciso defini-lo na Vercel para usar outro pixel.
+
 ## 3. Domínios (Settings → Domains)
 
 1. Adicionar `www.decadaousada.pt`, `decadaousada.pt` (redireciona para `www`)

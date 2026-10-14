@@ -3,6 +3,17 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.18.0]: 2026-10-14
+
+### Changed
+
+- Meta Pixel loads on the first visit with the cookie banner still open, and
+  stops only if the visitor chooses "Só necessários" or turns marketing off.
+- Banner and /privacidade: the marketing cookies are on until the visitor
+  refuses them.
+- Production builds get the pixel id from `.env.production`
+  (`NEXT_PUBLIC_META_PIXEL_ID`).
+
 ## [0.17.1]: 2026-10-14
 
 ### Changed

@@ -105,7 +105,7 @@ export default function PrivacyPage() {
             <h2 className="display text-h2">Cookies</h2>
             <p className="mt-4 text-copy-secondary">
               Os cookies necessários estão sempre ativos, porque o site não funciona sem eles.
-              {META_PIXEL_ID && " Os de marketing só são usados se os aceitar, e pode mudar de ideias a qualquer momento."}
+              {META_PIXEL_ID && " Os de marketing estão ativos até os recusar, e pode mudar de ideias a qualquer momento."}
             </p>
             <h3 className="mt-8 text-body-large font-semibold">Necessários</h3>
             <CookieTable caption="Cookies necessários" rows={NECESSARY} />

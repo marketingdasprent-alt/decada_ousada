@@ -15,7 +15,7 @@ const SCRIPT_SRC = "https://connect.facebook.net/en_US/fbevents.js";
 
 const win = () => window as MetaWindow;
 
-/** Carrega o fbevents.js (só depois do consentimento) e inicia o pixel; se já estava carregado, volta a autorizar. */
+/** Carrega o fbevents.js e inicia o pixel; se já estava carregado, volta a autorizar. */
 export function loadPixel(id: string): void {
   const w = win();
   if (w.fbq) {

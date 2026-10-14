@@ -1,9 +1,9 @@
 /**
- * Consentimento de cookies (RGPD e Lei n.º 41/2004): os cookies necessários não pedem
- * consentimento; os de marketing (Meta Pixel) só depois de "Aceitar". A escolha fica no
+ * Escolha de cookies: os necessários estão sempre ativos; os de marketing (Meta Pixel) estão
+ * ativos até o visitante escolher "Só necessários" (DECISIONS.md 2026-10-14). A escolha fica no
  * localStorage deste browser e muda a qualquer momento no link "Cookies" do rodapé.
  * Sem localStorage (modo privado, bloqueado) não há escolha guardada: o aviso volta a aparecer
- * e nada de marketing carrega.
+ * e o pixel carrega.
  */
 export type Consent = { marketing: boolean; at: string };
 
