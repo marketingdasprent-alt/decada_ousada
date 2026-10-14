@@ -102,8 +102,8 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
       {/* Instagram: últimas publicações de @decada_ousada (pedido da equipa, DECISIONS.md 2026-10-12) */}
       <InstagramFeed />
 
-      {/* Localizações (SEO regional, doc §109) */}
-      <Section><Container>
+      {/* Localizações (SEO regional, doc §109): só os pontos que a API devolve; sem nenhum, a secção não aparece */}
+      {locations.length > 0 && <Section><Container>
         <SectionHeading title={region === "azores" ? "Pontos de levantamento nos Açores" : "Pontos de levantamento"} />
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {locations.map((l, i) => (
@@ -116,7 +116,7 @@ export default async function HomePage({ params }: PageProps<"/[region]">) {
             </li>
           ))}
         </ul>
-      </Container></Section>
+      </Container></Section>}
     </>
   );
 }
