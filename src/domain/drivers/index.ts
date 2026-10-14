@@ -54,4 +54,4 @@ export const DRIVER_FORM_KIND: "links" | "embed" | "site" = "links";
 export const DRIVER_FORM_OPEN: "tab" | "popup" = "popup";
 
 /** Área do motorista no WeGest (para quem já trabalha com a DÉCADA OUSADA). */
-export const DRIVER_AREA_URL = "https://wegest.pt/motorista/login";
+export const DRIVER_AREA_URL = "https://www.wegest.pt/motorista/login";

@@ -56,12 +56,18 @@ Validate at: 320, 375, 430, 768, 1024, 1280, 1440, 1920px.
 
 ## Cookie consent
 
-- [ ] Banner shows on first visit only; button order is Accept all,
-      Necessary only, then Manage preferences full-width below.
+- [ ] Banner shows on first visit only; order is "Aceitar tudo",
+      "Só necessários" (same size, 44 px), then the "Gerir preferências"
+      and "Política de cookies" text links.
+- [ ] With the banner open, nothing focusable ends up under it and the
+      mobile checkout bar sits above it.
 - [ ] Accept all / Necessary only both dismiss the banner and persist
       across a reload.
 - [ ] Manage preferences opens the native dialog from the banner, and
-      separately from the footer's "Cookies" link, on any page.
+      separately from the footer's "Preferências de cookies" link, on any
+      page. Without JavaScript that link goes to /privacidade#cookies.
+- [ ] No request to facebook.net / facebook.com before marketing is
+      accepted.
 - [ ] The necessary category shows as checked and disabled; the optional
       category is a real, labeled checkbox.
 - [ ] `Escape`, the close button, and Save all close the dialog and

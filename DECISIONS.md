@@ -795,3 +795,115 @@ Content (Level 3).
 DATE:
 2026-10-14
 ```
+
+---
+
+```
+DECISION:
+/entrar offers two logins (Thiago, 2026-10-14): "Rent a Car" keeps the
+site's own account form; "Motorista TVDE" sends the driver to the WeGest
+driver panel (DRIVER_AREA_URL, www.wegest.pt/motorista/login). The driver
+account lives in WeGest and its login page refuses framing
+(X-Frame-Options: DENY) and only accepts its own form posts, so the site
+links to it in the same tab instead of collecting the password itself. The
+switch is two links (?tipo=motorista) rendered on the server. Coming from
+"Candidatar-me" (next=/tvde/candidatura) the page is unchanged: that flow
+uses the site account.
+
+REASON:
+Team request: logging in as a TVDE driver must lead to the WeGest driver
+panel.
+
+SCOPE:
+src/app/[region]/entrar/page.tsx, src/components/account/login-type-switch.tsx,
+src/domain/drivers (DRIVER_AREA_URL now on www, skipping a redirect).
+
+LEVEL:
+Feature (navigation).
+
+DATE:
+2026-10-14
+```
+
+---
+
+```
+DECISION:
+Meta Pixel (Thiago, 2026-10-14) behind a cookie consent banner. The pixel id
+comes from NEXT_PUBLIC_META_PIXEL_ID (public by nature: it is visible in any
+page that runs a pixel); without it there is no pixel, no banner and no
+"Cookies" link, because the site has no other optional cookies.
+- fbevents.js is injected by hand only after "Aceitar tudo" or marketing on
+  in the preferences (no next/script, no npm package). Revoking calls
+  fbq("consent", "revoke") and deletes _fbp/_fbc.
+- autoConfig is off: no automatic button/form events, no automatic advanced
+  matching. The pixel only receives PageView (also on client navigation) and
+  the funnel events from src/lib/analytics.ts mapped in src/lib/meta-pixel.ts
+  (Search, ViewContent, InitiateCheckout, AddPaymentInfo, Purchase with the
+  API total, SubmitApplication, Lead, plus two custom events). TVDE payments
+  and application decisions are not sent.
+- New analytics event drivers_apply_opened: the /motoristas application is
+  submitted inside the WeGest iframe, which the site cannot see, so opening
+  the popup is the closest signal (custom event, not Lead).
+- Consent lives in localStorage (do:consent, versioned). Banner order and the
+  native <dialog> follow docs/qa.md "Cookie consent".
+- /privacidade lists what the code stores; the legal text (controller, NIF,
+  purposes, retention, contact) is <Pending> until the client provides it.
+
+REASON:
+Marketing request to measure the Facebook/Instagram campaigns. Marketing
+cookies need prior consent (GDPR, Lei n.º 41/2004), and the site had no
+consent mechanism. No dependency added.
+
+SCOPE:
+src/lib/consent.ts, src/lib/meta-pixel.ts, src/lib/analytics.ts,
+src/components/shared/cookie-consent.tsx, src/components/layout/site-footer.tsx,
+src/components/drivers/driver-apply-dialog.tsx, src/app/[region]/layout.tsx,
+src/app/[region]/privacidade, src/app/sitemap.ts, .env.example.
+
+LEVEL:
+Feature (integration).
+
+DATE:
+2026-10-14
+```
+
+---
+
+```
+DECISION:
+Cookie banner review (PROMPT-MASTER-REVISAO-COOKIES-E-ENTRAR.md, report in
+docs/design/revisao-cookies-entrar.md):
+- The banner publishes its height as the runtime CSS variable
+  --consent-banner-h on <html> (ResizeObserver, removed when it closes).
+  globals.css uses it for scroll-padding-bottom, the body bottom padding and
+  the `bottom` of [data-action-bar]. It is not a design token: it is a
+  measured value, like the browser's own sizes. The checkout bar lost its
+  `bottom-0` class so the base rule can place it.
+- CookieConsent is mounted right after the skip link (first in reading and
+  focus order); its position on screen is fixed, so nothing moves.
+- docs/qa.md "Manage preferences full-width below" becomes a text link next
+  to "Política de cookies", under the two buttons, to keep the banner under
+  200 px at 375. The two choices keep equal size and weight.
+- /privacidade on mobile uses inline "label: value" lines instead of
+  grid-label-value: the 10.5rem label column would leave about half of a
+  375 px screen for the value.
+
+REASON:
+Measured in phase 1: the banner covered the mobile checkout bar, 30 of 59
+focusable elements at 375 px could be focused under it, its buttons were
+36 px high, and it was the last thing in the focus order.
+
+SCOPE:
+src/components/shared/cookie-consent.tsx, src/app/globals.css,
+src/app/[region]/layout.tsx, src/components/booking/booking-wizard.tsx (one
+class), src/components/layout/site-footer.tsx,
+src/app/[region]/privacidade/page.tsx, src/app/[region]/entrar/page.tsx,
+scripts/qa-layout.mjs, docs/qa.md, docs/design-system.md.
+
+LEVEL:
+Override (component contract, docs/qa.md).
+
+DATE:
+2026-10-14
+```

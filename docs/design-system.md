@@ -304,7 +304,25 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   only), form on the right; on mobile only the form, under a brand-colour top
   border. Password fields have a show/hide button (`aria-pressed`). Sign in:
   "Esqueci-me da password" under the password, then "Ainda não tem conta?" with
-  an outline "Criar conta" button.
+  an outline "Criar conta" button. `LoginTypeSwitch` (`current` rentacar |
+  motorista, `next`): two equal-height links on top of /entrar ("Rent a Car",
+  "Motorista TVDE"), selected one filled with the brand colour like the
+  service switch of the search form, `aria-current="page"`; hidden when
+  coming from "Candidatar-me". The driver option's main button goes to the
+  WeGest panel in the same tab, with an `ExternalLink` icon.
+- Consent: `CookieConsent` (`pixelId`; mounted in the layout right after the
+  skip link, only with `NEXT_PUBLIC_META_PIXEL_ID`). Banner: fixed at the
+  bottom, `z-overlay`, text aligned to the `Container`; order Aceitar tudo,
+  Só necessários (same size, both filled, 44 px), then the text links
+  "Gerir preferências" and "Política de cookies". Below `lg` everything
+  stacks (under 200 px at 375); from `lg`, `grid-main-aside` with the
+  buttons on the right. While open it writes its height to
+  `--consent-banner-h`, which `globals.css` uses for `scroll-padding-bottom`,
+  the `body` bottom padding and the position of `[data-action-bar]` (the
+  checkout bar sits on top of the banner). Preferences: native `<dialog>`,
+  centred, bottom sheet below `sm`, same header as the driver popup, the
+  necessary category checked and disabled. `CookieSettingsButton`: a link to
+  `/privacidade#cookies` that opens the dialog when JavaScript runs.
 
 ## Content and edge cases
 
