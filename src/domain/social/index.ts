@@ -4,6 +4,12 @@ export const INSTAGRAM = {
   url: "https://www.instagram.com/decada_ousada/",
 } as const;
 
+/** Página de Facebook da DÉCADA OUSADA (indicada pela equipa, 2026-10-14). */
+export const FACEBOOK = {
+  name: "decada.ousada",
+  url: "https://www.facebook.com/decada.ousada",
+} as const;
+
 /** Publicação do Instagram já normalizada para a UI. */
 export interface InstagramPost {
   id: string;

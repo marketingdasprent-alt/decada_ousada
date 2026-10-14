@@ -11,6 +11,9 @@ Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
   /motoristas, and the site's general contacts (footer, /contactos, booking
   page) show this phone and motoristas.tvde@decadaousada.pt in both regions.
   The address stays "a confirmar".
+- Facebook (facebook.com/decada.ousada) next to Instagram: a "Facebook"
+  button beside "Seguir no Instagram" (homepage and /motoristas) and a link in
+  the footer contacts (new `FacebookIcon`).
 
 ## [0.15.1]: 2026-10-13
 
