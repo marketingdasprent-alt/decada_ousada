@@ -943,3 +943,27 @@ Override (previous Meta Pixel decision).
 DATE:
 2026-10-14
 ```
+
+---
+
+```
+DECISION:
+This repo deploys to the existing Vercel project decadaousada-landing, which
+serves www.decadaousada.pt and replaces the old Vite landing (Thiago,
+2026-10-14). vercel.json sets framework "nextjs" and outputDirectory ".next",
+because that project was created with the Vite preset (output "dist").
+
+REASON:
+The site owner chose to replace the landing in the same Vercel project
+instead of creating a new one. Builds were failing with "No Output Directory
+named dist".
+
+SCOPE:
+vercel.json.
+
+LEVEL:
+Infrastructure.
+
+DATE:
+2026-10-14
+```
