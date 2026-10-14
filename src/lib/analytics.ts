@@ -1,8 +1,8 @@
 /**
  * Eventos do funil (doc §106), com os nomes exatos do documento.
  * `track()` guarda o evento em memória, emite `do:analytics` na window e escreve
- * na consola em desenvolvimento. O Meta Pixel escuta esse evento, só com
- * consentimento de marketing (src/components/shared/cookie-consent.tsx).
+ * na consola em desenvolvimento. O Meta Pixel escuta esse evento, exceto se o
+ * visitante recusar os cookies de marketing (src/components/shared/cookie-consent.tsx).
  * Nunca enviar dados pessoais: só ids, valores e escolhas.
  */
 export type AnalyticsEvent =

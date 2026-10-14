@@ -907,3 +907,39 @@ Override (component contract, docs/qa.md).
 DATE:
 2026-10-14
 ```
+
+---
+
+```
+DECISION:
+Meta Pixel loads on the first visit, with the cookie banner still open
+(Thiago, 2026-10-14). Replaces "only after Aceitar" in the previous Meta
+Pixel entry; the banner and the preferences dialog stay.
+- The pixel is on unless the visitor chose "Só necessários" or turned
+  marketing off in the preferences. That choice still revokes the pixel
+  and deletes _fbp/_fbc. The preferences checkbox shows marketing on until
+  the visitor picks.
+- Banner and /privacidade copy say the marketing cookies are on until the
+  visitor refuses them.
+- The pixel id ships in a versioned .env.production
+  (NEXT_PUBLIC_META_PIXEL_ID=1212569624343076, the id already used on the
+  live decadaousada.pt). It is public by nature; a Vercel variable with the
+  same name overrides it.
+
+REASON:
+Explicit request from the site owner: the pixel must work while the banner
+is visible. Known risk, stated to the requester: GDPR and Lei n.º 41/2004
+require prior consent for marketing cookies such as _fbp.
+
+SCOPE:
+src/components/shared/cookie-consent.tsx, src/lib/consent.ts,
+src/lib/meta-pixel.ts, src/lib/analytics.ts, src/app/[region]/privacidade,
+.env.production, .gitignore, .env.example, docs/qa.md,
+docs/deploy-vercel.md.
+
+LEVEL:
+Override (previous Meta Pixel decision).
+
+DATE:
+2026-10-14
+```

@@ -39,13 +39,14 @@ function useConsent(): Consent | null | typeof UNKNOWN {
 
 /**
  * Aviso de cookies, preferências e Meta Pixel (montado no layout só quando há id do pixel).
- * O pixel só carrega com "Aceitar" ou com marketing ativo nas preferências; ao retirar o
- * consentimento deixa de enviar e o cookie _fbp é apagado. Recebe os eventos do funil
- * (`do:analytics`) e um PageView por cada página vista, também na navegação sem recarregar.
+ * O pixel carrega logo na primeira visita, com o aviso ainda aberto (DECISIONS.md 2026-10-14),
+ * e só para com "Só necessários" ou com marketing desligado nas preferências: deixa de enviar
+ * e o cookie _fbp é apagado. Recebe os eventos do funil (`do:analytics`) e um PageView por
+ * cada página vista, também na navegação sem recarregar.
  */
 export function CookieConsent({ pixelId }: { pixelId: string }) {
   const consent = useConsent();
-  const marketing = consent !== UNKNOWN && consent?.marketing === true;
+  const marketing = consent !== UNKNOWN && consent?.marketing !== false;
   const pathname = usePathname();
   const dialog = useRef<HTMLDialogElement>(null);
   const [draft, setDraft] = useState(false);
@@ -94,7 +95,7 @@ export function CookieConsent({ pixelId }: { pixelId: string }) {
   // "Cookies" no rodapé (ou noutra página) abre as preferências com a escolha atual
   useEffect(() => {
     const open = () => {
-      setDraft(readConsent()?.marketing ?? false);
+      setDraft(readConsent()?.marketing ?? true);
       dialog.current?.showModal();
     };
     window.addEventListener(CONSENT_OPEN_EVENT, open);
@@ -112,7 +113,7 @@ export function CookieConsent({ pixelId }: { pixelId: string }) {
         <section ref={banner} aria-label="Aviso de cookies" className="fixed inset-x-0 bottom-0 z-overlay border-t border-line bg-panel shadow-overlay">
           <div className="layout-container flex flex-col gap-2 py-3 lg:grid lg:grid-main-aside lg:items-center lg:gap-x-8 lg:gap-y-1">
             <p className="text-body-small text-copy-secondary lg:col-start-1">
-              Usamos cookies necessários para o site funcionar e, se aceitar, cookies de marketing da Meta para medir as nossas campanhas.
+              Usamos cookies necessários para o site funcionar e cookies de marketing da Meta para medir as nossas campanhas. Pode recusar os de marketing.
             </p>
             <div className="grid grid-cols-2 gap-2 lg:col-start-2 lg:row-span-2 lg:row-start-1">
               <Button onClick={() => save(true)}>Aceitar tudo</Button>
