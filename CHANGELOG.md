@@ -3,6 +3,15 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.15.2]: 2026-10-14
+
+### Changed
+
+- Phone and WhatsApp now +351 910 102 454 (was +351 912 023 234) on
+  /motoristas, and the site's general contacts (footer, /contactos, booking
+  page) show this phone and motoristas.tvde@decadaousada.pt in both regions.
+  The address stays "a confirmar".
+
 ## [0.15.1]: 2026-10-13
 
 ### Fixed
