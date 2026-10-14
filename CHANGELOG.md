@@ -3,6 +3,14 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.18.1]: 2026-10-14
+
+### Fixed
+
+- Vercel build: `vercel.json` forces the Next.js preset (`framework`,
+  `outputDirectory: .next`). The Vercel project `decadaousada-landing` was
+  set up for the old Vite landing and looked for `dist`.
+
 ## [0.18.0]: 2026-10-14
 
 ### Changed
