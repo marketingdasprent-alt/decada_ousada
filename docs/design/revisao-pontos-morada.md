@@ -51,6 +51,16 @@ dados reais simulados (só o nome):
 Teclado: Tab chega a cada ponto e a cada "Ver no mapa", com contorno de foco
 visível (2 px). Testado nas três páginas, Continente e Açores.
 
+## Depois do deploy (0.18.3)
+
+Verificação em produção (www e acores, 3 páginas, 360 e 1440 px): pontos da
+API, ícone na cor de cada região, sem scroll horizontal, sem "Morada a
+confirmar". Um defeito que o mock escondia: só com o nome, o link de cada ponto
+tinha 26 px de altura em mobile (abaixo dos 44 px). O espaço vertical da linha
+passou para dentro do link (66 px só com o nome, a linha inteira clicável);
+com "Ver no mapa", o link do ponto fecha com 8 px e o do mapa leva os 20 px de
+baixo.
+
 ## Fora deste trabalho
 
 - `fillSpanClasses` (`src/lib/grid.ts`) deixou de ter uso; `fillSpans` continua

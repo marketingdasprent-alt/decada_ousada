@@ -23,7 +23,7 @@ import { listVehicles } from "@/services/wegest";
 export const metadata: Metadata = {
   title: "Trabalhe como motorista TVDE",
   description:
-    "Conduza com a DÉCADA OUSADA: renda fixa semanal, pagamento todas as semanas e suporte 7 dias. Alugue uma viatura nossa ou trabalhe como Slot com a sua.",
+    "Trabalhe como motorista TVDE com a DÉCADA OUSADA. Compare Aluguer e Slot, conheça as condições e candidate-se com a sua viatura ou uma da nossa frota.",
 };
 
 const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&q=70`;
@@ -33,7 +33,7 @@ const PROOF = [
   { value: "500+", label: "motoristas ativos na nossa estrutura" },
   { value: "100%", label: "das viaturas com seguro contra todos os riscos" },
   { value: "7 dias", label: "de suporte por semana, fins de semana incluídos" },
-  { value: "24 h", label: "para lhe ligarmos depois da candidatura" },
+  { value: "24 h", label: "úteis para lhe ligarmos após a candidatura" },
 ];
 
 /** Faixa de fotos (Continente): lugares e momentos ao volante. Fotos do Unsplash, legenda só com o que mostram. */
@@ -53,12 +53,12 @@ const TAPE_PROMISE = ["Conduza", "Fature", "Receba à semana", "Uber", "Bolt", "
 const TAPE_FLEET = ["Aluguer", "Slot", "X Saver", "Comfort", "Black", "Green"];
 
 const BENEFITS = [
-  { title: "Custos claros e fixos", text: "Renda fixa semanal. Sabe exatamente quanto paga antes de sair de casa." },
-  { title: "Pagamento semanal", text: "O dinheiro cai na sua conta todas as semanas." },
+  { title: "Conheça os custos de aluguer", text: "Consulte o preço por semana, a caução e os quilómetros incluídos antes de escolher a viatura." },
+  { title: "Pagamento semanal", text: "Receba os ganhos da sua atividade na sua conta bancária, todas as semanas." },
   { title: "Suporte 7 dias", text: "Uma equipa disponível todos os dias, fins de semana incluídos." },
-  { title: "Sem burocracia", text: "Tratamos da papelada. Você conduz e fatura." },
-  { title: "Horário seu", text: "Trabalhe quando e quanto quiser, sem horários mínimos nem penalizações por folgas." },
-  { title: "Só precisa do certificado", text: "Sem empresa própria: com a licença TVDE trabalha como independente e passa recibo verde à semana." },
+  { title: "Apoio com os documentos", text: "A equipa acompanha a documentação e dá apoio administrativo à sua atividade TVDE." },
+  { title: "Escolha o seu horário", text: "Trabalhe quando e quanto quiser, sem horários mínimos nem penalizações por folgas." },
+  { title: "Trabalhe como independente", text: "Com licença TVDE e a documentação necessária, pode trabalhar connosco sem criar uma empresa." },
 ];
 
 const MODES: Array<{ id: DriverMode; tag: string; title: string; image: string; points: string[]; cta: string }> = [
@@ -69,7 +69,7 @@ const MODES: Array<{ id: DriverMode; tag: string; title: string; image: string; 
     image: photo("photo-1533558701576-23c65e0272fb"),
     points: [
       "Viatura pronta a trabalhar em Uber e Bolt",
-      "Renda fixa semanal, sem custos escondidos",
+      "Valor de aluguer por semana indicado na viatura",
       "Seguro contra todos os riscos incluído",
       "Categorias X Saver, Comfort, Black ou Green",
     ],
@@ -81,7 +81,7 @@ const MODES: Array<{ id: DriverMode; tag: string; title: string; image: string; 
     title: "Slot",
     image: photo("photo-1578041262130-633307b3bfd6"),
     points: [
-      "Trabalha com o seu carro, como nosso parceiro",
+      "Conduza a sua própria viatura como nosso parceiro",
       "Usa a nossa estrutura de operador TVDE certificado",
       "Pagamento semanal na sua conta",
       "Apoio administrativo 7 dias por semana",
@@ -91,22 +91,22 @@ const MODES: Array<{ id: DriverMode; tag: string; title: string; image: string; 
 ];
 
 const STEPS = [
-  { title: "Preencha o formulário", text: "Dois minutos. Diga-nos a sua situação e como quer trabalhar.", image: photo("photo-1764347923709-fc48487f2486") },
-  { title: "Nós ligamos-lhe", text: "Em menos de 24 horas úteis, para tratar dos documentos.", image: photo("photo-1520088096110-20308c23a3cd") },
-  { title: "Comece a faturar", text: "Aprovação em 24 a 48 horas úteis e apoio desde o primeiro dia.", image: photo("photo-1751498273591-1b93d0dd490a") },
+  { title: "Preencha o formulário", text: "Escolha Aluguer ou Slot e indique os seus dados. O formulário demora cerca de 2 minutos.", image: photo("photo-1764347923709-fc48487f2486") },
+  { title: "Nós ligamos-lhe", text: "Em menos de 24 horas úteis, falamos consigo sobre a modalidade e os documentos necessários.", image: photo("photo-1520088096110-20308c23a3cd") },
+  { title: "Após a aprovação, comece a conduzir", text: "A candidatura e os documentos são analisados. A aprovação demora normalmente 24 a 48 horas úteis.", image: photo("photo-1751498273591-1b93d0dd490a") },
 ];
 
 const DOCUMENTS = ["Licença TVDE válida", "Carta de condução", "Cartão de cidadão ou passaporte", "Registo criminal", "Comprovativo de morada", "IBAN para receber os pagamentos"];
 
 const FAQ = [
   { q: "Preciso de ter empresa para trabalhar convosco?", a: "Não. Trabalha como trabalhador independente com a sua licença TVDE e emite semanalmente um recibo verde para receber os seus ganhos. Damos apoio na parte administrativa." },
-  { q: "Como funciona o pagamento?", a: "O pagamento é feito todas as semanas, diretamente na sua conta bancária. Paga apenas um valor fixo de aluguer semanal. As comissões das plataformas (Uber, Bolt) aplicam-se normalmente." },
+  { q: "Como funciona o pagamento?", a: "Os ganhos da sua atividade são pagos semanalmente, por transferência bancária. Na modalidade Aluguer, o valor semanal indicado refere-se ao custo da viatura. As comissões da Uber e da Bolt aplicam-se normalmente. Consulte as condições da modalidade escolhida com a equipa." },
   { q: "Que documentos preciso para me candidatar?", a: "Licença TVDE válida, carta de condução, documento de identificação (cartão de cidadão ou passaporte), registo criminal, comprovativo de morada e IBAN para receber os pagamentos." },
   { q: "Posso trabalhar quando quiser?", a: "Sim. Não há horários mínimos obrigatórios nem penalizações por dias de folga." },
   { q: "E se não tiver licença TVDE?", a: "A licença TVDE é obrigatória por lei para exercer a atividade. Para a obter, procure um centro de formação certificado na sua zona." },
   { q: "Quanto tempo demora a aprovação?", a: "Depois de submeter a candidatura e os documentos, a aprovação demora normalmente 24 a 48 horas úteis." },
   { q: "Que viaturas têm disponíveis?", a: "Viaturas para as categorias X Saver, Comfort, Black, Green (elétricos), X Priority e outras." },
-  { q: "Qual é a diferença entre Aluguer e Slot?", a: "No Aluguer, fornecemos a viatura e você trabalha com ela. No Slot, já tem viatura própria e usa a nossa estrutura e apoio para trabalhar nas plataformas." },
+  { q: "Qual é a diferença entre Aluguer e Slot?", a: "No Aluguer, trabalha com uma viatura da nossa frota e paga o respetivo aluguer. No Slot, trabalha com a sua própria viatura através da nossa estrutura de operador TVDE. A equipa explica-lhe as condições de cada modalidade." },
 ];
 
 export default async function DriversPage({ params }: PageProps<"/[region]/motoristas">) {
@@ -153,7 +153,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
       <Section>
         <Container className="grid gap-10 lg:grid-cols-5 lg:gap-14">
           <div className="lg:col-span-3">
-            <SectionHeading title="O que muda quando conduz connosco" description="Sabe quanto paga, recebe todas as semanas e tem alguém do outro lado da linha sete dias por semana." />
+            <SectionHeading title="Conduza com apoio no dia a dia" description="Da escolha da viatura à documentação, conheça o apoio disponível para a sua atividade TVDE." />
             <dl className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
               {BENEFITS.map((b) => (
                 <div key={b.title} className="border-t border-line pt-4">
@@ -194,7 +194,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
         <Container>
           <SectionHeading
             title={<span id="modalidades-titulo">Aluguer ou Slot?</span>}
-            description="No Aluguer, damos-lhe a viatura. No Slot, trabalha com a sua e usa a nossa estrutura de operador para estar nas plataformas."
+            description="Precisa de uma viatura ou já tem a sua? Compare as duas modalidades e escolha a candidatura que corresponde à sua situação."
           />
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             {MODES.map((m) => (
@@ -226,7 +226,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
         <Section>
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <SectionHeading title="A frota" description="Viaturas para as categorias X Saver, Comfort, Black e Green, com preço semanal, caução e km incluídos à vista." />
+              <SectionHeading title="Escolha a viatura para o seu trabalho" description="Compare o preço de aluguer por semana, a caução e os quilómetros incluídos em cada viatura disponível." />
               <ButtonLink href="/tvde/viaturas" variant="outline">Ver todas as viaturas TVDE</ButtonLink>
             </div>
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -242,7 +242,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
       <Section className="bg-panel-dark text-on-dark" aria-labelledby="passos-titulo">
         <Container>
           <h2 id="passos-titulo" className="display text-h2">Da candidatura à estrada</h2>
-          <p className="mt-3 max-w-2xl text-on-dark/75">Três passos, com aprovação em 24 a 48 horas úteis.</p>
+          <p className="mt-3 max-w-2xl text-on-dark/75">Saiba o que acontece depois de enviar os seus dados e quais os documentos a preparar.</p>
           <ol className="mt-8 grid gap-6 md:grid-cols-3">
             {STEPS.map((s, i) => (
               <li key={s.title}>
@@ -297,12 +297,12 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
         <span id="candidatura-slot" className="block scroll-mt-16" aria-hidden />
         <Container className="grid gap-10 lg:grid-cols-5 lg:items-start">
           <div className="lg:col-span-2">
-            <h2 id="candidatura-titulo" className="display text-h2">Comece a faturar já</h2>
+            <h2 id="candidatura-titulo" className="display text-h2">Candidate-se para conduzir connosco</h2>
             <p className="mt-3 text-copy-secondary">
-              Escolha a sua situação e deixe-nos o contacto: são cerca de 2 minutos e não tem compromisso. Ligamos-lhe em menos de 24 horas para tratar do resto.
+              Escolha Aluguer ou Slot e preencha o formulário em cerca de 2 minutos, sem compromisso. Ligamos-lhe em menos de 24 horas úteis para explicar as condições e os próximos passos.
             </p>
             <div className="mt-8 rounded-panel border border-line bg-panel p-6">
-              <h3 className="font-bold">Tenha à mão para depois</h3>
+              <h3 className="font-bold">Prepare os documentos para a candidatura</h3>
               <ul className="mt-4 grid gap-y-2 text-copy-secondary">
                 {DOCUMENTS.map((d) => (
                   <li key={d} className="border-l-2 border-brand pl-3">{d}</li>

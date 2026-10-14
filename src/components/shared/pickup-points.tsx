@@ -2,6 +2,7 @@ import { MapPin } from "lucide-react";
 import Link from "next/link";
 
 import type { Location } from "@/domain/location";
+import { cn } from "@/lib/cn";
 
 import { Container, Section, SectionHeading } from "./ui";
 
@@ -28,8 +29,9 @@ export function PickupPoints({
       <SectionHeading className="lg:col-span-5" title={title} description={description} />
       <ul className="divide-y divide-line border-y border-line lg:col-span-7">
         {locations.map((l) => (
-          <li key={l.id} className="py-5">
-            <Link href={`/rent-a-car/${l.slug}`} className="group flex items-start gap-4">
+          <li key={l.id}>
+            {/* O espaço vertical fica dentro do link: a linha inteira é clicável (66 px só com o nome) */}
+            <Link href={`/rent-a-car/${l.slug}`} className={cn("group flex items-start gap-4 py-5", hasMap(l, showMap) && "pb-2")}>
               <MapPin className="mt-0.5 size-6 shrink-0 text-brand" aria-hidden />
               <span>
                 <span className="display block text-h3 transition-colors group-hover:text-brand">{l.name}</span>
@@ -39,9 +41,9 @@ export function PickupPoints({
               </span>
             </Link>
             {/* Link próprio, fora do link do ponto, alinhado com o texto (ícone de 24 px + espaço de 16 px) */}
-            {showMap && l.latitude && l.longitude && (
+            {hasMap(l, showMap) && (
               <a
-                className="mt-2 ml-10 inline-block text-body-small font-medium text-brand underline underline-offset-4 max-md:tap-target"
+                className="mb-5 ml-10 inline-block text-body-small font-medium text-brand underline underline-offset-4 max-md:tap-target"
                 target="_blank"
                 rel="noopener noreferrer"
                 href={`https://www.google.com/maps/search/?api=1&query=${l.latitude},${l.longitude}`}
@@ -55,3 +57,5 @@ export function PickupPoints({
     </Container></Section>
   );
 }
+
+const hasMap = (l: Location, showMap: boolean) => showMap && l.latitude !== undefined && l.longitude !== undefined;

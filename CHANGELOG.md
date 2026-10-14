@@ -3,6 +3,21 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.18.4]: 2026-10-14
+
+### Changed
+
+- /motoristas copy (marketing request): "Renda fixa semanal" is gone, because
+  it read as a fixed weekly income for the driver. Hero, benefits, Aluguer or
+  Slot, fleet, steps, FAQ and the application section now describe the weekly
+  rental cost, weekly payment of earnings and the support. Layout unchanged.
+
+### Fixed
+
+- Pickup points: with name-only data from the API each link was 26 px tall
+  on mobile, below the 44 px tap target. The row spacing now sits inside the
+  link, so the whole row is clickable (66 px with just the name).
+
 ## [0.18.3]: 2026-10-14
 
 ### Changed
