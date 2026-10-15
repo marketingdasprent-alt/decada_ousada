@@ -964,6 +964,52 @@ vercel.json.
 LEVEL:
 Infrastructure.
 
+Driver accounts are WeGest accounts (WeGest guide "Contas de motorista no
+site da Década", 2026-10-14). Dependency added: @supabase/supabase-js.
+- Sign up, login, resend confirmation, password recovery and the new
+  password run in the browser, directly against WeGest's Supabase Auth with
+  the publishable key (NEXT_PUBLIC_WEGEST_AUTH_URL / _KEY / _ORG_ID, public
+  values). The site never creates accounts on the server.
+- After login the browser sends the access token to /api/driver-session;
+  the server checks it at WeGest (/auth/v1/user, publishable key only) and
+  opens the site session. The signed cookie keeps the account id and email,
+  so the session survives the in-memory local store. The token is never
+  stored or logged.
+- The TVDE application requires a driver session. The browser sends the
+  current token; /api/tvde/applications checks it again and forwards it as
+  X-Motorista-Token with the wg_ra_ key. The email is the account email,
+  read-only in the form. SESSAO_INVALIDA: refresh and retry once, then ask
+  to log in again. CONTA_INVALIDA and CANDIDATURA_EXISTENTE get their own
+  messages.
+- Rent a Car keeps the site's own accounts (team decision, 2026-10-14). The
+  driver's account page is /entrar?tipo=motorista (signed-in panel with the
+  WeGest driver panel link); /tvde/minha-conta is no longer the driver's
+  entry point from the header.
+- Without the three variables everything falls back to the previous
+  behaviour (own accounts, external driver panel link).
+
+REASON:
+WeGest owns driver accounts: the same login works on the site, the WeGest
+portal and the app, and the application is linked to the account. The guide
+requires supabase-js in the browser (session storage, token refresh, email
+link handling); writing that by hand would duplicate the library.
+
+SCOPE:
+package.json, .env.example, src/lib/driver-account.ts,
+src/lib/driver-auth-client.ts, src/services/auth/driver.ts,
+src/services/auth/index.ts, src/services/store/index.ts,
+src/app/api/driver-session/route.ts, src/app/api/tvde/applications/route.ts,
+src/components/account/driver-auth-forms.tsx,
+src/components/account/auth-forms.tsx (export PasswordInput),
+src/components/account/account-nav.tsx, src/components/layout/site-header.tsx,
+src/components/tvde/application-steps.tsx, src/components/tvde/dynamic-form.tsx,
+src/app/[region]/entrar, registar, recuperar-password, nova-password,
+tvde/candidatura/page.tsx, src/services/wegest (client, transport,
+http-transport, index).
+
+LEVEL:
+Dependency + project rule (driver accounts live in WeGest).
+
 DATE:
 2026-10-14
 ```
@@ -991,6 +1037,50 @@ src/styles/tailwind.css, docs/design-system.md.
 
 LEVEL:
 Project rule (TVDE flow).
+
+DATE:
+2026-10-15
+```
+
+---
+
+```
+DECISION:
+The Rent a Car flow starts with the search, never with the vehicle (team
+decision, 2026-10-15). The home page and /rent-a-car open with the search
+form (pickup and return location, date and time; pickup from today to
+today + 15 days, at most 30 days). /rent-a-car/viaturas only lists what
+GET /disponibilidade returns for those dates, with quantidade_disponivel on
+each card ("3 viaturas disponíveis", "Última viatura disponível") and the
+total from the quote. Without dates it shows only the form. With no results
+it says "Sem viaturas para estas datas." and offers up to three other dates
+with the same duration that the API confirmed have vehicles. A 400
+PERIODO_INVALIDO (or another validation error) is shown inside the form,
+never as an error page. The catalogue (GET /modelos) lives only on the new
+/rent-a-car/frota page: each model shows "Disponível a partir de
+{disponivel_desde}" and opens the search with that date. The category grid
+on /rent-a-car is removed (component deleted). The mock now returns only
+free models, like the API, and leaves some days fully booked per location.
+
+REASON:
+With the search first the customer never sees a car they cannot rent. The
+live API already returns disponivel_desde in /modelos (always filled there,
+because /modelos only lists models with a free day in the next 15 days).
+
+SCOPE:
+src/app/[region]/rent-a-car/page.tsx, rent-a-car/viaturas/page.tsx,
+rent-a-car/frota/page.tsx (new), rent-a-car/viatura/[slug]/page.tsx
+(breadcrumb), rent-a-car/reserva/page.tsx (link label),
+src/app/[region]/not-found.tsx, src/app/sitemap.ts,
+src/components/rentacar/search-form.tsx, rac-intro.tsx (link),
+category-grid.tsx (deleted), src/components/layout/site-footer.tsx (link),
+src/components/vehicles/vehicle-card.tsx, vehicle-results.tsx,
+src/domain/availability, src/domain/booking (limits), src/domain/vehicle,
+src/lib/attempt.ts, src/services/wegest (api-types, types, transport,
+http-transport, mappers, client, index, mock/transport).
+
+LEVEL:
+Project rule (Rent a Car flow).
 
 DATE:
 2026-10-15

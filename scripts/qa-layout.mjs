@@ -274,21 +274,28 @@ async function prepare(region) {
   await send("Network.clearBrowserCookies");
   await go(`/?regiao=${region}`);
   const loc = await js(`return document.querySelector('form[aria-label] select')?.value`);
-  const q = `levantamento=${loc}&devolucao=${loc}&inicio=${addDays(40)}T10:00&fim=${addDays(43)}T10:00`;
-
   await go("/rent-a-car");
-  const city = await js(`return [...document.querySelectorAll('main a[href^="/rent-a-car/"]')].map(a=>a.getAttribute('href')).find(h=>/^\\/rent-a-car\\/[a-z-]+$/.test(h) && !/viaturas|reserva|confirmacao/.test(h))`);
-  await go(`/rent-a-car/viaturas?${q}`, 1200);
-  const racVehicle = await js(`return [...document.querySelectorAll('main a[href*="/rent-a-car/viatura/"]')].map(a=>a.getAttribute('href'))[0]`);
+  const city = await js(`return [...document.querySelectorAll('main a[href^="/rent-a-car/"]')].map(a=>a.getAttribute('href')).find(h=>/^\\/rent-a-car\\/[a-z-]+$/.test(h) && !/viaturas|reserva|confirmacao|frota/.test(h))`);
+
+  // Levantamento dentro dos 15 dias que o Rent a Car aceita (MAX_ADVANCE_DAYS). Alguns dias
+  // ficam esgotados por balcão (no mock e na API), por isso experimenta até haver viaturas.
+  let q;
+  let racVehicle;
+  for (const start of [5, 6, 7, 8, 9, 10]) {
+    q = `levantamento=${loc}&devolucao=${loc}&inicio=${addDays(start)}T10:00&fim=${addDays(start + 3)}T10:00`;
+    await go(`/rent-a-car/viaturas?${q}`, 1200);
+    racVehicle = await js(`return [...document.querySelectorAll('main a[href*="/rent-a-car/viatura/"]')].map(a=>a.getAttribute('href'))[0]`);
+    if (racVehicle) break;
+  }
   await go(racVehicle, 1200);
   const checkout = await js(`return [...document.querySelectorAll('main a[href*="/rent-a-car/reserva"]')].map(a=>a.getAttribute('href'))[0]`);
   await go("/tvde/viaturas", 1000);
   const tvdeVehicles = await js(`return [...new Set([...document.querySelectorAll('main a[href*="/tvde/viatura/"]')].map(a=>a.getAttribute('href')))]`);
 
   const publicRoutes = [
-    "/", "/rent-a-car", city, "/rent-a-car/viaturas", `/rent-a-car/viaturas?${q}`, racVehicle,
+    "/", "/rent-a-car", "/rent-a-car/frota", city, "/rent-a-car/viaturas", `/rent-a-car/viaturas?${q}`, racVehicle,
     "/tvde", "/tvde/viaturas", tvdeVehicles[0], "/perguntas-frequentes", "/contactos", "/privacidade",
-    "/entrar", "/entrar?tipo=motorista", "/registar", "/recuperar-password", "/pagina-que-nao-existe",
+    "/entrar", "/entrar?tipo=motorista", "/registar", "/registar?tipo=motorista", "/recuperar-password", "/nova-password", "/pagina-que-nao-existe",
   ].filter(Boolean);
 
   // Sessão da conta de demonstração

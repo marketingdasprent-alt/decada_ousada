@@ -24,6 +24,8 @@ interface RequestOptions {
   /** FormData para upload de documentos. */
   form?: FormData;
   idempotencyKey?: string;
+  /** Cabeçalhos extra do pedido (ex.: X-Motorista-Token). Nunca são escritos em logs. */
+  headers?: Record<string, string>;
   /** Força retry mesmo em POST (só quando o endpoint é idempotente com Idempotency-Key). */
   retry?: boolean;
   /**
@@ -48,8 +50,8 @@ function authHeaders(): Record<string, string> {
  * Mensagens para o visitante por `erro.codigo` (a `erro.mensagem` do WeGest nunca chega ao
  * cliente). Códigos sem mensagem própria caem na mensagem genérica do estado HTTP.
  */
-const CODE_MESSAGE: Record<string, string> = {
-  PERIODO_INVALIDO: "As datas escolhidas não são válidas. Escolha um período no futuro.",
+export const CODE_MESSAGE: Record<string, string> = {
+  PERIODO_INVALIDO: "As datas escolhidas não são válidas. O levantamento tem de ser entre hoje e daqui a 15 dias, e a devolução depois do levantamento.",
   PERIODO_EXCEDE_MAXIMO: "O período máximo de aluguer online é de 30 dias.",
   PARAMETRO_INVALIDO: "Alguns dados do pedido não são válidos. Reveja e tente novamente.",
   CORPO_INVALIDO: "Alguns dados do pedido não são válidos. Reveja e tente novamente.",
@@ -57,7 +59,9 @@ const CODE_MESSAGE: Record<string, string> = {
   PRECO_ALTERADO: "O preço foi atualizado. Reveja o novo total antes de continuar.",
   TARIFA_INDISPONIVEL: "Ainda não há preços para estas datas. Escolha outras datas.",
   ESTADO_INVALIDO: "Esta reserva já não pode ser alterada online.",
-  CANDIDATURA_EXISTENTE: "Não foi possível registar a candidatura. Contacte-nos para continuar.",
+  CANDIDATURA_EXISTENTE: "Já tem uma candidatura em análise. Se precisar de mudar alguma coisa, contacte-nos.",
+  SESSAO_INVALIDA: "A sua sessão terminou. Entre de novo para continuar.",
+  CONTA_INVALIDA: "Esta conta não pode candidatar-se. Contacte a DÉCADA OUSADA.",
 };
 
 const CODE_KIND: Record<string, WeGestError["code"]> = {
@@ -117,6 +121,7 @@ async function request<T>(path: string, opts: RequestOptions): Promise<T> {
           ...(opts.body !== undefined ? { "Content-Type": "application/json" } : {}),
           ...(opts.idempotencyKey ? { "Idempotency-Key": opts.idempotencyKey } : {}),
           "X-Request-Id": requestId,
+          ...opts.headers,
           ...authHeaders(),
         },
         body: opts.form ?? (opts.body !== undefined ? JSON.stringify(opts.body) : undefined),

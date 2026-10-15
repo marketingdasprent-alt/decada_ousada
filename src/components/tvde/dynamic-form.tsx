@@ -14,11 +14,14 @@ export function DynamicWeGestForm({
   values,
   errors,
   onChange,
+  locked = {},
 }: {
   fields: FormField[];
   values: Record<string, string>;
   errors: Record<string, string>;
   onChange: (field: string, value: string) => void;
+  /** Campos que não se podem mudar, com a explicação (ex.: o email da conta de motorista). */
+  locked?: Record<string, string>;
 }) {
   const sections = [...new Set(fields.filter((f) => f.type !== "file").map((f) => f.section ?? "Dados"))];
 
@@ -71,7 +74,7 @@ export function DynamicWeGestForm({
               }
 
               return (
-                <Field key={f.field} label={f.label} htmlFor={id} required={f.required} error={errors[f.field]} help={f.help} className={wide ? "sm:col-span-2" : undefined}>
+                <Field key={f.field} label={f.label} htmlFor={id} required={f.required} error={errors[f.field]} help={locked[f.field] ?? f.help} className={wide ? "sm:col-span-2" : undefined}>
                   {f.type === "select" ? (
                     <Select {...common} value={values[f.field] ?? ""} onChange={(e) => onChange(f.field, e.target.value)}>
                       <option value="">Selecione…</option>
@@ -83,7 +86,8 @@ export function DynamicWeGestForm({
                     <Input
                       {...common}
                       type={f.type}
-                      className={short ? "max-w-field-short" : undefined}
+                      className={cn(short && "max-w-field-short", locked[f.field] && "bg-panel-sunken text-copy-secondary")}
+                      readOnly={f.field in locked}
                       placeholder={f.placeholder}
                       min={f.validation?.min}
                       max={f.validation?.max}

@@ -20,6 +20,8 @@ interface CardProps {
   /** Total do período devolvido pela API (Rent a Car com datas). */
   total?: number;
   days?: number;
+  /** Página Frota: mostra desde quando há uma viatura livre e o cartão abre a pesquisa. */
+  fleet?: boolean;
 }
 
 /** Card de viatura (doc §12, §40): cada produto tem o seu (doc §127). */
@@ -27,13 +29,34 @@ export function VehicleCard(props: CardProps) {
   return props.offer.type === "tvde" ? <TvdeCard {...props} /> : <RentACarCard {...props} />;
 }
 
-/** Disponibilidade só quando é exceção: "Disponível" em todos os cards era ruído. */
+/**
+ * Disponibilidade só quando diz alguma coisa: "Disponível" em todos os cards era ruído.
+ * Com a quantidade da API (Rent a Car), o número aparece sempre e só a última unidade se destaca.
+ */
 function AvailabilityFlag({ availability, dark }: { availability?: Availability; dark?: boolean }) {
-  if (!availability || availability.status === "available") return null;
-  const unavailable = availability.status === "unavailable";
+  if (!availability) return null;
+  const { status, quantity } = availability;
+  if (status === "available" && quantity === undefined) return null;
+  const unavailable = status === "unavailable";
+  const plenty = !unavailable && quantity !== undefined && quantity > 1;
+  const label = unavailable
+    ? availability.nextAvailableAt ? `Indisponível até ${formatDate(availability.nextAvailableAt.slice(0, 10))}` : AVAILABILITY_LABEL.unavailable
+    : quantity === 1 ? "Última viatura disponível"
+    : plenty ? `${quantity} viaturas disponíveis`
+    : AVAILABILITY_LABEL[status];
   return (
-    <p className={cn("self-start rounded-control px-2 py-0.5 text-caption font-semibold", unavailable ? "bg-negative-surface text-negative" : dark ? "bg-on-dark/10 text-on-dark" : "bg-caution-surface text-caution")}>
-      {unavailable && availability.nextAvailableAt ? `Indisponível até ${formatDate(availability.nextAvailableAt.slice(0, 10))}` : AVAILABILITY_LABEL[availability.status]}
+    <p className={cn("self-start rounded-control px-2 py-0.5 text-caption font-semibold", unavailable ? "bg-negative-surface text-negative" : plenty ? "bg-panel-sunken text-copy-secondary" : dark ? "bg-on-dark/10 text-on-dark" : "bg-caution-surface text-caution")}>
+      {label}
+    </p>
+  );
+}
+
+/** Frota: desde quando o modelo tem uma viatura livre (`disponivel_desde`); nada se a API não disser. */
+function AvailableFrom({ value }: { value: string | null | undefined }) {
+  if (value === undefined) return null;
+  return (
+    <p className={cn("self-start rounded-control px-2 py-0.5 text-caption font-semibold", value ? "bg-panel-sunken text-copy-secondary" : "bg-caution-surface text-caution")}>
+      {value ? `Disponível a partir de ${formatDate(value)}` : "Sem dias livres nos próximos 15 dias"}
     </p>
   );
 }
@@ -42,7 +65,7 @@ function AvailabilityFlag({ availability, dark }: { availability?: Availability;
  * Rent a Car (direção A): o número grande é o que o cliente paga. Com datas, é o
  * total do período; sem datas, o preço por dia. O card inteiro é o link.
  */
-function RentACarCard({ vehicle, offer, href, availability, total, days }: CardProps) {
+function RentACarCard({ vehicle, offer, href, availability, total, days, fleet }: CardProps) {
   const unavailable = availability?.status === "unavailable";
   const hasTotal = total !== undefined;
   return (
@@ -63,6 +86,7 @@ function RentACarCard({ vehicle, offer, href, availability, total, days }: CardP
         <p className="-mt-1.5 text-caption text-copy-muted">ou similar</p>
         <VehicleSpecs vehicle={vehicle} compact />
         <AvailabilityFlag availability={availability} />
+        {fleet && <AvailableFrom value={vehicle.availableFrom} />}
         <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">
           <p className="display text-h2 tabular">{formatMoney(hasTotal ? total : offer.pricing.amount)}</p>
           <p className="text-right text-caption text-copy-secondary">
@@ -81,6 +105,12 @@ function RentACarCard({ vehicle, offer, href, availability, total, days }: CardP
             )}
           </p>
         </div>
+        {/* Na Frota o cartão abre a pesquisa: o botão é só o rótulo visível do link do nome */}
+        {fleet && (
+          <span className={buttonClass("outline", "md", "w-full")} aria-hidden>
+            {vehicle.availableFrom ? "Pesquisar a partir desta data" : "Pesquisar datas"}
+          </span>
+        )}
       </div>
     </article>
   );

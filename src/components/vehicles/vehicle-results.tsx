@@ -24,6 +24,8 @@ export interface ResultItem {
   availability?: Availability;
   total?: number;
   days?: number;
+  /** Página Frota (ver VehicleCard). */
+  fleet?: boolean;
 }
 
 interface Filters {
@@ -249,7 +251,7 @@ export function VehicleResults({
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((i) => (
-              <VehicleCard key={i.vehicle.id} vehicle={i.vehicle} offer={i.offer} href={i.href} availability={i.availability} total={i.total} days={i.days} />
+              <VehicleCard key={i.vehicle.id} vehicle={i.vehicle} offer={i.offer} href={i.href} availability={i.availability} total={i.total} days={i.days} fleet={i.fleet} />
             ))}
             <GridFiller count={filtered.length} xl={3}>
               {product === "rentacar" ? (

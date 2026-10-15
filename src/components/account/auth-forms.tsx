@@ -13,7 +13,7 @@ import { Notice } from "../shared/states";
 import { Button, ButtonLink } from "../shared/ui";
 
 /** Campo de password com botão para mostrar o que se escreveu (evita erros no telemóvel). */
-function PasswordInput(props: Omit<ComponentProps<typeof Input>, "type">) {
+export function PasswordInput(props: Omit<ComponentProps<typeof Input>, "type">) {
   const [visible, setVisible] = useState(false);
   return (
     <div className="relative">

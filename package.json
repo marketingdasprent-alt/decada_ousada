@@ -1,6 +1,6 @@
 {
   "name": "decada-ousada",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,6 +14,7 @@
     "validate:wegest": "node scripts/validate-wegest.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "lucide-react": "^1.52.0",
     "next": "16.4.0",
     "react": "19.3.0",

@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const region of REGIONS) {
     const base = BASE[region];
     const [locations, vehicles] = await Promise.all([listLocations(region), listVehicles(region)]);
-    for (const path of ["", "/rent-a-car", "/rent-a-car/viaturas", "/tvde", "/tvde/viaturas", "/motoristas", "/contactos", "/perguntas-frequentes", "/privacidade"]) {
+    for (const path of ["", "/rent-a-car", "/rent-a-car/viaturas", "/rent-a-car/frota", "/tvde", "/tvde/viaturas", "/motoristas", "/contactos", "/perguntas-frequentes", "/privacidade"]) {
       entries.push({ url: `${base}${path}` });
     }
     for (const l of locations) if (!l.products || l.products.includes("rentacar")) entries.push({ url: `${base}/rent-a-car/${l.slug}` });

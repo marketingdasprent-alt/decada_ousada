@@ -4,6 +4,8 @@ export interface Availability {
   status: AvailabilityStatus;
   /** Próxima data disponível (ISO), quando indisponível. */
   nextAvailableAt?: string;
+  /** Viaturas do modelo livres no período, quando a API o diz (Rent a Car). */
+  quantity?: number;
   /** Momento da consulta: disponibilidade nunca é assumida como permanente (doc §89). */
   checkedAt: string;
 }

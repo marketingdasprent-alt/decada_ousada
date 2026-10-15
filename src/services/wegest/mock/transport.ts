@@ -1,5 +1,6 @@
 import "server-only";
 
+import { CODE_MESSAGE } from "../client";
 import type { WeGestTransport } from "../transport";
 import {
   WeGestError,
@@ -104,6 +105,13 @@ function availabilityFor(vehicleId: string, product: "RAC" | "TVDE", pickup: str
   return { status: "AVAILABLE" as const };
 }
 
+/** `disponivel_desde` simulado (em /modelos vem sempre preenchido): a maioria livre já, alguns daqui a dias. */
+function availableFrom(vehicleId: string): string {
+  const h = hash(`${vehicleId}|desde`) % 10;
+  const days = h < 6 ? 0 : 2 + (h % 5);
+  return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+}
+
 function vehicleOrThrow(id: string) {
   const v = MOCK_VEHICLES.find((x) => x.vehicle_id === id);
   if (!v) throw new WeGestError("not_found", `Viatura ${id} não encontrada`, 404);
@@ -170,7 +178,7 @@ export const mockTransport: WeGestTransport = {
     return clone(
       MOCK_VEHICLES.filter(
         (v) => v.status === "ACTIVE" && v.region_code === regionCode && (!product || v.rates.some((r) => r.product === product)),
-      ),
+      ).map((v) => (v.rates.some((r) => r.product === "RAC") ? { ...v, available_from: availableFrom(v.vehicle_id) } : v)),
     );
   },
 
@@ -182,6 +190,13 @@ export const mockTransport: WeGestTransport = {
 
   async searchAvailability(p) {
     await delay();
+    if (p.product === "RAC") {
+      // As mesmas regras da API: início no futuro e a no máximo 15 dias, no máximo 30 dias de aluguer
+      const start = new Date(p.pickupDatetime).getTime();
+      const end = new Date(p.returnDatetime ?? p.pickupDatetime).getTime();
+      if (start < Date.now() || start > Date.now() + 16 * 86_400_000) throw new WeGestError("validation", CODE_MESSAGE.PERIODO_INVALIDO, 400, undefined, undefined, "PERIODO_INVALIDO");
+      if (end - start > 30 * 86_400_000) throw new WeGestError("validation", CODE_MESSAGE.PERIODO_EXCEDE_MAXIMO, 400, undefined, undefined, "PERIODO_EXCEDE_MAXIMO");
+    }
     const candidates = MOCK_VEHICLES.filter(
       (v) =>
         v.status === "ACTIVE" &&
@@ -194,7 +209,17 @@ export const mockTransport: WeGestTransport = {
       const ret = MOCK_LOCATIONS.find((l) => l.location_id === p.returnLocationId);
       if (!ret?.allows_return) return [];
     }
-    return candidates.map((v) => ({ vehicle_id: v.vehicle_id, ...availabilityFor(v.vehicle_id, p.product, p.pickupDatetime, p.returnDatetime) }));
+    const all = candidates.map((v) => {
+      const a = availabilityFor(v.vehicle_id, p.product, p.pickupDatetime, p.returnDatetime);
+      // Rent a Car: a API real devolve quantidade_disponivel (1 = últimas unidades)
+      const quantity = p.product === "RAC" && a.status !== "UNAVAILABLE" ? (a.status === "LIMITED" ? 1 : 2 + (hash(v.vehicle_id) % 4)) : undefined;
+      return { vehicle_id: v.vehicle_id, ...a, quantity };
+    });
+    if (p.product !== "RAC") return all;
+    // Como a API: só modelos com uma viatura livre. Alguns dias por balcão ficam esgotados,
+    // para a demo mostrar a pesquisa sem resultados e as datas alternativas
+    if (hash(`${p.pickupLocationId}|${p.pickupDatetime.slice(0, 10)}`) % 7 === 0) return [];
+    return all.filter((a) => a.status !== "UNAVAILABLE");
   },
 
   async listExtras() {

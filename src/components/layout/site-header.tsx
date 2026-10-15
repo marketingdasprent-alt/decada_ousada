@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import type { Region } from "@/domain/region";
 import { regionSwitchHref } from "@/lib/region";
-import { getSession } from "@/services/auth";
+import { getSession, isDriverSession } from "@/services/auth";
 
 import { Container } from "../shared/ui";
 import { Logo } from "../shared/logo";
@@ -23,7 +23,8 @@ async function AccountLink() {
   const session = await getSession();
   const hasTvde = session?.integrations.some((i) => i.customerType === "tvde");
   const hasRac = session?.integrations.some((i) => i.customerType === "rentacar");
-  const href = session ? (hasTvde && !hasRac ? "/tvde/minha-conta" : "/minha-conta") : "/entrar";
+  // Conta de motorista (WeGest): a página da conta é /entrar?tipo=motorista
+  const href = !session ? "/entrar" : isDriverSession(session) ? "/entrar?tipo=motorista" : hasTvde && !hasRac ? "/tvde/minha-conta" : "/minha-conta";
   return (
     <Link href={href} className="flex h-11 min-w-11 items-center justify-center gap-2 rounded-control border border-on-dark/15 px-3 text-body-small font-medium text-on-dark transition-colors hover:border-on-dark/40">
       <UserRound className="size-4" aria-hidden />

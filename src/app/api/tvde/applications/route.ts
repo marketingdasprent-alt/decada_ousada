@@ -3,11 +3,16 @@ import { z } from "zod";
 import type { CustomerInput } from "@/domain/customer";
 import { getOffer } from "@/domain/vehicle";
 import { fail, fromError, fromZod, ok } from "@/lib/api";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { KNOWN_FIELD_MAP, validateDynamicForm } from "@/lib/dynamic-form";
 import { regionFromRequest } from "@/lib/region";
-import { getCustomerId, getSession, linkCustomer } from "@/services/auth";
+import { driverAccountId, getCustomerId, getSession, isDriverSession, linkCustomer } from "@/services/auth";
+import { bearerToken, DriverAuthUnavailable, verifyDriverToken } from "@/services/auth/driver";
 import { sendEmail } from "@/services/email";
 import { checkVehicleAvailability, createApplication, getApplicationForm, getVehicleById, onlineRequestsEnabled, upsertCustomer } from "@/services/wegest";
+import { WeGestError } from "@/services/wegest/types";
+
+const SESSION_ENDED = "A sua sessão terminou. Entre de novo para continuar.";
 
 const schema = z.object({
   vehicleId: z.string().min(1),
@@ -19,6 +24,10 @@ const schema = z.object({
 /**
  * POST /api/tvde/applications: cadastro do motorista + candidatura (doc §49–50).
  * O motorista é criado/atualizado no WeGest; a candidatura fica a aguardar documentos e pagamento.
+ *
+ * Com contas de motorista (WeGest): o browser envia o token da conta (Authorization: Bearer),
+ * que segue para o WeGest em X-Motorista-Token e liga a candidatura à conta. O token não é
+ * guardado nem escrito em logs. O email da candidatura é sempre o da conta.
  */
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
@@ -32,6 +41,19 @@ export async function POST(req: Request) {
   try {
     const session = await getSession();
     if (!session) return fail("unauthorized", "Inicie sessão para se candidatar.", 401);
+
+    let driverToken: string | undefined;
+    if (driverAuthEnabled()) {
+      const token = bearerToken(req);
+      if (!isDriverSession(session) || !token) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
+      const account = await verifyDriverToken(token);
+      if (!account || account.id !== driverAccountId(session)) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
+      if (formData.email && formData.email.trim().toLowerCase() !== account.email) {
+        return fail("validation", "Verifique os campos assinalados.", 422, { fieldErrors: { email: "Use o email da sua conta de motorista." } });
+      }
+      formData.email = account.email;
+      driverToken = token;
+    }
 
     // Validação com a definição da ficha vinda da API
     const form = await getApplicationForm(region);
@@ -55,10 +77,17 @@ export async function POST(req: Request) {
     const driver = await upsertCustomer("tvde", input, existingId ?? undefined);
     if (!existingId) await linkCustomer(session.user.id, { wegestCustomerId: driver.id, customerType: "tvde", region });
 
-    const application = await createApplication({ region, customerId: driver.id, vehicleId, offerId: offer.id, pickupAt, pickupLocationId, formData });
+    const application = await createApplication({ region, customerId: driver.id, vehicleId, offerId: offer.id, pickupAt, pickupLocationId, formData, driverToken });
     await sendEmail(input.email || session.user.email, "tvde.registration_received", { reference: application.reference });
     return ok({ applicationId: application.id });
   } catch (err) {
+    if (err instanceof DriverAuthUnavailable) {
+      console.warn("[tvde/applications]", err.message);
+      return fail("unavailable", "O serviço de contas está indisponível. Tente de novo dentro de minutos.", 503);
+    }
+    // Erros da conta de motorista no WeGest: sessão a renovar ou conta que não se pode candidatar
+    if (err instanceof WeGestError && err.apiCode === "SESSAO_INVALIDA") return fail("unauthorized", err.message, 401, { reason: "session_expired" });
+    if (err instanceof WeGestError && err.apiCode === "CONTA_INVALIDA") return fail("unauthorized", err.message, 403);
     return fromError(err);
   }
 }

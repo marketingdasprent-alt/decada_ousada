@@ -67,6 +67,8 @@ export interface WgVehicle {
   location_ids: string[];
   rates: WgRate[];
   status: "ACTIVE" | "MAINTENANCE" | "INACTIVE";
+  /** Rent a Car: `disponivel_desde`, primeiro dia livre (YYYY-MM-DD); null = nenhum nos próximos 15 dias. */
+  available_from?: string | null;
 }
 
 export interface WgExtra {

@@ -1,33 +1,25 @@
 import type { Metadata } from "next";
 
-import { CategoryGrid, rentACarCategories, type CategoryEntry } from "@/components/rentacar/category-grid";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
 import { PickupPoints } from "@/components/shared/pickup-points";
-import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
-import { FAMILY_LABEL, type VehicleFamily } from "@/domain/vehicle";
+import { ButtonLink, Container, Section } from "@/components/shared/ui";
 import { regionFromParams } from "@/lib/region";
 import { REGION_IMAGERY } from "@/lib/region-imagery";
-import { listCategories, listLocations, listVehicles } from "@/services/wegest";
+import { listLocations } from "@/services/wegest";
 
 export const metadata: Metadata = {
   title: "Rent a Car",
-  description: "Escolha a categoria e veja as viaturas disponíveis, com preço por dia e total do período ao escolher as datas.",
+  description: "Escolha o local e as datas de levantamento e devolução e veja só as viaturas livres, com o preço total do período.",
 };
 
 /**
- * Entrada do Rent a Car: as categorias são a porta de entrada (sem passo intermédio
- * de filtros). Cada categoria abre as viaturas dela; a pesquisa com datas fica na hero.
+ * Entrada do Rent a Car: a pesquisa (local, datas e horas) é o primeiro passo, como nas
+ * rent-a-car de referência. O catálogo de modelos fica na página Frota.
  */
 export default async function RentACarPage({ params }: PageProps<"/[region]/rent-a-car">) {
   const region = await regionFromParams(params);
-  const [locations, categories, vehicles] = await Promise.all([listLocations(region, "rentacar"), listCategories(), listVehicles(region, "rentacar")]);
-
-  // Categorias com frota real nesta região, agrupadas por família (doc §11)
-  const byFamily = new Map<VehicleFamily, CategoryEntry[]>();
-  for (const entry of rentACarCategories(categories, vehicles)) {
-    byFamily.set(entry.family, [...(byFamily.get(entry.family) ?? []), entry]);
-  }
+  const locations = await listLocations(region, "rentacar");
 
   return (
     <>
@@ -36,22 +28,14 @@ export default async function RentACarPage({ params }: PageProps<"/[region]/rent
         size="medium"
         images={[REGION_IMAGERY[region].rentacar]}
         title="Rent a Car"
-        description="Aluguer ao dia para férias, viagens e empresas. Escolha a categoria abaixo ou pesquise já com as suas datas."
+        description="Aluguer ao dia para férias, viagens e empresas. Indique o local e as datas para ver as viaturas livres e o preço total."
         crumbs={[{ label: "Rent a Car" }]}
         side={<HeroSearch racLocations={locations} tvdeLocations={[]} only="rentacar" />}
       />
 
-      {[...byFamily.entries()].map(([family, cats]) => (
-        <Section key={family} variant="compact"><Container>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <SectionHeading title={`Viaturas ${FAMILY_LABEL[family].toLowerCase()}`} description="Preços por dia com IVA incluído. O total aparece ao escolher as datas." />
-          </div>
-          <CategoryGrid entries={cats} className="mt-6" />
-        </Container></Section>
-      ))}
-
-      <Section variant="compact"><Container>
-        <ButtonLink href="/rent-a-car/viaturas" variant="outline">Ver toda a frota</ButtonLink>
+      <Section variant="compact"><Container className="flex flex-wrap items-center justify-between gap-4">
+        <p className="max-w-2xl text-body text-copy-secondary">Quer ver primeiro os modelos e o preço por dia? A frota mostra também a partir de quando há uma viatura livre.</p>
+        <ButtonLink href="/rent-a-car/frota" variant="outline">Ver a frota</ButtonLink>
       </Container></Section>
 
       <PickupPoints title="Os nossos balcões" locations={locations} />
