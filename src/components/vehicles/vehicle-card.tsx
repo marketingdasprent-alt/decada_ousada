@@ -1,3 +1,4 @@
+import { MapPin } from "lucide-react";
 import Link from "next/link";
 
 import { AVAILABILITY_LABEL, type Availability } from "@/domain/availability";
@@ -85,6 +86,8 @@ function RentACarCard({ vehicle, offer, href, availability, total, days }: CardP
   );
 }
 
+const PICKUP_LIST = new Intl.ListFormat("pt-PT", { type: "conjunction" });
+
 /**
  * TVDE (direção B, "o recibo"): responde à pergunta do motorista, quanto paga agora
  * e quanto paga por semana. O escuro fica reservado ao produto profissional.
@@ -96,6 +99,8 @@ function TvdeCard({ vehicle, offer, href, availability }: CardProps) {
     formatMileage(offer),
     offer.minimumPeriod !== undefined && `mínimo de ${offer.minimumPeriod} semanas`,
   ].filter(Boolean);
+  // A pesquisa TVDE não tem data: o cartão diz onde a viatura pode ser levantada
+  const pickupAt = vehicle.locations?.filter((l) => l.pickupAvailable).map((l) => l.name) ?? [];
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-panel bg-panel-dark text-on-dark ring-1 ring-on-dark/10 transition-shadow hover:ring-on-dark/40 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-4 has-[:focus-visible]:outline-focus has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-on-dark">
       <VehicleImage image={vehicle.images[0]} surface="dark" className="aspect-vehicle" sizes="(min-width: 1024px) 30vw, (min-width: 640px) 50vw, 100vw" />
@@ -124,7 +129,15 @@ function TvdeCard({ vehicle, offer, href, availability }: CardProps) {
           </div>
         </dl>
         {conditions.length > 0 && <p className="text-body-small text-on-dark/75">{conditions.join(", ")}.</p>}
-        <span className={buttonClass("light", "md", "mt-auto w-full")} aria-hidden>
+        {/* Junto ao botão e empurrado para o fundo: o número de locais muda de cartão para
+            cartão e não pode desalinhar os recibos da mesma fila */}
+        {pickupAt.length > 0 && (
+          <p className="mt-auto flex gap-1.5 text-body-small font-medium">
+            <MapPin className="mt-0.5 size-4 shrink-0 text-on-dark/75" aria-hidden />
+            <span>Levantamento em {PICKUP_LIST.format(pickupAt)}</span>
+          </p>
+        )}
+        <span className={buttonClass("light", "md", cn("w-full", pickupAt.length === 0 && "mt-auto"))} aria-hidden>
           Ver viatura
         </span>
       </div>

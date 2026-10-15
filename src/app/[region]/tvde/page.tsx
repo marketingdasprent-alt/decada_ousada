@@ -9,6 +9,7 @@ import { TvdeRequirements } from "@/components/tvde/tvde-requirements";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { formatMoney } from "@/domain/pricing";
 import { getOffer } from "@/domain/vehicle";
+import { withPickupLocations } from "@/lib/pickup-locations";
 import { regionFromParams } from "@/lib/region";
 import { REGION_IMAGERY } from "@/lib/region-imagery";
 import { getStartingPrice, listLocations, listVehicles } from "@/services/wegest";
@@ -24,7 +25,7 @@ export default async function TvdePage({ params }: PageProps<"/[region]/tvde">) 
 
   return (
     <>
-      {/* Topo TVDE: foto da região e a pesquisa por local e data de início */}
+      {/* Topo TVDE: foto da região e a pesquisa por local ("Alterar" da listagem volta a #pesquisa) */}
       <Hero
         region={region}
         size="medium"
@@ -32,7 +33,7 @@ export default async function TvdePage({ params }: PageProps<"/[region]/tvde">) 
         title="TVDE: comece a conduzir esta semana"
         description="Viaturas preparadas para motoristas profissionais, à semana. Preço, caução, limite de quilómetros e condições de cada viatura antes de se candidatar."
         crumbs={[{ label: "TVDE" }]}
-        side={<HeroSearch racLocations={[]} tvdeLocations={locations} only="tvde" />}
+        side={<div id="pesquisa" className="scroll-mt-24"><HeroSearch racLocations={[]} tvdeLocations={locations} only="tvde" /></div>}
       >
         {from !== null && (
           <p className="mt-6 text-on-dark/85">
@@ -52,7 +53,7 @@ export default async function TvdePage({ params }: PageProps<"/[region]/tvde">) 
             <ButtonLink href="/tvde/viaturas" variant="outline">Ver todas</ButtonLink>
           </div>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {vehicles.slice(0, 6).map((v) => (
+            {withPickupLocations(vehicles.slice(0, 6), locations).map((v) => (
               <VehicleCard key={v.id} vehicle={v} offer={getOffer(v, "tvde")!} href={`/tvde/viatura/${v.slug}`} />
             ))}
             <GridFiller count={Math.min(vehicles.length, 6)} lg={3}>

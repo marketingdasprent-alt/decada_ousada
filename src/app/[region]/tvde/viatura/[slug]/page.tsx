@@ -43,7 +43,7 @@ export default function Page({ params, searchParams }: { params: Promise<{ regio
   );
 }
 
-/** Seletor de levantamento com o local e a data vindos da pesquisa TVDE (?local=&inicio=). */
+/** Seletor de levantamento com o local vindo da pesquisa TVDE (?local=); aceita ainda ?inicio= de links antigos. */
 async function PickupFromSearch({ searchParams, vehicleId, locations }: { searchParams: Promise<SP>; vehicleId: string; locations: Location[] }) {
   const sp = await searchParams;
   return <PickupSelector vehicleId={vehicleId} locations={locations} initialLocationId={firstParam(sp.local)} initialPickupAt={firstParam(sp.inicio)} online={onlineRequestsEnabled()} />;

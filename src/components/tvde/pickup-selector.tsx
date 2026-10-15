@@ -114,16 +114,13 @@ export function PickupSelector({
       </div>
 
       {!online ? (
-        <>
-          <Notice tone="info">As candidaturas online ainda não estão disponíveis. Contacte-nos para se candidatar a esta viatura.</Notice>
-          <Link href="/contactos" className={buttonClass("primary", "lg", "mt-3 w-full")}>Contactar a equipa</Link>
-        </>
+        <Link href="/contactos" className={buttonClass("primary", "lg", "w-full")}>Contactar a equipa</Link>
       ) : available ? (
         <Link href={href} onClick={() => track("tvde_pickup_selected", { vehicleId })} className={buttonClass("primary", "lg", "w-full")}>
-          <CalendarCheck className="size-5" aria-hidden /> Candidatar-me a esta viatura
+          <CalendarCheck className="size-5" aria-hidden /> Reservar esta viatura
         </Link>
       ) : (
-        <span className={disabledButtonClass("lg", "w-full")} aria-disabled>Candidatar-me a esta viatura</span>
+        <span className={disabledButtonClass("lg", "w-full")} aria-disabled>Reservar esta viatura</span>
       )}
     </div>
   );

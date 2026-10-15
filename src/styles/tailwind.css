@@ -99,9 +99,6 @@
 @utility grid-search {
   grid-template-columns: 1.4fr 1fr 0.75fr 1fr 0.75fr;
 }
-@utility grid-tvde-search {
-  grid-template-columns: 1.4fr 1fr 0.75fr;
-}
 @utility grid-search-bar {
   grid-template-columns: 1.4fr 1fr 0.75fr 1fr 0.75fr auto;
 }
