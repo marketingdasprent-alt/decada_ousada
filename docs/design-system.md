@@ -158,10 +158,11 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   the destination ("Ver viaturas Rent a Car", "Ver viaturas TVDE"). Both panels
   share one grid cell and the inactive one is `invisible` and `inert`, so the
   card keeps the height of the taller panel and never jumps when switching.
-  Each card keeps its own tab state. The TVDE panel is shorter than
-  the Rent a Car one; its extra height goes to a "Como funciona" box (`flex-1`,
-  the three steps and the note that the deposit is not an approval), so the card
-  never shows an empty area.
+  Each card keeps its own tab state. The TVDE panel (location only) is shorter
+  than the Rent a Car one: it shows a "Como funciona" box at its natural height
+  (the three steps and the note that the deposit is not an approval) and the
+  search sits at the bottom (`mt-auto`), so its button lands where the Rent a
+  Car button is and no box is stretched empty.
 - `Testimonials` (`shared/testimonials.tsx`, client, `service: "rentacar" | "tvde"`): testimonials panel for one service; title, description and list label come from `COPY` ("O que dizem os nossos clientes" / "... motoristas"), ids from the service. On the homepage, `service="rentacar"` between `RacIntro` and `TvdeProcess`, on the light surface; the TVDE testimonials are kept in the data for another place. Lists the `TESTIMONIALS` of that service (DÉCADA OUSADA customers; text as written, stars, initials, name) in a horizontal scroll-snap row without a native scrollbar (`scrollbar-none`): one card and a peek on mobile, two from `sm`, three from `lg`. The quote mark in `text-brand` (region colour) is the graphic element; the quote is `text-body-large`, clamped to five lines with "Ler tudo" / "Mostrar menos" (`aria-expanded`) only when it overflows. Infinite: after hydration the list gets one copy on each side (`inert`, `aria-hidden`; the server HTML has the list once) and, when scrolling stops on a copy (`scrollend`, or 150 ms idle), the row jumps instantly by one list width back to the original, so the jump is invisible. Controls: counter of the leftmost card ("4 de 14", `aria-live`), previous/next arrows (one view, never disabled), focusable row for arrow keys, and a brand-colour position bar under the row. "Ler tudo" state is shared by a card and its copies. Entrance: `reveal-item` (see Motion). No relative dates.
 - `InstagramFeed` (`shared/instagram.tsx`, async server component, no props): "Siga-nos no Instagram" section on the homepage, after `TvdeProcess` and before the pickup points. Heading plus an `outline` "Seguir no Instagram" button to the profile; under it the posts from `getInstagramPosts()` (`services/instagram`, cache profile `minutes`) as square tiles, two columns, four from `lg` (trimmed to full rows of four when there are four or more), linking to each post in a new tab. Alt text is the start of the caption; videos and albums carry a small `Play` / `Images` badge. With no token or an API error there is no grid, only the heading and the button. `InstagramIcon` (`shared/instagram-icon.tsx`) and `FacebookIcon` (`shared/facebook-icon.tsx`) are the brand glyphs (lucide-react has no brand icons), also used in the footer. A second `outline` button, "Facebook", sits next to "Seguir no Instagram".
 - `CoverPhoto` (`shared/cover-photo.tsx`, client, `src`, `sizes`, `position?`): a photo that covers its `relative` parent (`object-cover`), through the Unsplash loader when the photo is from there; decorative by default (`alt=""`). Used on `/motoristas` for the numbers band, benefits, Aluguer/Slot, steps and contact band.
@@ -293,9 +294,20 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   levantamento" only when the API has them. `showMap` adds "Ver no mapa" as
   its own link under the text (never inside the point's link) when the API
   returns coordinates. No points, no section.
-- TVDE: `TvdeSearchForm` (location, start date and time; leads to
-  `/tvde/viaturas?local=&inicio=`), `PickupSelector` (re-checks availability on
-  every change; `initialLocationId` and `initialPickupAt` from the search),
+- TVDE: `TvdeSearchForm` (pickup location only; leads to
+  `/tvde/viaturas?local=`, the date is picked on the vehicle), `PickupSelector`
+  (date, time and location; re-checks availability on every change;
+  `initialLocationId` from the search, `initialPickupAt` from old links). The
+  TVDE `VehicleCard` lists where the vehicle can be picked up ("Levantamento em
+  Leiria, Lisboa e Porto", `Intl.ListFormat`), right above "Ver viatura" and
+  pushed to the bottom (`mt-auto`), so a longer list never misaligns the
+  receipts of one row. Pages set each vehicle's locations with the same rule
+  as the vehicle page (`withPickupLocations`, `lib/pickup-locations.ts`): the
+  TVDE locations where the vehicle is, or all of them with no restriction, so
+  the card never names a point that cannot be picked there. The
+  results strip ("Viaturas com levantamento em X." and "Alterar", to
+  `/tvde#pesquisa`) is one row at every width; the list never claims
+  availability, which only `PickupSelector` shows.
   `DynamicWeGestForm`, `DocumentUploader`, `ApplicationStatusBadge`,
   `ApplicationTimeline` (vertical on mobile, step state in text, payment
   step from the real payment), `ApplicationChecklist` ("Vai precisar de",

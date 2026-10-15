@@ -3,6 +3,25 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.19.0]: 2026-10-15
+
+### Changed
+
+- TVDE search asks only for the pickup location (marketing request) and leads
+  to /tvde/viaturas?local=. The date and time are picked on the vehicle page,
+  where availability is checked. A hint under the field says so.
+- TVDE cards say where the vehicle is picked up ("Levantamento em Leiria e
+  Lisboa"), with the same rule as the vehicle page.
+- TVDE list: one row "Viaturas com levantamento em X." with "Alterar", which
+  goes back to the search card on /tvde (#pesquisa). Shorter page header.
+- Home page, TVDE tab: the "Como funciona" box keeps its natural height and
+  the search sits at the bottom, with the button where the Rent a Car one is.
+- TVDE vehicle page button: "Reservar esta viatura" (was "Candidatar-me a
+  esta viatura").
+- With online requests off, the TVDE and Rent a Car vehicle pages show only
+  "Contactar a equipa", without the "reservas online" notice. The API error
+  for that case now talks about reservations.
+
 ## [0.18.4]: 2026-10-14
 
 ### Changed

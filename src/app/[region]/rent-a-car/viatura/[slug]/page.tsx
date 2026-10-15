@@ -146,10 +146,7 @@ async function BookingPanel({ region, vehicle, offer, searchParams }: { region: 
         <Notice tone="warn">Não foi possível obter o preço neste momento. Tente novamente.</Notice>
       )}
       {!onlineRequestsEnabled() ? (
-        <>
-          <Notice tone="info" className="mt-6">As reservas online ainda não estão disponíveis. Contacte-nos para reservar esta viatura.</Notice>
-          <ButtonLink href="/contactos" size="lg" className="mt-3 w-full">Contactar a equipa</ButtonLink>
-        </>
+        <ButtonLink href="/contactos" size="lg" className="mt-6 w-full">Contactar a equipa</ButtonLink>
       ) : available && quote.ok ? (
         <ButtonLink href={`/rent-a-car/reserva?viatura=${vehicle.id}&${rentalSearchQuery(search)}`} size="lg" className="mt-6 w-full">
           Reservar

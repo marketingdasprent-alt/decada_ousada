@@ -54,7 +54,7 @@ const TVDE_STEPS = [
 
 function TvdeSteps({ className }: { className?: string }) {
   return (
-    <div className={cn("flex flex-col justify-center rounded-card bg-panel-alt p-4", className)}>
+    <div className={cn("rounded-card bg-panel-alt p-4", className)}>
       <p className="text-body-small font-semibold">Como funciona</p>
       <ol className="mt-3 space-y-3">
         {TVDE_STEPS.map((step, i) => (
@@ -71,11 +71,11 @@ function TvdeSteps({ className }: { className?: string }) {
   );
 }
 
-function ProductForm({ product, racLocations, tvdeLocations }: { product: Product; racLocations: Location[]; tvdeLocations: Location[] }) {
+function ProductForm({ product, racLocations, tvdeLocations, className }: { product: Product; racLocations: Location[]; tvdeLocations: Location[]; className?: string }) {
   return product === "rentacar" ? (
     <RentACarSearchForm locations={racLocations} variant="stack" submitLabel={SERVICE.rentacar.cta} />
   ) : (
-    <TvdeSearchForm locations={tvdeLocations} layout="stack" />
+    <TvdeSearchForm locations={tvdeLocations} layout="stack" className={className} />
   );
 }
 
@@ -164,9 +164,10 @@ export function HeroSearch({ racLocations, tvdeLocations, only }: { racLocations
             className={cn("col-start-1 row-start-1 flex flex-col gap-4 p-5", active !== p && "invisible")}
           >
             <ServiceIntro product={p} />
-            {/* O painel TVDE estica até à altura do Rent a Car: o espaço a mais vai para os passos */}
-            {p === "tvde" && <TvdeSteps className="flex-1" />}
-            <ProductForm product={p} racLocations={racLocations} tvdeLocations={tvdeLocations} />
+            {/* O painel TVDE (só o local) é mais curto que o Rent a Car: os passos ficam no
+                tamanho natural e a pesquisa desce para o fundo, com o botão no sítio do outro */}
+            {p === "tvde" && <TvdeSteps />}
+            <ProductForm product={p} racLocations={racLocations} tvdeLocations={tvdeLocations} className={p === "tvde" ? "mt-auto" : undefined} />
           </div>
         ))}
       </div>

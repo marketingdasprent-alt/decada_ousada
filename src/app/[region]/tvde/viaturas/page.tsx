@@ -1,4 +1,4 @@
-import { CalendarRange } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -10,15 +10,14 @@ import { VehicleResults } from "@/components/vehicles/vehicle-results";
 import type { Region } from "@/domain/region";
 import { getOffer } from "@/domain/vehicle";
 import { attempt } from "@/lib/attempt";
-import { formatDateTime } from "@/lib/dates";
 import { regionFromParams } from "@/lib/region";
+import { withPickupLocations } from "@/lib/pickup-locations";
 import { firstParam } from "@/lib/search";
 import { listLocations, listVehicles } from "@/services/wegest";
 
 export const metadata: Metadata = { title: "Viaturas TVDE" };
 
 type SP = Record<string, string | string[] | undefined>;
-const LOCAL_DT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 export default async function TvdeVehiclesPage({ params, searchParams }: PageProps<"/[region]/tvde/viaturas">) {
   const region = await regionFromParams(params);
@@ -26,7 +25,7 @@ export default async function TvdeVehiclesPage({ params, searchParams }: PagePro
     <>
       <PageHeader tone="dark"
         title="Viaturas TVDE"
-        description="Preço por semana. A disponibilidade é confirmada ao escolher a data e o local de levantamento."
+        description="Preço por semana. A data de levantamento escolhe-se em cada viatura, onde a disponibilidade é confirmada."
         crumbs={[{ href: "/tvde", label: "TVDE" }, { label: "Viaturas" }]}
       />
       <Section><Container>
@@ -38,28 +37,29 @@ export default async function TvdeVehiclesPage({ params, searchParams }: PagePro
   );
 }
 
-/** Com ?local= e ?inicio= (pesquisa TVDE): só viaturas desse local, e o levantamento segue para a viatura. */
+/**
+ * Com ?local= (pesquisa TVDE): só viaturas desse local, e o local segue para a viatura,
+ * onde se escolhe a data.
+ */
 async function Results({ region, searchParams }: { region: Region; searchParams: Promise<SP> }) {
   const sp = await searchParams;
   const [res, locations] = await Promise.all([attempt(() => listVehicles(region, "tvde")), listLocations(region, "tvde")]);
   const location = locations.find((l) => l.id === firstParam(sp.local));
-  const start = firstParam(sp.inicio);
-  const pickupAt = start && LOCAL_DT.test(start) ? start : undefined;
-  const pickupQuery = location && pickupAt ? `?${new URLSearchParams({ local: location.id, inicio: pickupAt })}` : "";
+  const pickupQuery = location ? `?${new URLSearchParams({ local: location.id })}` : "";
 
   if (!res.ok) return <ErrorState timeout={res.timeout} retryHref="/tvde/viaturas" />;
-  const vehicles = location ? res.data.filter((v) => !v.locations || v.locations.some((l) => l.id === location.id)) : res.data;
+  const vehicles = withPickupLocations(location ? res.data.filter((v) => !v.locations || v.locations.some((l) => l.id === location.id)) : res.data, locations);
 
   return (
     <>
       {location && (
-        <p className="mb-6 flex flex-wrap items-center gap-2 text-body-small text-copy-secondary">
-          <CalendarRange className="size-4 text-copy-muted" aria-hidden />
-          <span>
-            Levantamento em <span className="font-semibold text-copy">{location.name}</span>
-            {pickupAt && <>, a partir de {formatDateTime(pickupAt)}</>}. A disponibilidade confirma-se na viatura.
+        // Uma linha de contexto: ícone, local e "Alterar" na mesma fila, mesmo a 360 px
+        <p className="mb-6 flex items-center gap-2 text-body-small text-copy-secondary">
+          <MapPin className="size-4 shrink-0 text-copy-muted" aria-hidden />
+          <span className="min-w-0 flex-1 sm:flex-none">
+            Viaturas com levantamento em <span className="font-semibold text-copy">{location.name}</span>.
           </span>
-          <Link href="/tvde" className="font-medium text-brand underline underline-offset-4 max-md:tap-target">Alterar</Link>
+          <Link href="/tvde#pesquisa" className="shrink-0 font-medium text-brand underline underline-offset-4 max-md:tap-target">Alterar</Link>
         </p>
       )}
       {vehicles.length === 0 ? (

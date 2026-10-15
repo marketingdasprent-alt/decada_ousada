@@ -967,3 +967,31 @@ Infrastructure.
 DATE:
 2026-10-14
 ```
+
+---
+
+```
+DECISION:
+The TVDE search asks only for the pickup location (team decision,
+2026-10-15). It leads to /tvde/viaturas?local=; the date and time are picked
+on the vehicle page, in PickupSelector, which checks availability. Each TVDE
+card lists where the vehicle can be picked up. The utility
+`grid-tvde-search` is removed. Old links with ?inicio= still preselect the
+date on the vehicle page.
+
+REASON:
+A driver browses the fleet before choosing a start date. The location stays
+first so the list only shows vehicles that can be picked up there.
+
+SCOPE:
+src/components/tvde/tvde-search-form.tsx, src/app/[region]/tvde/viaturas/page.tsx,
+src/components/vehicles/vehicle-card.tsx (TVDE card),
+src/app/[region]/tvde/viatura/[slug]/page.tsx (comment),
+src/styles/tailwind.css, docs/design-system.md.
+
+LEVEL:
+Project rule (TVDE flow).
+
+DATE:
+2026-10-15
+```
