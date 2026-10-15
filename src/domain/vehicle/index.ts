@@ -47,6 +47,11 @@ export interface Vehicle {
   region?: Region;
   locations?: Location[];
   offers: VehicleOffer[];
+  /**
+   * Rent a Car: primeiro dia com uma viatura livre (YYYY-MM-DD), nos próximos 15 dias.
+   * null = nenhum dia livre nesse prazo; undefined = a API não devolveu o dado.
+   */
+  availableFrom?: string | null;
 }
 
 export const FUEL_LABEL: Record<FuelType, string> = {

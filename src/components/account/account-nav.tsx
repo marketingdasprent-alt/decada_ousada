@@ -6,6 +6,12 @@ import { usePathname } from "next/navigation";
 
 import { logoutAction } from "@/app/actions/auth";
 import { cn } from "@/lib/cn";
+import { driverAuthEnabled } from "@/lib/driver-account";
+
+/** Conta de motorista: termina também a sessão WeGest guardada no browser. */
+function signOutDriverAccount() {
+  if (driverAuthEnabled()) void import("@/lib/driver-auth-client").then((m) => m.driverAuth().auth.signOut({ scope: "local" }));
+}
 
 export function AccountNav({ items }: { items: Array<{ href: string; label: string }> }) {
   const pathname = usePathname();
@@ -29,7 +35,7 @@ export function AccountNav({ items }: { items: Array<{ href: string; label: stri
           </Link>
         );
       })}
-      <form action={logoutAction} className="shrink-0 lg:mt-4 lg:border-t lg:border-line lg:pt-4">
+      <form action={logoutAction} onSubmit={signOutDriverAccount} className="shrink-0 lg:mt-4 lg:border-t lg:border-line lg:pt-4">
         <button type="submit" className="tap-target gap-2 rounded-control px-3.5 py-2.5 text-body-small font-medium text-copy-secondary hover:bg-panel-sunken">
           <LogOut className="size-4" aria-hidden /> Terminar sessão
         </button>

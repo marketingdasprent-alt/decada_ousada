@@ -29,6 +29,10 @@ export interface SelectedExtra {
   quantity: number;
 }
 
+/** Limites da reserva online de Rent a Car no WeGest (validade da tarifa do site e duração). */
+export const RAC_MAX_DAYS = 30;
+export const RAC_MAX_ADVANCE_DAYS = 15;
+
 export interface RentalSearch {
   pickupLocationId: string;
   returnLocationId: string;

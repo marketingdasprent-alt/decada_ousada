@@ -28,7 +28,7 @@ export function SiteFooter({ region }: { region: Region }) {
           <h2 className="mb-3 text-body-small font-semibold uppercase tracking-wider text-on-dark">Rent a Car</h2>
           <ul className="space-y-2 text-body-small max-md:space-y-0">
             <li><Link className="hover:text-on-dark max-md:tap-target" href="/rent-a-car">Pesquisar viaturas</Link></li>
-            <li><Link className="hover:text-on-dark max-md:tap-target" href="/rent-a-car/viaturas">Ver frota</Link></li>
+            <li><Link className="hover:text-on-dark max-md:tap-target" href="/rent-a-car/frota">Ver frota</Link></li>
             <li><Link className="hover:text-on-dark max-md:tap-target" href="/minha-conta/reservas">As minhas reservas</Link></li>
           </ul>
         </div>

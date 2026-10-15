@@ -27,8 +27,9 @@ const g = globalThis as unknown as { __localDb?: Db };
 const db = (): Db => (g.__localDb ??= { users: new Map(), integrations: [], payments: new Map(), refunds: new Map() });
 
 export const usersRepo = {
+  /** Só contas com password do site: as contas de motorista vivem no WeGest e entram por lá. */
   async findByEmail(email: string) {
-    return [...db().users.values()].find((u) => u.email.toLowerCase() === email.toLowerCase()) ?? null;
+    return [...db().users.values()].find((u) => u.authProviderId.startsWith("local:") && u.email.toLowerCase() === email.toLowerCase()) ?? null;
   },
   async findById(id: string) {
     return db().users.get(id) ?? null;

@@ -8,7 +8,7 @@ export default function NotFound() {
       <p className="mt-2 text-copy-secondary">A página que procura não existe ou foi movida.</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <ButtonLink href="/">Voltar ao início</ButtonLink>
-        <ButtonLink href="/rent-a-car/viaturas" variant="outline">Ver viaturas</ButtonLink>
+        <ButtonLink href="/rent-a-car/frota" variant="outline">Ver a frota</ButtonLink>
       </div>
     </Container></Section>
   );

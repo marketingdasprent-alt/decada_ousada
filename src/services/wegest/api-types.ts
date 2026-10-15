@@ -48,6 +48,12 @@ interface ApiModeloBase {
 export interface ApiModelo extends ApiModeloBase {
   tipo: "passageiros" | "comercial";
   preco_dia: ApiPreco;
+  /**
+   * Primeiro dia (AAAA-MM-DD, hora de Lisboa) com uma viatura do modelo livre 24 h, nos
+   * próximos 15 dias. Em /modelos vem sempre preenchido (só lista modelos com um dia livre);
+   * em /modelos/{id} é null quando não há nenhum. Opcional aqui para tolerar uma API antiga.
+   */
+  disponivel_desde?: string | null;
 }
 
 export interface ApiModeloDetalhe extends ApiModelo {

@@ -38,7 +38,7 @@ async function Checkout({ region, searchParams }: { region: Region; searchParams
 
   const vehicle = await getVehicleById(region, vehicleId);
   const offer = vehicle && getOffer(vehicle, "rentacar");
-  if (!vehicle || !offer) return <EmptyState title="Viatura não encontrada" action={<ButtonLink href="/rent-a-car/viaturas">Ver viaturas</ButtonLink>} />;
+  if (!vehicle || !offer) return <EmptyState title="Viatura não encontrada" action={<ButtonLink href="/rent-a-car/viaturas">Pesquisar viaturas</ButtonLink>} />;
 
   const query = rentalSearchQuery(search);
   const backHref = `/rent-a-car/viatura/${vehicle.slug}?${query}`;

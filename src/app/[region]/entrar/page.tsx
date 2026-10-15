@@ -5,13 +5,15 @@ import { Suspense } from "react";
 
 import { AuthShell } from "@/components/account/auth-shell";
 import { LoginForm } from "@/components/account/auth-forms";
+import { DriverConfirmation, DriverLoginForm, DriverSignOutButton } from "@/components/account/driver-auth-forms";
 import { LoginTypeSwitch } from "@/components/account/login-type-switch";
 import { ButtonLink, buttonClass, Skeleton } from "@/components/shared/ui";
 import { DRIVER_AREA_URL } from "@/domain/drivers";
 import type { Region } from "@/domain/region";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
-import { getSession } from "@/services/auth";
+import { getSession, isDriverSession } from "@/services/auth";
 
 export const metadata: Metadata = { title: "Entrar", robots: { index: false } };
 
@@ -33,7 +35,57 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[r
 async function Login({ region, searchParams }: { region: Region; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const query = await searchParams;
   const next = firstParam(query.next);
-  if (await getSession()) redirect(next?.startsWith("/") ? next : "/minha-conta");
+  const driverAccounts = driverAuthEnabled();
+  const isDriverLogin = firstParam(query.tipo) === "motorista";
+  const session = await getSession();
+
+  // Motorista com sessão: a página da conta é esta (o painel completo fica no WeGest)
+  if (session && isDriverSession(session) && isDriverLogin && !next) {
+    return (
+      <AuthShell region={region} title="A sua conta de motorista" description={`Sessão iniciada como ${session.user.email}.`}>
+        <p className="text-copy-secondary">
+          Esta é a sua conta WeGest: entra com o mesmo email e a mesma password no portal e na app do motorista.
+        </p>
+        <div className="mt-6 space-y-3">
+          <ButtonLink href="/tvde/viaturas" size="lg" className="w-full">Ver viaturas TVDE</ButtonLink>
+          <a href={DRIVER_AREA_URL} className={buttonClass("outline", "lg", "w-full")}>
+            Abrir o painel do motorista
+            <ExternalLink className="size-4" aria-hidden />
+          </a>
+        </div>
+        <div className="mt-8 border-t border-line pt-5">
+          <DriverSignOutButton />
+        </div>
+      </AuthShell>
+    );
+  }
+  // Cliente Rent a Car a candidatar-se: a candidatura pede a conta de motorista, por isso fica aqui
+  const needsDriverAccount = driverAccounts && next?.startsWith("/tvde/candidatura") && !isDriverSession(session);
+  if (session && !needsDriverAccount) redirect(next?.startsWith("/") && !next.startsWith("//") ? next : isDriverSession(session) ? "/entrar?tipo=motorista" : "/minha-conta");
+
+  // Link do email de confirmação da conta de motorista (chega com a sessão no URL)
+  if (driverAccounts && firstParam(query.confirmado) === "1") {
+    return (
+      <AuthShell region={region} title="Confirmar conta">
+        <DriverConfirmation />
+      </AuthShell>
+    );
+  }
+
+  // Vindo de "Candidatar-me" com contas WeGest: a conta de motorista, criar conta primeiro
+  if (driverAccounts && next?.startsWith("/tvde/candidatura")) {
+    return (
+      <AuthShell
+        region={region}
+        title="Crie a sua conta de motorista"
+        description="A conta é a mesma do portal e da app do motorista. A sua escolha de viatura fica guardada."
+      >
+        <ButtonLink href={`/registar?tipo=motorista&next=${encodeURIComponent(next)}`} size="lg" className="w-full">Criar conta</ButtonLink>
+        <h2 className="mb-4 mt-8 border-t border-line pt-8 font-semibold">Já tem conta? Entre para continuar</h2>
+        <DriverLoginForm next={next} secondary />
+      </AuthShell>
+    );
+  }
 
   // Vindo de "Candidatar-me": quase sempre um motorista novo, por isso criar conta vem primeiro
   if (next?.startsWith("/tvde/candidatura")) {
@@ -50,8 +102,18 @@ async function Login({ region, searchParams }: { region: Region; searchParams: P
     );
   }
 
-  // Motorista TVDE: a conta vive no WeGest, por isso o login é o do painel do motorista de lá
-  if (firstParam(query.tipo) === "motorista") {
+  // Motorista TVDE com contas WeGest: entra aqui, com a mesma conta do portal e da app
+  if (driverAccounts && isDriverLogin) {
+    return (
+      <AuthShell region={region} title="Entrar" description="Entre com a conta de motorista, a mesma do portal e da app do WeGest.">
+        <LoginTypeSwitch current="motorista" next={next} />
+        <DriverLoginForm next={next} />
+      </AuthShell>
+    );
+  }
+
+  // Motorista TVDE sem contas WeGest configuradas: o login é o do painel do motorista de lá
+  if (isDriverLogin) {
     return (
       <AuthShell region={region} title="Entrar" description="Aceda ao painel do motorista TVDE.">
         <LoginTypeSwitch current="motorista" next={next} />

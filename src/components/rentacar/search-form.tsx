@@ -4,6 +4,7 @@ import { Car, Search, SlidersHorizontal, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 
+import { RAC_MAX_ADVANCE_DAYS, RAC_MAX_DAYS } from "@/domain/booking";
 import type { Location } from "@/domain/location";
 import { FAMILY_SLUG, type VehicleFamily } from "@/domain/vehicle";
 import { addDays, TIME_SLOTS } from "@/lib/dates";
@@ -23,7 +24,8 @@ export interface SearchValues {
   returnTime: string;
 }
 
-const MAX_DAYS = 30; // limite da API WeGest para Rent a Car
+const MAX_DAYS = RAC_MAX_DAYS; // limite da API WeGest para Rent a Car
+const MAX_ADVANCE_DAYS = RAC_MAX_ADVANCE_DAYS; // levantamento entre hoje e hoje + 15 dias (validade da tarifa do site no WeGest)
 
 export function searchToQuery(v: SearchValues): string {
   return new URLSearchParams({
@@ -49,6 +51,7 @@ export function RentACarSearchForm({
   collapsible,
   submitLabel = "Pesquisar",
   initialFamily = "passenger",
+  initialError,
 }: {
   locations: Location[];
   initial?: Partial<SearchValues>;
@@ -65,14 +68,18 @@ export function RentACarSearchForm({
   submitLabel?: string;
   /** Tipo de viatura já escolhido (`?tipo=`). */
   initialFamily?: VehicleFamily;
+  /** Erro que a API devolveu para esta pesquisa (ex.: 400 PERIODO_INVALIDO), mostrado no formulário. */
+  initialError?: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  // Com um erro da API, o formulário abre já em mobile: a mensagem fica à vista
+  const [expanded, setExpanded] = useState(!!initialError);
   const router = useRouter();
   const id = useId();
   const pickupLocations = locations.filter((l) => l.pickupAvailable);
   const returnLocations = locations.filter((l) => l.returnAvailable);
 
   const today = useToday();
+  const maxPickupDate = today ? addDays(today, MAX_ADVANCE_DAYS) : "";
   const [draft, setValues] = useState<SearchValues>({
     pickupLocationId: initial?.pickupLocationId ?? pickupLocations[0]?.id ?? "",
     returnLocationId: initial?.returnLocationId ?? initial?.pickupLocationId ?? pickupLocations[0]?.id ?? "",
@@ -83,7 +90,7 @@ export function RentACarSearchForm({
   });
   const [family, setFamily] = useState<VehicleFamily>(initialFamily);
   const [sameReturn, setSameReturn] = useState(!initial?.returnLocationId || initial.returnLocationId === initial.pickupLocationId);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
 
   // Datas por omissão calculadas no browser (amanhã → +3 dias)
   const values: SearchValues = {
@@ -101,6 +108,9 @@ export function RentACarSearchForm({
     const end = new Date(`${v.returnDate}T${v.returnTime}`);
     if (!v.pickupLocationId) return setError("Escolha o local de levantamento.");
     if (start.getTime() < Date.now()) return setError("A data de levantamento tem de ser no futuro.");
+    if (maxPickupDate && v.pickupDate > maxPickupDate) {
+      return setError(`O levantamento online só pode ser marcado até ${MAX_ADVANCE_DAYS} dias a partir de hoje.`);
+    }
     if (end <= start) return setError("A devolução tem de ser depois do levantamento.");
     if ((end.getTime() - start.getTime()) / 86_400_000 > MAX_DAYS) {
       return setError(`O aluguer online tem um máximo de ${MAX_DAYS} dias. Para períodos maiores, contacte-nos.`);
@@ -153,7 +163,7 @@ export function RentACarSearchForm({
         </div>
         <div>
           <Label htmlFor={`${id}-pd`}>Levantamento</Label>
-          <Input id={`${id}-pd`} type="date" min={today} value={values.pickupDate} onChange={(e) => set({ pickupDate: e.target.value })} required />
+          <Input id={`${id}-pd`} type="date" min={today} max={maxPickupDate || undefined} value={values.pickupDate} onChange={(e) => set({ pickupDate: e.target.value })} required />
         </div>
         <div>
           <Label htmlFor={`${id}-pt`}>Hora</Label>

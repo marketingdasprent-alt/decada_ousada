@@ -140,6 +140,7 @@ export function mapVehicle(v: WgVehicle, ctx: { categories: WgCategory[]; locati
     region: regionFromCode(v.region_code),
     locations: ctx.locations?.filter((l) => v.location_ids.includes(l.location_id)).map(mapLocation),
     offers: v.rates.map((r) => mapOffer(v, r)),
+    availableFrom: v.available_from,
   };
 }
 
@@ -149,8 +150,8 @@ const AVAIL: Record<"AVAILABLE" | "LIMITED" | "UNAVAILABLE", AvailabilityStatus>
   UNAVAILABLE: "unavailable",
 };
 
-export function mapAvailability(a: { status: "AVAILABLE" | "LIMITED" | "UNAVAILABLE"; next_available?: string }): Availability {
-  return { status: AVAIL[a.status], nextAvailableAt: a.next_available, checkedAt: new Date().toISOString() };
+export function mapAvailability(a: { status: "AVAILABLE" | "LIMITED" | "UNAVAILABLE"; next_available?: string; quantity?: number }): Availability {
+  return { status: AVAIL[a.status], nextAvailableAt: a.next_available, quantity: a.quantity, checkedAt: new Date().toISOString() };
 }
 
 export function mapExtra(e: WgExtra): Extra {

@@ -61,7 +61,7 @@ async function RacVehicle({ params, searchParams }: { params: Promise<{ region: 
       <PageHeader
         title={vehicle.name}
         description={`${vehicle.category?.name ?? ""}, ou similar`}
-        crumbs={[{ href: "/rent-a-car", label: "Rent a Car" }, { href: "/rent-a-car/viaturas", label: "Viaturas" }, { label: vehicle.name }]}
+        crumbs={[{ href: "/rent-a-car", label: "Rent a Car" }, { href: "/rent-a-car/frota", label: "Frota" }, { label: vehicle.name }]}
       />
       <Section><Container>
         <VehicleOverview

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { EmptyState, ErrorState } from "@/components/shared/states";
@@ -10,10 +11,11 @@ import { TvdeSummary, tvdeSummaryLabel } from "@/components/tvde/tvde-summary";
 import type { Region } from "@/domain/region";
 import { getOffer } from "@/domain/vehicle";
 import { attempt } from "@/lib/attempt";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { requireSession } from "@/lib/guard";
 import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
-import { getCustomerId } from "@/services/auth";
+import { getCustomerId, isDriverSession } from "@/services/auth";
 import { checkVehicleAvailability, getApplicationForm, getCustomer, getVehicleById, listLocations } from "@/services/wegest";
 
 export const metadata: Metadata = { title: "Candidatura TVDE", robots: { index: false } };
@@ -37,7 +39,11 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
   if (!vehicleId || !pickupAt || !locationId) {
     return <Section><Container><EmptyState title="Escolha primeiro a viatura e o levantamento" action={<ButtonLink href="/tvde/viaturas">Ver viaturas TVDE</ButtonLink>} /></Container></Section>;
   }
-  const session = await requireSession(`/tvde/candidatura?${new URLSearchParams({ viatura: vehicleId, inicio: pickupAt, local: locationId })}`);
+  const here = `/tvde/candidatura?${new URLSearchParams({ viatura: vehicleId, inicio: pickupAt, local: locationId })}`;
+  const session = await requireSession(here);
+  // Com contas de motorista, a candidatura é feita com a conta WeGest (fica ligada a ela)
+  const driverAccount = driverAuthEnabled();
+  if (driverAccount && !isDriverSession(session)) redirect(`/entrar?next=${encodeURIComponent(here)}`);
 
   const vehicle = await getVehicleById(region, vehicleId);
   const offer = vehicle && getOffer(vehicle, "tvde");
@@ -63,7 +69,7 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
   const initial: Record<string, string> = Object.fromEntries(
     Object.entries({
       full_name: cust?.fullName ?? session.user.name,
-      email: cust?.email ?? session.user.email,
+      email: driverAccount ? session.user.email : (cust?.email ?? session.user.email),
       phone: cust?.phone,
       birth_date: cust?.birthDate,
       nif: cust?.taxId,
@@ -99,7 +105,15 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
         filled={form.data.fields.filter((f) => initial[f.field]).length}
         className="mb-6"
       />
-      <RegistrationStep fields={form.data.fields} initial={initial} vehicleId={vehicleId} pickupAt={pickupAt} pickupLocationId={locationId} />
+      <RegistrationStep
+        fields={form.data.fields}
+        initial={initial}
+        vehicleId={vehicleId}
+        pickupAt={pickupAt}
+        pickupLocationId={locationId}
+        driverAccount={driverAccount}
+        loginHref={`/entrar?next=${encodeURIComponent(here)}`}
+      />
     </ApplicationLayout>
   );
 }

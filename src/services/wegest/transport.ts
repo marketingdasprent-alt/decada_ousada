@@ -39,6 +39,8 @@ export interface WeGestTransport {
       vehicle_id: string;
       status: "AVAILABLE" | "LIMITED" | "UNAVAILABLE";
       next_available?: string;
+      /** Rent a Car: viaturas do modelo livres no período (`quantidade_disponivel`). */
+      quantity?: number;
       /** Preço do período já calculado pela API (sem extras): dispensa uma cotação por viatura. */
       quote?: WgQuote;
     }>
@@ -95,6 +97,8 @@ export interface WeGestTransport {
     pickupDatetime: string;
     pickupLocationId: string;
     formData: Record<string, string>;
+    /** access_token da conta de motorista (X-Motorista-Token). Só passa por este pedido. */
+    driverToken?: string;
   }): Promise<WgApplication>;
   getApplication(applicationId: string): Promise<WgApplication | null>;
   listCustomerApplications(customerId: string): Promise<WgApplication[]>;

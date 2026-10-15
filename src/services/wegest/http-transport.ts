@@ -137,6 +137,8 @@ function toVehicle(m: ApiModelo | ApiModeloTvde, rate: WgRate, regionCode: Regio
     location_ids: locationIds,
     rates: [rate],
     status: "ACTIVE",
+    // Só quando a API o devolve: uma chave a undefined apagava o valor ao juntar com o TVDE
+    ...("tipo" in m && m.disponivel_desde !== undefined && { available_from: m.disponivel_desde }),
   };
 }
 
@@ -381,7 +383,7 @@ export const httpTransport: WeGestTransport = {
     });
     return res.modelos
       .filter((m) => !p.vehicleId || m.id === p.vehicleId)
-      .map((m) => ({ vehicle_id: m.id, status: m.quantidade_disponivel > 1 ? "AVAILABLE" : "LIMITED", quote: quoteFromAvailability(m) }));
+      .map((m) => ({ vehicle_id: m.id, status: m.quantidade_disponivel > 1 ? "AVAILABLE" : "LIMITED", quantity: m.quantidade_disponivel, quote: quoteFromAvailability(m) }));
   },
 
   listExtras: async () =>
@@ -516,6 +518,8 @@ export const httpTransport: WeGestTransport = {
     const res = await wegestRequest<ApiCandidatura>("/tvde/candidaturas", {
       method: "POST",
       retry: true,
+      // Liga a candidatura à conta WeGest do motorista (resposta com com_conta: true)
+      headers: input.driverToken ? { "X-Motorista-Token": input.driverToken } : undefined,
       body: {
         referencia_externa: `site-cand-${crypto.randomUUID()}`,
         nome: f.full_name ?? c.name,

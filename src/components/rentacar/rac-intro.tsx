@@ -33,7 +33,7 @@ export function RacIntro({ region, from }: { region: Region; from: number | null
             {from !== null && <PriceDisplay amount={from} unit="day" prefix="Desde" size="lg" note="IVA incluído" />}
             <div className="flex flex-wrap gap-3">
               <ButtonLink href="/rent-a-car" size="lg">Ver categorias</ButtonLink>
-              <ButtonLink href="/rent-a-car/viaturas" variant="outline" size="lg">Ver toda a frota</ButtonLink>
+              <ButtonLink href="/rent-a-car/frota" variant="outline" size="lg">Ver toda a frota</ButtonLink>
             </div>
           </div>
           <ul className="mt-10 space-y-5 border-t border-line pt-8">

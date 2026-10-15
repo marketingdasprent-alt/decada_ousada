@@ -24,18 +24,24 @@ export function RegistrationStep({
   vehicleId,
   pickupAt,
   pickupLocationId,
+  driverAccount = false,
+  loginHref,
 }: {
   fields: FormField[];
   initial: Record<string, string>;
   vehicleId: string;
   pickupAt: string;
   pickupLocationId: string;
+  /** Contas de motorista (WeGest): envia o token da conta e fixa o email no da conta. */
+  driverAccount?: boolean;
+  loginHref?: string;
 }) {
   const router = useRouter();
   const [values, setValues] = useState(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionEnded, setSessionEnded] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,10 +53,28 @@ export function RegistrationStep({
     }
     setSubmitting(true);
     setError(null);
-    const res = await apiFetch<{ applicationId: string }>("/api/tvde/applications", {
-      method: "POST",
-      body: JSON.stringify({ vehicleId, pickupAt, pickupLocationId, formData: values }),
-    });
+    setSessionEnded(false);
+    const body = JSON.stringify({ vehicleId, pickupAt, pickupLocationId, formData: values });
+    const send = (token?: string | null) =>
+      apiFetch<{ applicationId: string }>("/api/tvde/applications", { method: "POST", body, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+
+    let res;
+    if (driverAccount) {
+      // O token lê-se na hora (o supabase-js renova-o); com a sessão expirada, renova e repete uma vez
+      const { currentDriverToken, driverAuth, signOutDriver } = await import("@/lib/driver-auth-client");
+      res = await send(await currentDriverToken());
+      if (!res.ok && res.error.reason === "session_expired") {
+        const { data } = await driverAuth().auth.refreshSession();
+        if (data.session) res = await send(data.session.access_token);
+      }
+      if (!res.ok && res.error.reason === "session_expired") {
+        // Termina as duas sessões, para "Entrar de novo" mostrar o login
+        await signOutDriver();
+        setSessionEnded(true);
+      }
+    } else {
+      res = await send();
+    }
     if (res.ok) {
       track("tvde_application_started", { vehicleId, applicationId: res.data.applicationId });
       router.push(`/tvde/candidatura/documentos?id=${encodeURIComponent(res.data.applicationId)}`);
@@ -64,9 +88,25 @@ export function RegistrationStep({
   return (
     <form onSubmit={submit} noValidate>
       <Card className="p-5 sm:p-6">
-        <DynamicWeGestForm fields={fields} values={values} errors={errors} onChange={(f, v) => setValues((s) => ({ ...s, [f]: v }))} />
+        <DynamicWeGestForm
+          fields={fields}
+          values={values}
+          errors={errors}
+          onChange={(f, v) => setValues((s) => ({ ...s, [f]: v }))}
+          locked={driverAccount ? { email: "O email da sua conta de motorista." } : undefined}
+        />
       </Card>
-      {error && <Notice tone="danger" className="mt-4">{error}</Notice>}
+      {error && (
+        <Notice tone="danger" className="mt-4">
+          {error}
+          {sessionEnded && loginHref && (
+            <>
+              {" "}
+              <a href={loginHref} className="font-semibold underline">Entrar de novo</a>
+            </>
+          )}
+        </Notice>
+      )}
       <ErrorSummary count={Object.keys(errors).length} className="mt-4" />
       <div className="mt-6 flex justify-end">
         <Button type="submit" size="lg" className="max-sm:w-full" loading={submitting}>Guardar e continuar</Button>

@@ -3,6 +3,44 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.20.0]: 2026-10-15
+
+### Added
+
+- Driver accounts are WeGest accounts (WeGest guide "Contas de motorista no
+  site da Década"). The "Motorista TVDE" tab on /entrar now signs in with the
+  same login as the WeGest portal and app, instead of linking out to it.
+  Sign-up (/registar?tipo=motorista), email confirmation, password recovery
+  (new /nova-password page) and the driver's account page.
+- The TVDE application requires a driver account: the email comes from the
+  account and the server sends the token to WeGest as `X-Motorista-Token`,
+  never storing or logging it. Errors 401 (one refresh and retry), 403, 409,
+  429 and 503 use the guide's messages.
+- New dependency `@supabase/supabase-js`, required by the guide (see
+  `DECISIONS.md`). Three new public variables: `NEXT_PUBLIC_WEGEST_AUTH_URL`,
+  `NEXT_PUBLIC_WEGEST_AUTH_KEY` and `NEXT_PUBLIC_WEGEST_ORG_ID`. Without them
+  the site keeps the previous behaviour.
+- New /rent-a-car/frota page, the only one that reads GET /modelos. Each model
+  shows "Disponível a partir de {data}" and "Pesquisar a partir desta data",
+  which opens the search with that date filled in.
+
+### Changed
+
+- Rent a Car starts with the search (team decision). /rent-a-car shows the
+  search, a "Ver a frota" link and the counters; the category grid is gone
+  (`category-grid.tsx` removed). /rent-a-car/viaturas without dates shows only
+  the form.
+- Pickup can be booked from today to today + 15 days (`MAX_ADVANCE_DAYS`), in
+  the date picker and when searching.
+- Results show the available quantity ("5 viaturas disponíveis", "Última
+  viatura disponível") from `quantidade_disponivel`.
+- No results: "Sem viaturas para estas datas." with up to 3 alternative dates
+  of the same length that WeGest confirms have vehicles.
+- A 400 `PERIODO_INVALIDO` shows inside the search form instead of an error
+  page.
+- Footer, 404 and the vehicle breadcrumb link to the Frota page; the sitemap
+  lists it.
+
 ## [0.19.0]: 2026-10-15
 
 ### Changed

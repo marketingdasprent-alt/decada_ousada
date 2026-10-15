@@ -5,14 +5,14 @@ import { connection } from "next/server";
 
 import type { ApplicationForm, TvdeApplication } from "@/domain/application";
 import type { Availability } from "@/domain/availability";
-import type { Booking, CancellationPreview, Coverage, Extra, RentalSearch, SelectedExtra } from "@/domain/booking";
+import { RAC_MAX_ADVANCE_DAYS, type Booking, type CancellationPreview, type Coverage, type Extra, type RentalSearch, type SelectedExtra } from "@/domain/booking";
 import type { Customer, CustomerInput, CustomerType, Invoice } from "@/domain/customer";
 import type { Location } from "@/domain/location";
 import type { ProductType, VehicleOffer } from "@/domain/offer";
 import type { Quote } from "@/domain/pricing";
 import type { Region } from "@/domain/region";
 import { getOffer, type Vehicle, type VehicleCategory } from "@/domain/vehicle";
-import { toApiDateTime } from "@/lib/dates";
+import { addDays, toApiDateTime } from "@/lib/dates";
 
 import { httpTransport } from "./http-transport";
 import {
@@ -168,6 +168,42 @@ export async function searchRentACar(search: RentalSearch): Promise<RentACarResu
   return results.filter((r): r is RentACarResult => r !== null);
 }
 
+/**
+ * Pesquisa sem resultados: outras datas com a mesma duração e as mesmas horas que têm
+ * viaturas livres, perguntadas ao WeGest (nunca adivinhadas). No máximo `limit`.
+ */
+export async function suggestRentACarDates(search: RentalSearch, limit = 3): Promise<Array<{ search: RentalSearch; count: number }>> {
+  await connection();
+  const t = transport();
+  const today = new Date().toISOString().slice(0, 10);
+  const lastPickup = addDays(today, RAC_MAX_ADVANCE_DAYS);
+  const shift = (local: string, days: number) => `${addDays(local, days)}${local.slice(10)}`;
+  const candidates = [1, 2, 3, 7, -1, -2]
+    .map((d) => ({ ...search, pickupAt: shift(search.pickupAt, d), returnAt: shift(search.returnAt, d) }))
+    .filter((s) => s.pickupAt.slice(0, 10) <= lastPickup && new Date(toApiDateTime(s.pickupAt, s.region)).getTime() > Date.now());
+  const checked = await Promise.all(
+    candidates.map(async (s) => {
+      try {
+        const res = await t.searchAvailability({
+          regionCode: REGION_CODE[s.region],
+          product: "RAC",
+          pickupLocationId: s.pickupLocationId,
+          returnLocationId: s.returnLocationId,
+          pickupDatetime: toApiDateTime(s.pickupAt, s.region),
+          returnDatetime: toApiDateTime(s.returnAt, s.region),
+        });
+        return { search: s, count: res.filter((a) => a.status !== "UNAVAILABLE").length };
+      } catch {
+        return { search: s, count: 0 };
+      }
+    }),
+  );
+  return checked
+    .filter((c) => c.count > 0)
+    .slice(0, limit)
+    .sort((a, b) => a.search.pickupAt.localeCompare(b.search.pickupAt));
+}
+
 export async function checkVehicleAvailability(params: {
   region: Region;
   product: ProductType;
@@ -320,6 +356,7 @@ export async function createApplication(input: {
   pickupAt: string;
   pickupLocationId: string;
   formData: Record<string, string>;
+  driverToken?: string;
 }): Promise<TvdeApplication> {
   await connection();
   return mapApplication(
@@ -330,6 +367,7 @@ export async function createApplication(input: {
       pickupDatetime: toApiDateTime(input.pickupAt, input.region),
       pickupLocationId: input.pickupLocationId,
       formData: input.formData,
+      driverToken: input.driverToken,
     }),
   );
 }
