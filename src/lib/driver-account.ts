@@ -14,6 +14,9 @@ export const DRIVER_AUTH = {
 /** Sem os valores, /entrar e a candidatura mantêm as contas próprias do site (demo e desenvolvimento). */
 export const driverAuthEnabled = () => Boolean(DRIVER_AUTH.url && DRIVER_AUTH.publishableKey && DRIVER_AUTH.orgId);
 
+/** Área do motorista no site: destino depois de entrar e de "A minha conta". */
+export const DRIVER_ACCOUNT = "/tvde/minha-conta";
+
 /** Destinos dos links de email. Têm de estar autorizados no WeGest para cada domínio. */
 export const DRIVER_CONFIRM_PATH = "/entrar?confirmado=1";
 export const DRIVER_NEW_PASSWORD_PATH = "/nova-password";

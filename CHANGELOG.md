@@ -45,9 +45,11 @@ Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
   form (/tvde/candidatura) without a vehicle. On /minha-conta/perfil, with no
   Rent a Car record, the record filled in that form is shown. Choosing a
   vehicle without a record still asks for the form, as before.
-- Signing in with a driver account and no other destination now goes straight
-  to /tvde/viaturas. The driver account page stays under "A minha conta" (with
-  "Terminar sessão"); a new account still goes to the registration form.
+- The driver account page (/entrar?tipo=motorista with a session) is removed.
+  Signing in with a driver account (with no other destination) and "A minha
+  conta" in the header go to the driver area (/tvde/minha-conta), which has
+  "Terminar sessão". Its empty state offers "Preencher ficha pessoal" and "Ver
+  viaturas TVDE". A new account still goes to the registration form.
 - Online requests with the real API (`WEGEST_PEDIDOS_ONLINE=on`), checked
   against a local fake of the WeGest API:
   - No online charging for now (`onlinePaymentsEnabled`: only in demo mode or
