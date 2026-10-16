@@ -22,7 +22,16 @@ async function Dashboard() {
     return (
       <>
         <h2 className="text-h2 font-bold">Olá{session.user.name ? `, ${session.user.name.split(" ")[0]}` : ""}.</h2>
-        <EmptyState className="mt-6" title="Ainda não tem candidaturas TVDE" description="Escolha uma viatura e candidate-se em poucos minutos." action={<ButtonLink href="/tvde/viaturas">Ver viaturas TVDE</ButtonLink>} />
+        <EmptyState
+          className="mt-6"
+          title="Ainda não tem candidaturas TVDE"
+          action={
+            <div className="flex flex-wrap justify-center gap-3">
+              <ButtonLink href="/tvde/candidatura">Preencher ficha pessoal</ButtonLink>
+              <ButtonLink href="/tvde/viaturas" variant="outline">Ver viaturas TVDE</ButtonLink>
+            </div>
+          }
+        />
       </>
     );
   }

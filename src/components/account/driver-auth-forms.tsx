@@ -1,13 +1,11 @@
 "use client";
 
-import { LogOut } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 
 import { track } from "@/lib/analytics";
-import { DRIVER_AUTH, DRIVER_CONFIRM_PATH, DRIVER_NEW_PASSWORD_PATH, driverAuthMessage, driverPasswordError, isEmailNotConfirmed } from "@/lib/driver-account";
-import { driverAuth, rememberNext, signOutDriver, startSiteSession, takeNext } from "@/lib/driver-auth-client";
+import { DRIVER_ACCOUNT, DRIVER_AUTH, DRIVER_CONFIRM_PATH, DRIVER_NEW_PASSWORD_PATH, driverAuthMessage, driverPasswordError, isEmailNotConfirmed } from "@/lib/driver-account";
+import { driverAuth, rememberNext, startSiteSession, takeNext } from "@/lib/driver-auth-client";
 
 import { Field, Input } from "../shared/form";
 import { Notice } from "../shared/states";
@@ -20,16 +18,16 @@ import { PasswordInput } from "./auth-forms";
  * Guia: "Contas de motorista no site da Década" (WeGest, 2026-10-14).
  */
 
-const ACCOUNT_HOME = "/entrar?tipo=motorista";
-/** Depois de entrar sem destino pedido: a lista de viaturas TVDE (a conta fica em "A minha conta"). */
-const DRIVER_HOME = "/tvde/viaturas";
+/** Ecrã de login de motorista. */
+const LOGIN = "/entrar?tipo=motorista";
+
 const withNext = (path: string, next?: string) => (next ? `${path}${path.includes("?") ? "&" : "?"}next=${encodeURIComponent(next)}` : path);
 const link = "font-medium text-brand underline-offset-4 hover:underline max-md:tap-target";
 
-/** Depois de entrar no WeGest: abre a sessão do site e segue para `next` ou para as viaturas (recarrega, para o servidor ver a sessão). */
+/** Depois de entrar no WeGest: abre a sessão do site e segue para `next` ou para a área do motorista (recarrega, para o servidor ver a sessão). */
 async function enterSite(next?: string | null): Promise<string | null> {
   if (!(await startSiteSession())) return "Não foi possível iniciar a sessão. Tente de novo.";
-  window.location.assign(next ?? DRIVER_HOME);
+  window.location.assign(next ?? DRIVER_ACCOUNT);
   return null;
 }
 
@@ -161,7 +159,7 @@ export function DriverRegisterForm({ next }: { next?: string }) {
           <ResendConfirmation email={sentTo} />
         </Notice>
         <p className="text-body-small text-copy-secondary">
-          Já tinha conta com este email? <Link href={withNext(ACCOUNT_HOME, next)} className={link}>Entrar</Link> ou{" "}
+          Já tinha conta com este email? <Link href={withNext(LOGIN, next)} className={link}>Entrar</Link> ou{" "}
           <Link href="/recuperar-password?tipo=motorista" className={link}>recuperar a password</Link>.
         </p>
       </div>
@@ -187,7 +185,7 @@ export function DriverRegisterForm({ next }: { next?: string }) {
       {error && <Notice tone="danger">{error}</Notice>}
       <Button type="submit" size="lg" className="w-full" loading={pending}>Criar conta</Button>
       <p className="text-center text-body-small text-copy-secondary">
-        Já tem conta? <Link href={withNext(ACCOUNT_HOME, next)} className={link}>Entrar</Link>
+        Já tem conta? <Link href={withNext(LOGIN, next)} className={link}>Entrar</Link>
       </p>
     </form>
   );
@@ -354,27 +352,5 @@ export function DriverConfirmation() {
       </Notice>
       <DriverLoginForm />
     </div>
-  );
-}
-
-export function DriverSignOutButton() {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="lg"
-      className="w-full"
-      loading={pending}
-      onClick={async () => {
-        setPending(true);
-        await signOutDriver();
-        router.replace(ACCOUNT_HOME);
-        router.refresh();
-      }}
-    >
-      <LogOut className="size-4" aria-hidden /> Terminar sessão
-    </Button>
   );
 }
