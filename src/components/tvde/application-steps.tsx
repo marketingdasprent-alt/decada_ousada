@@ -42,7 +42,10 @@ function PartProgress({ parts, current }: { parts: string[]; current: number }) 
   );
 }
 
-/** Passo 2: cadastro do motorista com a ficha dinâmica do WeGest, em partes curtas. */
+/**
+ * Cadastro do motorista com a ficha dinâmica do WeGest, em partes curtas. Com viatura segue
+ * para os documentos e o sinal; sem viatura (só o cadastro) termina na confirmação.
+ */
 export function RegistrationStep({
   fields,
   initial,
@@ -54,9 +57,9 @@ export function RegistrationStep({
 }: {
   fields: FormField[];
   initial: Record<string, string>;
-  vehicleId: string;
-  pickupAt: string;
-  pickupLocationId: string;
+  vehicleId?: string;
+  pickupAt?: string;
+  pickupLocationId?: string;
   /** Contas de motorista (WeGest): envia o token da conta e fixa o email no da conta. */
   driverAccount?: boolean;
   loginHref?: string;
@@ -141,7 +144,8 @@ export function RegistrationStep({
     }
     if (res.ok) {
       track("tvde_application_started", { vehicleId, applicationId: res.data.applicationId });
-      router.push(`/tvde/candidatura/documentos?id=${encodeURIComponent(res.data.applicationId)}`);
+      const id = encodeURIComponent(res.data.applicationId);
+      router.push(vehicleId ? `/tvde/candidatura/documentos?id=${id}` : `/tvde/candidatura/confirmacao?id=${id}`);
       return;
     }
     setSubmitting(false);
@@ -186,7 +190,7 @@ export function RegistrationStep({
           <Button type="button" variant="ghost" size="lg" className="max-sm:w-full" onClick={() => goTo(part - 1)} disabled={submitting}>Voltar</Button>
         ) : <span aria-hidden />}
         <Button type="submit" size="lg" className="max-sm:w-full" loading={submitting}>
-          {last ? "Guardar e continuar" : "Continuar"}
+          {!last ? "Continuar" : vehicleId ? "Guardar e continuar" : "Enviar cadastro"}
         </Button>
       </div>
     </form>

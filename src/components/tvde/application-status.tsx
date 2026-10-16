@@ -29,14 +29,16 @@ const CHARGED: PaymentStatus[] = ["paid", "refunded", "partially_refunded"];
  * pagamento real quando existe. Em mobile é vertical, para os rótulos não se
  * sobreporem; o estado de cada passo também está em texto.
  */
-export function ApplicationTimeline({ status, paymentStatus }: { status: Status; paymentStatus?: PaymentStatus }) {
-  const steps: Array<{ key: string; label: string }> = [
+/** `withVehicle`: sem viatura escolhida (só o cadastro) não há pagamento nem levantamento. */
+export function ApplicationTimeline({ status, paymentStatus, withVehicle = true }: { status: Status; paymentStatus?: PaymentStatus; withVehicle?: boolean }) {
+  const all: Array<{ key: string; label: string }> = [
     { key: "registered", label: "Cadastro" },
     { key: "paid", label: "Pagamento" },
     { key: "review", label: "Análise" },
     { key: "decision", label: status === "rejected" ? "Não aprovada" : "Aprovação" },
     { key: "pickup", label: "Levantamento" },
   ];
+  const steps = withVehicle ? all : all.filter((s) => s.key !== "paid" && s.key !== "pickup");
   const reached: Record<Status, number> = {
     draft: 0,
     payment_pending: 1,
@@ -50,14 +52,18 @@ export function ApplicationTimeline({ status, paymentStatus }: { status: Status;
   const idx = reached[status];
   const paid = paymentStatus ? CHARGED.includes(paymentStatus) : idx > 1;
   const decided = status === "approved" || status === "rejected";
-  const doneAt = (i: number) => (i === 1 ? paid : i === 3 ? decided : i < idx);
+  // Pelo passo da lista completa, para a lista curta dar o mesmo resultado
+  const doneAt = (i: number) => {
+    const at = all.findIndex((s) => s.key === steps[i].key);
+    return at === 1 ? paid : at === 3 ? decided : at < idx;
+  };
   // Passo atual: o primeiro por fazer (nenhum numa candidatura cancelada ou recusada)
   const currentIdx = status === "cancelled" || status === "rejected" ? -1 : steps.findIndex((_, i) => !doneAt(i));
 
   return (
-    <ol className="flex flex-col gap-3 sm:grid sm:grid-cols-5 sm:gap-2">
+    <ol className={cn("flex flex-col gap-3 sm:grid sm:gap-2", withVehicle ? "sm:grid-cols-5" : "sm:grid-cols-3")}>
       {steps.map((s, i) => {
-        const failed = status === "rejected" && i === 3;
+        const failed = status === "rejected" && s.key === "decision";
         const done = doneAt(i) && !failed;
         const current = i === currentIdx;
         const state = failed ? "não aprovada" : done ? "concluído" : current ? "passo atual" : "por fazer";

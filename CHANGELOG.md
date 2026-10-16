@@ -18,6 +18,15 @@ Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
   hidden and the API gets `em_formacao_tvde: true` with no licence. Before,
   the licence was optional and a blank number meant "in training".
 - The IBAN goes to the API without spaces and in capitals.
+- Driver registration no longer needs a vehicle. The flow is Entrar >
+  Motorista TVDE > Criar conta > registration form: a new driver account goes
+  to /tvde/candidatura, which without `viatura`, `inicio` and `local` shows
+  only the form (steps Conta, Cadastro, Enviado). It is sent without
+  `modelo_pretendido_id` and `data_inicio_pretendida` (optional in the API)
+  and ends on the confirmation page, which points to the driver portal for
+  the documents. Choosing a vehicle first still works as before.
+- The driver account page (/entrar?tipo=motorista) opens with "Preencher o
+  cadastro de motorista".
 - The registration form is split into three short parts (Sobre si,
   Identificação e carta, IBAN e envio), each checked before "Continuar", with
   "Voltar" to go back. ID type and licence categories are tap buttons (B

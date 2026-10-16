@@ -14,15 +14,19 @@ import { WeGestError } from "@/services/wegest/types";
 
 const SESSION_ENDED = "A sua sessão terminou. Entre de novo para continuar.";
 
-const schema = z.object({
-  vehicleId: z.string().min(1),
-  pickupAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
-  pickupLocationId: z.string().min(1),
-  formData: z.record(z.string(), z.string().max(2000)),
-});
+const schema = z
+  .object({
+    vehicleId: z.string().min(1).optional(),
+    pickupAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/).optional(),
+    pickupLocationId: z.string().min(1).optional(),
+    formData: z.record(z.string(), z.string().max(2000)),
+  })
+  // A viatura é opcional, mas vem completa (viatura, data e local) ou não vem
+  .refine((b) => [b.vehicleId, b.pickupAt, b.pickupLocationId].every(Boolean) || ![b.vehicleId, b.pickupAt, b.pickupLocationId].some(Boolean), { path: ["vehicleId"], message: "Viatura, data e local vêm juntos." });
 
 /**
  * POST /api/tvde/applications: cadastro do motorista + candidatura (doc §49–50).
+ * Sem viatura é só o cadastro; com viatura, a disponibilidade é confirmada outra vez aqui.
  * O motorista é criado/atualizado no WeGest; a candidatura fica a aguardar documentos e pagamento.
  *
  * Com contas de motorista (WeGest): o browser envia o token da conta (Authorization: Bearer),
@@ -60,12 +64,15 @@ export async function POST(req: Request) {
     const errors = validateDynamicForm(form.fields, formData);
     if (Object.keys(errors).length) return fail("validation", "Verifique os campos assinalados.", 422, { fieldErrors: errors });
 
-    const vehicle = await getVehicleById(region, vehicleId);
-    const offer = vehicle && getOffer(vehicle, "tvde");
-    if (!vehicle || !offer) return fail("not_found", "Viatura não encontrada.", 404);
-
-    const availability = await checkVehicleAvailability({ region, product: "tvde", vehicleId, pickupLocationId, pickupAt });
-    if (availability.status === "unavailable") return fail("conflict", "A viatura deixou de estar disponível nesta data.", 409);
+    let offerId: string | undefined;
+    if (vehicleId && pickupAt && pickupLocationId) {
+      const vehicle = await getVehicleById(region, vehicleId);
+      const offer = vehicle && getOffer(vehicle, "tvde");
+      if (!vehicle || !offer) return fail("not_found", "Viatura não encontrada.", 404);
+      const availability = await checkVehicleAvailability({ region, product: "tvde", vehicleId, pickupLocationId, pickupAt });
+      if (availability.status === "unavailable") return fail("conflict", "A viatura deixou de estar disponível nesta data.", 409);
+      offerId = offer.id;
+    }
 
     // Motorista no WeGest (source of truth do candidato, doc §54)
     const input = Object.fromEntries(
@@ -77,7 +84,7 @@ export async function POST(req: Request) {
     const driver = await upsertCustomer("tvde", input, existingId ?? undefined);
     if (!existingId) await linkCustomer(session.user.id, { wegestCustomerId: driver.id, customerType: "tvde", region });
 
-    const application = await createApplication({ region, customerId: driver.id, vehicleId, offerId: offer.id, pickupAt, pickupLocationId, formData, driverToken });
+    const application = await createApplication({ region, customerId: driver.id, vehicleId, offerId, pickupAt, pickupLocationId, formData, driverToken });
     await sendEmail(input.email || session.user.email, "tvde.registration_received", { reference: application.reference });
     return ok({ applicationId: application.id });
   } catch (err) {

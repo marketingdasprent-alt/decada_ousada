@@ -5,19 +5,21 @@ import { Stepper } from "../shared/stepper";
 import { Container, Section } from "../shared/ui";
 
 export const TVDE_STEPS = ["Levantamento", "Cadastro", "Documentos", "Pagamento"];
+/** Cadastro sem viatura: a conta, o formulário e o envio. */
+export const SIGNUP_STEPS = ["Conta", "Cadastro", "Enviado"];
 
 /**
  * `asideLabel`: em mobile o resumo (`aside`) aparece antes do formulário, fechado
  * numa linha com este texto; em desktop fica na coluna lateral.
  */
-export function ApplicationLayout({ step, title, description, aside, asideLabel, children }: { step: number; title: string; description?: string; aside?: ReactNode; asideLabel?: string; children: ReactNode }) {
+export function ApplicationLayout({ step, steps = TVDE_STEPS, title, description, aside, asideLabel, children }: { step: number; steps?: string[]; title: string; description?: string; aside?: ReactNode; asideLabel?: string; children: ReactNode }) {
   return (
     <Section variant="compact"><Container>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <p className="text-body-small font-semibold text-copy-secondary">Candidatura TVDE</p>
-        <Stepper steps={TVDE_STEPS} current={step} />
+        <Stepper steps={steps} current={step} />
       </div>
-      <div className="grid grid-cols-1 gap-8 lg:grid-main-aside">
+      <div className={aside ? "grid grid-cols-1 gap-8 lg:grid-main-aside" : "max-w-3xl"}>
         <div className="min-w-0">
           <h1 className="text-h2 font-bold">{title}</h1>
           {description && <p className="mt-1 text-copy-secondary">{description}</p>}

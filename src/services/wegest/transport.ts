@@ -92,10 +92,11 @@ export interface WeGestTransport {
   getApplicationForm(regionCode: string): Promise<{ version: string; fields: WgFormField[]; documents: WgDocumentType[] }>;
   createApplication(input: {
     customerId: string;
-    vehicleId: string;
-    rateId: string;
-    pickupDatetime: string;
-    pickupLocationId: string;
+    /** Sem viatura: candidatura só com o cadastro do motorista. */
+    vehicleId?: string;
+    rateId?: string;
+    pickupDatetime?: string;
+    pickupLocationId?: string;
     formData: Record<string, string>;
     /** access_token da conta de motorista (X-Motorista-Token). Só passa por este pedido. */
     driverToken?: string;

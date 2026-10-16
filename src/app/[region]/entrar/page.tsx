@@ -47,7 +47,8 @@ async function Login({ region, searchParams }: { region: Region; searchParams: P
           Esta é a sua conta WeGest: entra com o mesmo email e a mesma password no portal e na app do motorista.
         </p>
         <div className="mt-6 space-y-3">
-          <ButtonLink href="/tvde/viaturas" size="lg" className="w-full">Ver viaturas TVDE</ButtonLink>
+          <ButtonLink href="/tvde/candidatura" size="lg" className="w-full">Preencher o cadastro de motorista</ButtonLink>
+          <ButtonLink href="/tvde/viaturas" variant="outline" size="lg" className="w-full">Ver viaturas TVDE</ButtonLink>
           <a href={DRIVER_AREA_URL} className={buttonClass("outline", "lg", "w-full")}>
             Abrir o painel do motorista
             <ExternalLink className="size-4" aria-hidden />
@@ -78,7 +79,7 @@ async function Login({ region, searchParams }: { region: Region; searchParams: P
       <AuthShell
         region={region}
         title="Crie a sua conta de motorista"
-        description="A conta é a mesma do portal e da app do motorista. A sua escolha de viatura fica guardada."
+        description={`A conta é a mesma do portal e da app do motorista.${next.includes("viatura=") ? " A sua escolha de viatura fica guardada." : ""}`}
       >
         <ButtonLink href={`/registar?tipo=motorista&next=${encodeURIComponent(next)}`} size="lg" className="w-full">Criar conta</ButtonLink>
         <h2 className="mb-4 mt-8 border-t border-line pt-8 font-semibold">Já tem conta? Entre para continuar</h2>
@@ -93,7 +94,7 @@ async function Login({ region, searchParams }: { region: Region; searchParams: P
       <AuthShell
         region={region}
         title="Crie a sua conta para se candidatar"
-        description="A conta serve para preencher a candidatura, enviar documentos e acompanhar a resposta. A sua escolha de viatura fica guardada."
+        description={`A conta serve para preencher a candidatura, enviar documentos e acompanhar a resposta.${next.includes("viatura=") ? " A sua escolha de viatura fica guardada." : ""}`}
       >
         <ButtonLink href={`/registar?next=${encodeURIComponent(next)}`} size="lg" className="w-full">Criar conta</ButtonLink>
         <h2 className="mb-4 mt-8 border-t border-line pt-8 font-semibold">Já tem conta? Entre para continuar</h2>
