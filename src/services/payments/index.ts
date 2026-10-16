@@ -14,6 +14,18 @@ const GATEWAYS: Record<string, PaymentGateway> = {
   mock: mockGateway,
 };
 
+/**
+ * Cobrança online ligada? Na demonstração (WEGEST_MODE=mock), sim, com o fornecedor de teste.
+ * Com a API real, só com um fornecedor de pagamentos real (PAYMENT_PROVIDER, diferente de
+ * "mock"): sem ele o site não cobra nada e os pedidos seguem sem pagamento (decisão de
+ * 2026-10-16, "sem cobrança virtual por enquanto").
+ */
+export function onlinePaymentsEnabled(): boolean {
+  if (process.env.WEGEST_MODE === "mock") return true;
+  const provider = process.env.PAYMENT_PROVIDER;
+  return !!provider && provider !== "mock" && provider in GATEWAYS;
+}
+
 export function paymentGateway(): PaymentGateway {
   const name = process.env.PAYMENT_PROVIDER ?? "mock";
   const gw = GATEWAYS[name];

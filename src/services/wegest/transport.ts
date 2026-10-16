@@ -78,7 +78,8 @@ export interface WeGestTransport {
     coverageId?: string | null;
     driver: { birthDate: string; licenseNumber: string; licenseExpiry: string; licenseCountry: string };
     message?: string;
-    paymentReference: string;
+    /** Sem cobrança online, a reserva segue sem pagamento. */
+    paymentReference?: string;
     idempotencyKey: string;
     /** Total com IVA que o cliente viu; a API recusa (PRECO_ALTERADO) se já não for esse. */
     expectedTotal: number;

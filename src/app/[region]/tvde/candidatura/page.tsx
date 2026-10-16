@@ -17,6 +17,7 @@ import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
 import { getCustomerId, isDriverSession } from "@/services/auth";
 import { checkVehicleAvailability, getApplicationForm, getCustomer, getVehicleById, listLocations } from "@/services/wegest";
+import { onlinePaymentsEnabled } from "@/services/payments";
 
 export const metadata: Metadata = { title: "Candidatura TVDE", robots: { index: false } };
 
@@ -61,10 +62,16 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
   }
 
   const initial = await prefill(session, driverAccount);
+  // Depois do envio: só os passos que existem (a API real não recebe documentos e, sem
+  // cobrança online, não há sinal a pagar no site)
+  const payments = onlinePaymentsEnabled();
+  const after = form.data.documents.length > 0 ? "documents" : payments ? "payment" : "confirmation";
 
   return (
     <ApplicationLayout
       step={1}
+      // Só os passos que existem: com a API real não há documentos nem sinal no site
+      steps={after === "confirmation" ? ["Levantamento", "Cadastro", "Enviado"] : undefined}
       title="Cadastro de motorista"
       description="Os dados são enviados para a sua ficha no nosso sistema de gestão."
       asideLabel={tvdeSummaryLabel({ vehicleName: vehicle.name, weeklyPrice: offer.pricing.amount, deposit: offer.deposit, reservationAmount: offer.pricing.reservationAmount })}
@@ -76,12 +83,13 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
           reservationAmount={offer.pricing.reservationAmount}
           pickupAt={pickupAt!}
           locationName={locations.find((l) => l.id === locationId)?.name}
+          payments={payments}
         />
       }
     >
       <ApplicationChecklist
         form={form.data}
-        reservationAmount={offer.pricing.reservationAmount ?? offer.deposit}
+        reservationAmount={payments ? (offer.pricing.reservationAmount ?? offer.deposit) : undefined}
         filled={form.data.fields.filter((f) => initial[f.field]).length}
         className="mb-6"
       />
@@ -91,6 +99,8 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
         vehicleId={vehicleId!}
         pickupAt={pickupAt!}
         pickupLocationId={locationId!}
+        after={after}
+        captchaSiteKey={process.env.TURNSTILE_SITE_KEY || undefined}
         driverAccount={driverAccount}
         loginHref={`/entrar?next=${encodeURIComponent(here)}`}
       />
@@ -135,7 +145,7 @@ async function SignupOnly({ region, session, driverAccount, loginHref }: { regio
       title="Cadastro de motorista"
       description="Os dados são enviados para a sua ficha no nosso sistema de gestão."
     >
-      <RegistrationStep fields={form.data.fields} initial={initial} driverAccount={driverAccount} loginHref={loginHref} />
+      <RegistrationStep fields={form.data.fields} initial={initial} driverAccount={driverAccount} loginHref={loginHref} captchaSiteKey={process.env.TURNSTILE_SITE_KEY || undefined} />
     </ApplicationLayout>
   );
 }

@@ -12,6 +12,7 @@ import { regionFromParams } from "@/lib/region";
 import { firstParam, parseCheckoutDraft, parseRentalSearch, rentalSearchQuery } from "@/lib/search";
 import { getCustomerId, getSession } from "@/services/auth";
 import { checkVehicleAvailability, getCustomer, getVehicleById, listCoverages, listExtras, listLocations, quoteRentACar } from "@/services/wegest";
+import { onlinePaymentsEnabled } from "@/services/payments";
 
 export const metadata: Metadata = { title: "Reserva", robots: { index: false } };
 
@@ -87,6 +88,7 @@ async function Checkout({ region, searchParams }: { region: Region; searchParams
       backHref={backHref}
       checkoutPath={`/rent-a-car/reserva?viatura=${vehicleId}&${query}`}
       alternativesHref={`/rent-a-car/viaturas?${query}`}
+      payments={onlinePaymentsEnabled()}
       customer={c ? customerToForm(c) : session ? { email: session.user.email, fullName: session.user.name } : null}
     />
   );

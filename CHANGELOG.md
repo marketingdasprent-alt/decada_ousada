@@ -40,6 +40,36 @@ Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 - Licence categories: the 13 buttons are replaced by one required box,
   "Tenho carta de condução de categoria B." For TVDE only B matters, and the
   API (which needs a list that includes B) gets `categorias: ["B"]`.
+- "Dados pessoais" (/minha-conta/perfil and /tvde/minha-conta/perfil) without a
+  record now offers only "Preencher ficha pessoal", which opens the registration
+  form (/tvde/candidatura) without a vehicle. On /minha-conta/perfil, with no
+  Rent a Car record, the record filled in that form is shown. Choosing a
+  vehicle without a record still asks for the form, as before.
+- Signing in with a driver account and no other destination now goes straight
+  to /tvde/viaturas. The driver account page stays under "A minha conta" (with
+  "Terminar sessão"); a new account still goes to the registration form.
+- Online requests with the real API (`WEGEST_PEDIDOS_ONLINE=on`), checked
+  against a local fake of the WeGest API:
+  - No online charging for now (`onlinePaymentsEnabled`: only in demo mode or
+    with a real `PAYMENT_PROVIDER`). Rent a Car: the last step is "Confirmar",
+    with "Pedir reserva"; the booking goes to WeGest as pending, with no
+    payment. TVDE: "Sinal" without "(pago agora)", and nothing says it is paid
+    at the end.
+  - TVDE with a vehicle: after sending, straight to the confirmation (the API
+    takes no documents and there is no deposit to pay); steps Levantamento,
+    Cadastro, Enviado. The confirmation and the application page take the
+    vehicle and location names from the catalogue, and hide price, deposit and
+    payment rows the API does not return. The timeline never marks a payment
+    that did not happen.
+  - The confirmation reads the status from WeGest when the site no longer
+    links the application to the account (no database yet).
+  - A second application on the same account (WeGest 409): one application per
+    account, with "Contactar a equipa".
+  - Cloudflare Turnstile on the last part of the registration, checked by the
+    API route; active only with `TURNSTILE_SITE_KEY` and
+    `TURNSTILE_SECRET_KEY`.
+  - No page in the booking flows promises an email: the site does not send
+    emails yet.
 - The registration form is split into three short parts (Sobre si,
   Identificação e carta, IBAN e envio), each checked before "Continuar", with
   "Voltar" to go back. ID type and licence categories are tap buttons (B

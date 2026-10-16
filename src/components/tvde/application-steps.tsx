@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { ApplicationDocument, DocumentRequirement, FormField } from "@/domain/application";
 import { formatMoney } from "@/domain/pricing";
@@ -12,7 +12,8 @@ import { cn } from "@/lib/cn";
 import { apiFetch } from "@/lib/fetcher";
 
 import { PaymentForm, type PaymentDraft } from "../payment/payment-form";
-import { Checkbox, ErrorSummary } from "../shared/form";
+import { Checkbox, ErrorSummary, FieldError } from "../shared/form";
+import { TurnstileWidget } from "../shared/turnstile";
 import { Notice } from "../shared/states";
 import { Button, buttonClass, Card, disabledButtonClass } from "../shared/ui";
 import { DocumentUploader } from "./document-uploader";
@@ -61,6 +62,8 @@ export function RegistrationStep({
   vehicleId,
   pickupAt,
   pickupLocationId,
+  after = "documents",
+  captchaSiteKey,
   driverAccount = false,
   loginHref,
 }: {
@@ -69,6 +72,10 @@ export function RegistrationStep({
   vehicleId?: string;
   pickupAt?: string;
   pickupLocationId?: string;
+  /** Com viatura: o passo depois do envio (documentos, sinal ou já a confirmação). */
+  after?: "documents" | "payment" | "confirmation";
+  /** TURNSTILE_SITE_KEY: com ela, o envio pede a verificação "não sou um robô" (exigida pela API). */
+  captchaSiteKey?: string;
   /** Contas de motorista (WeGest): envia o token da conta e fixa o email no da conta. */
   driverAccount?: boolean;
   loginHref?: string;
@@ -82,6 +89,14 @@ export function RegistrationStep({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionEnded, setSessionEnded] = useState(false);
+  const [errorReason, setErrorReason] = useState<string | undefined>();
+  const [captcha, setCaptcha] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
+  // Token novo: guarda-o e tira o erro da verificação
+  const onCaptcha = useCallback((token: string) => {
+    setCaptcha(token);
+    if (token) setErrors((prev) => (prev.captcha ? without(prev, "captcha") : prev));
+  }, []);
   const [part, setPart] = useState(0);
   const top = useRef<HTMLDivElement>(null);
   const partHeading = useRef<HTMLHeadingElement>(null);
@@ -132,6 +147,7 @@ export function RegistrationStep({
       return goTo(part + 1);
     }
     const errs = validateDynamicForm(fields, values);
+    if (captchaSiteKey && !captcha) errs.captcha = "Confirme que não é um robô.";
     setErrors(errs);
     if (Object.keys(errs).length) {
       // Um erro numa parte anterior (ex.: dados mudados ao voltar atrás) leva a essa parte
@@ -142,7 +158,7 @@ export function RegistrationStep({
     setSubmitting(true);
     setError(null);
     setSessionEnded(false);
-    const body = JSON.stringify({ vehicleId, pickupAt, pickupLocationId, formData: values });
+    const body = JSON.stringify({ vehicleId, pickupAt, pickupLocationId, formData: values, captcha: captcha || undefined });
     const send = (token?: string | null) =>
       apiFetch<{ applicationId: string }>("/api/tvde/applications", { method: "POST", body, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
 
@@ -167,10 +183,17 @@ export function RegistrationStep({
       dirty.current = false;
       track("tvde_application_started", { vehicleId, applicationId: res.data.applicationId });
       const id = encodeURIComponent(res.data.applicationId);
-      router.push(vehicleId ? `/tvde/candidatura/documentos?id=${id}` : `/tvde/candidatura/confirmacao?id=${id}`);
+      const step = !vehicleId ? "confirmacao" : after === "documents" ? "documentos" : after === "payment" ? "pagamento" : "confirmacao";
+      router.push(`/tvde/candidatura/${step}?id=${id}`);
       return;
     }
     setSubmitting(false);
+    setErrorReason(res.error.reason);
+    // Cada token serve uma vez: depois de um envio falhado, pede-se outro
+    if (captchaSiteKey) {
+      setCaptcha("");
+      setCaptchaKey((k) => k + 1);
+    }
     if (res.error.fieldErrors) {
       const fe = res.error.fieldErrors;
       setErrors(fe);
@@ -195,6 +218,12 @@ export function RegistrationStep({
           locked={driverAccount ? { email: "O email da sua conta de motorista." } : undefined}
         />
       </Card>
+      {last && captchaSiteKey && (
+        <div className="mt-4">
+          <TurnstileWidget key={captchaKey} siteKey={captchaSiteKey} onToken={onCaptcha} errorId={errors.captcha ? "f-captcha-error" : undefined} />
+          <FieldError id="f-captcha-error">{errors.captcha}</FieldError>
+        </div>
+      )}
       {error && (
         <Notice tone="danger" className="mt-4">
           {error}
@@ -202,6 +231,12 @@ export function RegistrationStep({
             <>
               {" "}
               <a href={loginHref} className="font-semibold underline">Entrar de novo</a>
+            </>
+          )}
+          {errorReason === "application_exists" && (
+            <>
+              {" "}
+              <Link href="/contactos" className="font-semibold underline">Contactar a equipa</Link>
             </>
           )}
         </Notice>
@@ -212,7 +247,7 @@ export function RegistrationStep({
           <Button type="button" variant="ghost" size="lg" className="max-sm:w-full" onClick={() => goTo(part - 1)} disabled={submitting}>Voltar</Button>
         ) : <span className="max-sm:hidden" aria-hidden />}
         <Button type="submit" size="lg" className="max-sm:w-full" loading={submitting}>
-          {!last ? "Continuar" : vehicleId ? "Guardar e continuar" : "Enviar candidatura"}
+          {!last ? "Continuar" : vehicleId && after !== "confirmation" ? "Guardar e continuar" : "Enviar candidatura"}
         </Button>
       </div>
     </form>

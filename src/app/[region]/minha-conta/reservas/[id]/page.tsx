@@ -48,7 +48,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         <ReservationStatus status={b.status} />
       </div>
       {b.status === "pending" && (
-        <Notice title="A aguardar confirmação">A equipa DÉCADA OUSADA está a confirmar a disponibilidade da viatura. Recebe um email quando estiver confirmada.</Notice>
+        <Notice title="A aguardar confirmação">A equipa DÉCADA OUSADA está a confirmar a disponibilidade da viatura. O estado atualiza-se nesta página.</Notice>
       )}
 
       {pending && <PendingPayment payment={pending} />}

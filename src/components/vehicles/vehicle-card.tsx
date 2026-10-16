@@ -149,7 +149,7 @@ function TvdeCard({ vehicle, offer, href, availability }: CardProps) {
         <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-card bg-on-dark/15">
           {now !== undefined && (
             <div className="bg-panel-dark px-3.5 py-3">
-              <dt className="text-caption text-on-dark/75">Sinal (pago agora)</dt>
+              <dt className="text-caption text-on-dark/75">Sinal</dt>
               <dd className="display mt-1 text-h3 tabular">{formatMoney(now)}</dd>
             </div>
           )}

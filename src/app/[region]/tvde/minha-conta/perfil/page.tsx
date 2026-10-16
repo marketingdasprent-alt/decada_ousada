@@ -27,7 +27,15 @@ export default function TvdeProfilePage() {
 
 async function Profile() {
   const { customerId } = await requireCustomer("tvde", "/tvde/minha-conta/perfil");
-  if (!customerId) return <EmptyState title="Ainda não tem ficha de motorista" description="É criada quando submete a primeira candidatura." action={<ButtonLink href="/tvde/viaturas" size="sm">Ver viaturas</ButtonLink>} />;
+  if (!customerId) {
+    return (
+      <EmptyState
+        title="Ainda não tem ficha pessoal"
+        description="Pode preenchê-la já, sem escolher viatura."
+        action={<ButtonLink href="/tvde/candidatura" size="sm">Preencher ficha pessoal</ButtonLink>}
+      />
+    );
+  }
   const res = await attempt(() => getCustomer(customerId));
   if (!res.ok || !res.data) return <ErrorState timeout={!res.ok && res.timeout} retryHref="/tvde/minha-conta/perfil" />;
   return <ProfileForm initial={customerToForm(res.data)} type="tvde" />;

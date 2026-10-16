@@ -12,25 +12,36 @@ import { formatMoney } from "@/domain/pricing";
 import { formatDateTime } from "@/lib/dates";
 import { getOwnApplication } from "@/lib/ownership";
 import { firstParam } from "@/lib/search";
-import { withPayment } from "@/services/tvde";
+import { withCatalogNames, withPayment } from "@/services/tvde";
+import { regionFromParams } from "@/lib/region";
+import { getSession } from "@/services/auth";
+import { getApplication } from "@/services/wegest";
+import { attempt } from "@/lib/attempt";
+import { onlinePaymentsEnabled } from "@/services/payments";
 
 export const metadata: Metadata = { title: "Candidatura recebida", robots: { index: false } };
 
-export default function TvdeConfirmacaoPage({ searchParams }: PageProps<"/[region]/tvde/candidatura/confirmacao">) {
+export default function TvdeConfirmacaoPage({ params, searchParams }: PageProps<"/[region]/tvde/candidatura/confirmacao">) {
   return (
     <Section><Container variant="narrow">
       <Suspense fallback={<Skeleton className="h-120" />}>
-        <Confirmation searchParams={searchParams} />
+        <Confirmation params={params} searchParams={searchParams} />
       </Suspense>
     </Container></Section>
   );
 }
 
-async function Confirmation({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+async function Confirmation({ params, searchParams }: { params: Promise<{ region: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const region = await regionFromParams(params);
   const id = firstParam((await searchParams).id);
   const own = id ? await getOwnApplication(id) : null;
-  if (!own) return <EmptyState title="Candidatura não encontrada" action={<ButtonLink href="/tvde/minha-conta">Área TVDE</ButtonLink>} />;
-  const app = await withPayment(own.application);
+  // Sem base de dados, o site pode já não saber que a candidatura é desta conta (outra
+  // instância). O WeGest devolve só o estado e as datas, sem dados pessoais: chega para
+  // confirmar o envio. A área do motorista continua a exigir a ligação à conta.
+  const fallback = !own && id && (await getSession()) ? await attempt(() => getApplication(id)) : null;
+  const found = own?.application ?? (fallback?.ok ? fallback.data : null);
+  if (!found) return <EmptyState title="Candidatura não encontrada" action={<ButtonLink href="/tvde/minha-conta">Área TVDE</ButtonLink>} />;
+  const app = await withCatalogNames(await withPayment(found), region);
   // Só o cadastro (sem viatura escolhida): sem levantamento nem pagamento
   const withVehicle = Boolean(app.vehicleId);
 
@@ -42,12 +53,12 @@ async function Confirmation({ searchParams }: { searchParams: Promise<Record<str
         <h1 className="display mt-4 text-h1">Candidatura recebida</h1>
         <p className="mt-2 text-on-dark/70">
           {withVehicle
-            ? "Estamos a analisar os seus dados e documentação. Recebe um email com a decisão."
+            ? "Estamos a analisar a sua candidatura. Pode acompanhar o estado na sua área de motorista."
             : "Recebemos a sua candidatura. A equipa pede-lhe depois os documentos, que também pode carregar no portal do motorista."}
         </p>
       </div>
       <div className="border-b border-line p-6">
-        <ApplicationTimeline status={app.status} paymentStatus={app.payment?.status} withVehicle={withVehicle} />
+        <ApplicationTimeline status={app.status} paymentStatus={app.payment?.status} withVehicle={withVehicle} showPayment={!!app.payment || onlinePaymentsEnabled()} />
       </div>
       <dl className="divide-y divide-line text-body-small">
         {[
@@ -59,7 +70,7 @@ async function Confirmation({ searchParams }: { searchParams: Promise<Record<str
                 ["Local", app.pickupLocation.name],
               ]
             : []),
-        ].map(([k, v]) => (
+        ].filter(([, v]) => v).map(([k, v]) => (
           <div key={k} className="grid grid-label-value gap-4 px-6 py-3.5">
             <dt className="text-copy-muted">{k}</dt>
             <dd className="font-medium">{v}</dd>

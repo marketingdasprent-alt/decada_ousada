@@ -8,6 +8,7 @@ import { KNOWN_FIELD_MAP, validateDynamicForm } from "@/lib/dynamic-form";
 import { regionFromRequest } from "@/lib/region";
 import { driverAccountId, getCustomerId, getSession, isDriverSession, linkCustomer } from "@/services/auth";
 import { bearerToken, DriverAuthUnavailable, verifyDriverToken } from "@/services/auth/driver";
+import { verifyCaptcha } from "@/services/captcha";
 import { sendEmail } from "@/services/email";
 import { checkVehicleAvailability, createApplication, getApplicationForm, getVehicleById, onlineRequestsEnabled, upsertCustomer } from "@/services/wegest";
 import { WeGestError } from "@/services/wegest/types";
@@ -20,6 +21,8 @@ const schema = z
     pickupAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/).optional(),
     pickupLocationId: z.string().min(1).optional(),
     formData: z.record(z.string(), z.string().max(2000)),
+    /** Token do Turnstile (obrigatório com TURNSTILE_SECRET_KEY). */
+    captcha: z.string().max(4096).optional(),
   })
   // A viatura é opcional, mas vem completa (viatura, data e local) ou não vem
   .refine((b) => [b.vehicleId, b.pickupAt, b.pickupLocationId].every(Boolean) || ![b.vehicleId, b.pickupAt, b.pickupLocationId].some(Boolean), { path: ["vehicleId"], message: "Viatura, data e local vêm juntos." });
@@ -41,6 +44,12 @@ export async function POST(req: Request) {
     return fail("unavailable", "As reservas online ainda não estão disponíveis. Contacte-nos para reservar esta viatura.", 503);
   }
   const region = regionFromRequest(req);
+
+  // A API do WeGest exige CAPTCHA (50 candidaturas por dia por chave)
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
+  if (!(await verifyCaptcha(parsed.data.captcha ?? "", ip))) {
+    return fail("validation", "Confirme que não é um robô e tente novamente.", 422, { fieldErrors: { captcha: "Confirme que não é um robô." } });
+  }
 
   try {
     const session = await getSession();
@@ -95,6 +104,10 @@ export async function POST(req: Request) {
     // Erros da conta de motorista no WeGest: sessão a renovar ou conta que não se pode candidatar
     if (err instanceof WeGestError && err.apiCode === "SESSAO_INVALIDA") return fail("unauthorized", err.message, 401, { reason: "session_expired" });
     if (err instanceof WeGestError && err.apiCode === "CONTA_INVALIDA") return fail("unauthorized", err.message, 403);
+    // Uma candidatura (e uma viatura) por conta. Mensagem genérica: não revela de quem é o NIF ou o email
+    if (err instanceof WeGestError && err.apiCode === "CANDIDATURA_EXISTENTE") {
+      return fail("conflict", "Já existe uma candidatura em curso com estes dados. Só é possível uma candidatura por conta: para mudar a viatura ou corrigir dados, contacte a equipa.", 409, { reason: "application_exists" });
+    }
     return fromError(err);
   }
 }

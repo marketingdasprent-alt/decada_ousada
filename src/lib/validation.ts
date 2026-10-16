@@ -57,7 +57,8 @@ export const bookingRequestSchema = quoteRequestSchema.extend({
   account: z.object({ password: z.string().min(8, "Mínimo 8 caracteres.") }).optional(),
   message: z.string().max(500).optional(),
   acceptTerms: z.literal(true, { error: "Tem de aceitar os termos e condições." }),
-  payment: paymentInputSchema,
+  /** Sem cobrança online (onlinePaymentsEnabled), o pedido segue sem pagamento. */
+  payment: paymentInputSchema.optional(),
   idempotencyKey: z.string().min(8),
 });
 

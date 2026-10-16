@@ -17,6 +17,7 @@ import { attempt } from "@/lib/attempt";
 import { firstParam } from "@/lib/search";
 import { getApplicationForm, getVehicleBySlug, listLocations, listVehicles, onlineRequestsEnabled } from "@/services/wegest";
 import { atLeastOne } from "@/lib/static-params";
+import { onlinePaymentsEnabled } from "@/services/payments";
 
 export async function generateStaticParams({ params }: { params: { region: string } }) {
   const regions = isRegion(params?.region) ? [params.region] : REGIONS;
@@ -58,6 +59,8 @@ async function TvdeVehicle({ params, searchParams }: { params: Promise<{ region:
   const [allLocations, form] = await Promise.all([listLocations(region, "tvde"), attempt(() => getApplicationForm(region))]);
   const locations = allLocations.filter((l) => !vehicle.locations || vehicle.locations.some((vl) => vl.id === l.id));
   const reservation = offer.pricing.reservationAmount ?? offer.deposit ?? 0;
+  // Sem cobrança online, nada diz que o sinal se paga agora (decisão de 2026-10-16)
+  const payments = onlinePaymentsEnabled();
 
   return (
     <>
@@ -78,12 +81,12 @@ async function TvdeVehicle({ params, searchParams }: { params: Promise<{ region:
               <p className="text-h1 font-bold tabular">{formatMoney(offer.pricing.amount)}<span className="text-body font-medium text-copy-muted">/semana</span></p>
               <dl className="mt-5 grid grid-cols-2 gap-3 rounded-card bg-panel-alt p-4 text-body-small">
                 {offer.deposit !== undefined && <div><dt className="text-copy-muted">Caução</dt><dd className="font-bold tabular">{formatMoney(offer.deposit)}</dd></div>}
-                {reservation > 0 && <div><dt className="text-copy-muted">Sinal (pago agora)</dt><dd className="font-bold tabular">{formatMoney(reservation)}</dd></div>}
+                {reservation > 0 && <div><dt className="text-copy-muted">{payments ? "Sinal (pago agora)" : "Sinal"}</dt><dd className="font-bold tabular">{formatMoney(reservation)}</dd></div>}
                 {offer.mileageLimit !== undefined && <div><dt className="text-copy-muted">Km incluídos</dt><dd className="font-bold tabular">{formatMileage(offer)}</dd></div>}
                 {offer.extraKmPrice !== undefined && <div><dt className="text-copy-muted">Km adicional</dt><dd className="font-bold tabular">{formatMoney(offer.extraKmPrice, "EUR", { decimals: true })}</dd></div>}
                 {offer.minimumPeriod !== undefined && <div><dt className="text-copy-muted">Período mínimo</dt><dd className="font-bold">{offer.minimumPeriod} semanas</dd></div>}
               </dl>
-              {offer.deposit !== undefined && reservation > 0 && reservation < offer.deposit && (
+              {payments && offer.deposit !== undefined && reservation > 0 && reservation < offer.deposit && (
                 <p className="mt-3 text-caption text-copy-muted">O restante da caução ({formatMoney(offer.deposit - reservation)}) é pago no levantamento.</p>
               )}
               <hr className="my-6 border-line" />
@@ -93,7 +96,7 @@ async function TvdeVehicle({ params, searchParams }: { params: Promise<{ region:
                 </Suspense>
               ) : <p className="text-body-small text-copy-secondary">Sem pontos de levantamento TVDE disponíveis.</p>}
             </Card>
-            {form.ok && <ApplicationChecklist form={form.data} reservationAmount={reservation || undefined} />}
+            {form.ok && <ApplicationChecklist form={form.data} reservationAmount={payments ? reservation || undefined : undefined} />}
             </div>
           }
         />

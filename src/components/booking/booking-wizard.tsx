@@ -35,6 +35,8 @@ const ICONS: Record<NonNullable<Extra["icon"]>, typeof Baby> = {
 };
 
 const STEPS = ["Proteção e extras", "Dados", "Pagamento"];
+/** Sem cobrança online: o último passo confirma o pedido, sem pagamento. */
+const STEPS_NO_PAYMENT = ["Proteção e extras", "Dados", "Confirmar"];
 
 const QTY_BUTTON = "flex size-11 items-center justify-center rounded-control border border-line disabled:cursor-not-allowed disabled:border-transparent disabled:bg-panel-sunken disabled:text-copy-muted";
 
@@ -56,6 +58,7 @@ export function BookingWizard({
   backHref,
   checkoutPath,
   alternativesHref,
+  payments = true,
 }: {
   vehicle: Vehicle;
   offerId: string;
@@ -75,6 +78,8 @@ export function BookingWizard({
   checkoutPath: string;
   /** Resultados para as mesmas datas, quando a viatura deixa de estar disponível. */
   alternativesHref: string;
+  /** Cobrança online ligada (onlinePaymentsEnabled). Sem ela, o pedido segue sem pagamento. */
+  payments?: boolean;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
@@ -182,10 +187,10 @@ export function BookingWizard({
   }
 
   async function submit() {
-    if (!payment.valid || !acceptTerms) return;
+    if ((payments && !payment.valid) || !acceptTerms) return;
     setSubmitting(true);
     setSubmitError(null);
-    track("rentacar_payment_started", { method: payment.method, total: quote.total });
+    if (payments) track("rentacar_payment_started", { method: payment.method, total: quote.total });
     const res = await apiFetch<{ bookingId: string; paymentStatus: string }>("/api/rentacar/bookings", {
       method: "POST",
       timeoutMs: 45_000,
@@ -200,13 +205,13 @@ export function BookingWizard({
         account: loggedIn ? undefined : { password },
         message: message || undefined,
         acceptTerms,
-        payment: { method: payment.method, token: payment.token, phone: payment.phone },
+        payment: payments ? { method: payment.method, token: payment.token, phone: payment.phone } : undefined,
         idempotencyKey: idempotencyKey.current,
       }),
     });
     if (res.ok) {
       if (!loggedIn) track("rentacar_customer_created", { vehicleId: vehicle.id });
-      track("rentacar_payment_completed", { method: payment.method, status: res.data.paymentStatus, total: quote.total });
+      if (payments) track("rentacar_payment_completed", { method: payment.method, status: res.data.paymentStatus, total: quote.total });
       router.push(`/rent-a-car/confirmacao?reserva=${encodeURIComponent(res.data.bookingId)}`);
       return;
     }
@@ -243,15 +248,15 @@ export function BookingWizard({
   // Viatura indisponível ou sessão expirada: o pagamento não pode seguir daqui
   const blocked = submitError?.reason === "vehicle_unavailable" || submitError?.reason === "session_expired";
   const payButton = (
-    <Button size="lg" className="w-full" onClick={submit} loading={submitting} disabled={!payment.valid || !acceptTerms || quoting}>
-      {submitting ? "A processar…" : `Pagar ${formatMoney(quote.total, "EUR", { decimals: true })} e reservar`}
+    <Button size="lg" className="w-full" onClick={submit} loading={submitting} disabled={(payments && !payment.valid) || !acceptTerms || quoting}>
+      {submitting ? "A processar…" : payments ? `Pagar ${formatMoney(quote.total, "EUR", { decimals: true })} e reservar` : "Pedir reserva"}
     </Button>
   );
   const mobileAction: ReactNode =
     step === 0 ? (
       <Button size="lg" className="w-full" onClick={() => go(1)} disabled={quoting}>Continuar</Button>
     ) : step === 1 ? (
-      <Button type="submit" form="dados-form" size="lg" className="w-full">Continuar para pagamento</Button>
+      <Button type="submit" form="dados-form" size="lg" className="w-full">{payments ? "Continuar para pagamento" : "Continuar"}</Button>
     ) : blocked ? null : (
       payButton
     );
@@ -262,7 +267,7 @@ export function BookingWizard({
         <Link href={backHref} className="flex items-center gap-1.5 text-body-small font-medium text-copy-secondary hover:text-copy max-md:min-h-(--layout-tap)">
           <ArrowLeft className="size-4" aria-hidden /> Voltar à viatura
         </Link>
-        <Stepper steps={STEPS} current={step} />
+        <Stepper steps={payments ? STEPS : STEPS_NO_PAYMENT} current={step} />
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-main-aside">
@@ -374,20 +379,28 @@ export function BookingWizard({
               <ErrorSummary count={Object.keys(errors).length} className="mt-6" />
               <div className="mt-6 flex justify-between gap-3">
                 <Button type="button" variant="ghost" onClick={() => go(0)}>Voltar</Button>
-                <Button type="submit" size="lg" className="max-lg:hidden">Continuar para pagamento</Button>
+                <Button type="submit" size="lg" className="max-lg:hidden">{payments ? "Continuar para pagamento" : "Continuar"}</Button>
               </div>
             </form>
           )}
 
           {step === 2 && (
             <div>
-              <h2 data-step-heading tabIndex={-1} className="text-h3 font-bold focus:outline-none">Pagamento</h2>
-              <Card className="mt-6 p-5 sm:p-6">
-                <PaymentForm onChange={setPayment} />
-              </Card>
-              <Notice className="mt-6" title="Como funciona a confirmação">
-                A sua reserva entra no nosso sistema de gestão e é confirmada pela equipa DÉCADA OUSADA. Recebe um email em cada passo.
-              </Notice>
+              <h2 data-step-heading tabIndex={-1} className="text-h3 font-bold focus:outline-none">{payments ? "Pagamento" : "Confirmar pedido"}</h2>
+              {payments ? (
+                <>
+                  <Card className="mt-6 p-5 sm:p-6">
+                    <PaymentForm onChange={setPayment} />
+                  </Card>
+                  <Notice className="mt-6" title="Como funciona a confirmação">
+                    A sua reserva entra no nosso sistema de gestão e é confirmada pela equipa DÉCADA OUSADA.
+                  </Notice>
+                </>
+              ) : (
+                <Notice className="mt-6" title="Sem pagamento online">
+                  O pedido entra no nosso sistema de gestão como reserva pendente e é confirmado pela equipa DÉCADA OUSADA. Não é cobrado nada agora.
+                </Notice>
+              )}
               <Checkbox
                 className="mt-6"
                 checked={acceptTerms}

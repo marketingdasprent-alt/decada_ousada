@@ -1131,3 +1131,33 @@ Project rule (TVDE registration flow).
 DATE:
 2026-10-16
 ```
+
+---
+
+```
+DECISION:
+No online charging for now (team decision, 2026-10-16). With the real API,
+the site charges only when a real payment provider is configured
+(PAYMENT_PROVIDER other than "mock"); demo mode keeps the test provider.
+Without it, Rent a Car requests go to WeGest as pending bookings with no
+payment ("Confirmar" step, "Pedir reserva"), and TVDE has no deposit step:
+after the registration form, straight to the confirmation. One TVDE
+application per account (WeGest returns 409 on a second one); the site says
+so and points to the team.
+
+REASON:
+A payment provider is not chosen yet, and the only gateway in the code is
+the test one, which would show payments as made without charging anything.
+
+SCOPE:
+src/services/payments (onlinePaymentsEnabled), src/app/api/rentacar/bookings,
+src/app/api/tvde/applications, src/components/booking/booking-wizard.tsx,
+src/app/[region]/rent-a-car/reserva, src/app/[region]/tvde/**,
+src/components/tvde/*, src/components/vehicles/vehicle-card.tsx.
+
+LEVEL:
+Project rule (payments and online requests).
+
+DATE:
+2026-10-16
+```
