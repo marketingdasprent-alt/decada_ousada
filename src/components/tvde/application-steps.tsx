@@ -8,6 +8,7 @@ import type { ApplicationDocument, DocumentRequirement, FormField } from "@/doma
 import { formatMoney } from "@/domain/pricing";
 import { track } from "@/lib/analytics";
 import { validateDynamicForm } from "@/lib/dynamic-form";
+import { cn } from "@/lib/cn";
 import { apiFetch } from "@/lib/fetcher";
 
 import { PaymentForm, type PaymentDraft } from "../payment/payment-form";
@@ -17,7 +18,31 @@ import { Button, buttonClass, Card, disabledButtonClass } from "../shared/ui";
 import { DocumentUploader } from "./document-uploader";
 import { DynamicWeGestForm } from "./dynamic-form";
 
-/** Passo 2: cadastro do motorista com a ficha dinâmica do WeGest. */
+/** Partes da ficha, pela ordem dos campos. Sem `step` nos campos, a ficha é uma só parte. */
+function partsOf(fields: FormField[]): Array<{ name: string; fields: FormField[] }> {
+  const names = [...new Set(fields.map((f) => f.step ?? ""))];
+  return names.map((name) => ({ name, fields: fields.filter((f) => (f.step ?? "") === name) }));
+}
+
+const without = (o: Record<string, string>, key: string) => Object.fromEntries(Object.entries(o).filter(([k]) => k !== key));
+
+const focusFirstError = () => requestAnimationFrame(() => document.querySelector<HTMLElement>("[aria-invalid=true]")?.focus());
+
+/** Partes da ficha: barras curtas com o nome de cada parte. */
+function PartProgress({ parts, current }: { parts: string[]; current: number }) {
+  return (
+    <ol className="mb-6 flex gap-2" aria-label={`Parte ${current + 1} de ${parts.length}`}>
+      {parts.map((name, i) => (
+        <li key={name} className="min-w-0 flex-1" aria-current={i === current ? "step" : undefined}>
+          <span className={cn("block h-1 rounded-pill", i <= current ? "bg-brand" : "bg-line")} aria-hidden />
+          <span className={cn("mt-2 block text-caption", i === current ? "font-semibold text-copy" : "text-copy-muted", i !== current && "max-sm:sr-only")}>{name}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Passo 2: cadastro do motorista com a ficha dinâmica do WeGest, em partes curtas. */
 export function RegistrationStep({
   fields,
   initial,
@@ -37,19 +62,58 @@ export function RegistrationStep({
   loginHref?: string;
 }) {
   const router = useRouter();
-  const [values, setValues] = useState(initial);
+  const [values, setValues] = useState<Record<string, string>>(() => ({
+    ...Object.fromEntries(fields.filter((f) => f.defaultValue).map((f) => [f.field, f.defaultValue!])),
+    ...initial,
+  }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionEnded, setSessionEnded] = useState(false);
+  const [part, setPart] = useState(0);
+  const top = useRef<HTMLDivElement>(null);
+
+  const parts = partsOf(fields);
+  const last = part === parts.length - 1;
+  const current = parts[part] ?? parts[0];
+
+  function goTo(i: number) {
+    setPart(i);
+    // Novo ecrã: o topo da ficha fica à vista e o leitor de ecrã anuncia a parte
+    requestAnimationFrame(() => {
+      top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      top.current?.focus({ preventScroll: true });
+    });
+  }
+
+  function change(field: string, value: string) {
+    setValues((s) => ({ ...s, [field]: value }));
+    if (errors[field]) setErrors((prev) => without(prev, field));
+  }
+
+  // Ao sair de um campo preenchido, diz logo o que está mal (um campo vazio só no fim da parte)
+  function blur(field: string) {
+    const f = fields.find((x) => x.field === field);
+    if (!f || !(values[field] ?? "").trim()) return;
+    const msg = validateDynamicForm([f], values)[field];
+    setErrors((prev) => (msg ? { ...prev, [field]: msg } : without(prev, field)));
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!last) {
+      const errs = validateDynamicForm(current.fields, values);
+      setErrors(errs);
+      if (Object.keys(errs).length) return focusFirstError();
+      return goTo(part + 1);
+    }
     const errs = validateDynamicForm(fields, values);
     setErrors(errs);
     if (Object.keys(errs).length) {
-      requestAnimationFrame(() => document.querySelector<HTMLElement>("[aria-invalid=true]")?.focus());
-      return;
+      // Um erro numa parte anterior (ex.: dados mudados ao voltar atrás) leva a essa parte
+      const back = parts.findIndex((p) => p.fields.some((f) => errs[f.field]));
+      if (back >= 0 && back !== part) setPart(back);
+      return focusFirstError();
     }
     setSubmitting(true);
     setError(null);
@@ -81,18 +145,27 @@ export function RegistrationStep({
       return;
     }
     setSubmitting(false);
-    if (res.error.fieldErrors) setErrors(res.error.fieldErrors);
+    if (res.error.fieldErrors) {
+      const fe = res.error.fieldErrors;
+      setErrors(fe);
+      const back = parts.findIndex((p) => p.fields.some((f) => fe[f.field]));
+      if (back >= 0 && back !== part) setPart(back);
+    }
     setError(res.error.message);
   }
 
   return (
     <form onSubmit={submit} noValidate>
+      <div ref={top} tabIndex={-1} className="scroll-mt-24 focus:outline-none">
+        {parts.length > 1 && <PartProgress parts={parts.map((p) => p.name)} current={part} />}
+      </div>
       <Card className="p-5 sm:p-6">
         <DynamicWeGestForm
-          fields={fields}
+          fields={current.fields}
           values={values}
           errors={errors}
-          onChange={(f, v) => setValues((s) => ({ ...s, [f]: v }))}
+          onChange={change}
+          onBlur={blur}
           locked={driverAccount ? { email: "O email da sua conta de motorista." } : undefined}
         />
       </Card>
@@ -108,8 +181,13 @@ export function RegistrationStep({
         </Notice>
       )}
       <ErrorSummary count={Object.keys(errors).length} className="mt-4" />
-      <div className="mt-6 flex justify-end">
-        <Button type="submit" size="lg" className="max-sm:w-full" loading={submitting}>Guardar e continuar</Button>
+      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {part > 0 ? (
+          <Button type="button" variant="ghost" size="lg" className="max-sm:w-full" onClick={() => goTo(part - 1)} disabled={submitting}>Voltar</Button>
+        ) : <span aria-hidden />}
+        <Button type="submit" size="lg" className="max-sm:w-full" loading={submitting}>
+          {last ? "Guardar e continuar" : "Continuar"}
+        </Button>
       </div>
     </form>
   );

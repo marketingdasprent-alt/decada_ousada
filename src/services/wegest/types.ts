@@ -5,6 +5,7 @@
  * real (formatos em api-types.ts, contrato em docs/wegest/openapi.json). Os mappers
  * convertem-nos depois para o modelo de domínio.
  */
+import type { FieldCheck } from "@/domain/application";
 import type { Region } from "@/domain/region";
 
 export interface WgLocation {
@@ -160,6 +161,12 @@ export interface WgFormField {
   min_length?: number;
   max_length?: number;
   group?: string;
+  /** Só na ficha local da candidatura (a API não envia a definição da ficha). */
+  check?: FieldCheck;
+  required_unless?: string;
+  default?: string;
+  format?: "postal_code" | "iban";
+  step?: string;
 }
 
 export interface WgDocumentType {

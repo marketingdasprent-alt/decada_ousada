@@ -1,5 +1,7 @@
 import "server-only";
 
+import { licenseCategories, normalizeIban } from "@/lib/dynamic-form";
+
 import type {
   ApiCategoria,
   ApiCobertura,
@@ -239,50 +241,64 @@ function toBooking(r: ApiReserva, customerId = ""): WgBooking {
 const CONSENT_VERSION = "site-2026-10";
 
 /** Ficha da candidatura com os campos que POST /tvde/candidaturas pede. Os documentos não vão pela API. */
+const CATEGORIES = ["AM", "A1", "A2", "A", "B1", "B", "BE", "C1", "C", "CE", "D1", "D", "DE"];
+
+/**
+ * Ficha da candidatura com os campos que POST /tvde/candidaturas pede. Os documentos não vão pela API.
+ * Fica em três partes curtas (`step`), cada uma validada antes de passar à seguinte.
+ */
 const APPLICATION_FORM: { version: string; fields: WgFormField[] } = {
   version: "api-v1",
   fields: [
-    { key: "full_name", label: "Nome completo", input_type: "text", mandatory: true, max_length: 200, group: "Dados pessoais" },
-    { key: "email", label: "Email", input_type: "email", mandatory: true, max_length: 254, group: "Dados pessoais" },
-    { key: "phone", label: "Telemóvel", input_type: "tel", mandatory: true, max_length: 20, group: "Dados pessoais" },
-    { key: "nif", label: "NIF", input_type: "text", mandatory: true, regex: "^\\d{9}$", regex_message: "O NIF tem 9 dígitos.", group: "Dados pessoais" },
-    { key: "address", label: "Morada", input_type: "text", mandatory: true, max_length: 200, group: "Morada" },
-    { key: "zip_code", label: "Código postal", input_type: "text", mandatory: true, placeholder: "0000-000", regex: "^\\d{4}-\\d{3}$", regex_message: "Use o formato 0000-000.", group: "Morada" },
-    { key: "city", label: "Localidade", input_type: "text", mandatory: true, max_length: 100, group: "Morada" },
+    // Parte 1: sobre o motorista
+    { key: "full_name", label: "Nome completo", input_type: "text", mandatory: true, max_length: 200, group: "Dados pessoais", step: "Sobre si" },
+    { key: "email", label: "Email", input_type: "email", mandatory: true, max_length: 254, group: "Dados pessoais", step: "Sobre si" },
+    { key: "phone", label: "Telemóvel", input_type: "tel", mandatory: true, max_length: 20, placeholder: "+351 912 345 678", hint: "Com o indicativo do país.", check: "phone_intl", group: "Dados pessoais", step: "Sobre si" },
+    { key: "nif", label: "NIF", input_type: "text", mandatory: true, placeholder: "9 dígitos", regex: "^\\d{9}$", regex_message: "O NIF tem 9 dígitos.", check: "nif", group: "Dados pessoais", step: "Sobre si" },
+    { key: "address", label: "Morada", input_type: "text", mandatory: true, max_length: 200, placeholder: "Rua, número e andar", group: "Morada", step: "Sobre si" },
+    { key: "zip_code", label: "Código postal", input_type: "text", mandatory: true, placeholder: "0000-000", regex: "^\\d{4}-\\d{3}$", regex_message: "Use o formato 0000-000.", format: "postal_code", group: "Morada", step: "Sobre si" },
+    { key: "city", label: "Localidade", input_type: "text", mandatory: true, max_length: 100, group: "Morada", step: "Sobre si" },
+
+    // Parte 2: documento, carta e licença
     {
       key: "id_type",
-      label: "Documento de identificação",
-      input_type: "select",
+      label: "Tipo de documento",
+      input_type: "radio",
       mandatory: true,
       choices: [
         { value: "cc", label: "Cartão de cidadão" },
-        { value: "bi", label: "Bilhete de identidade" },
         { value: "ar", label: "Autorização de residência" },
         { value: "tr", label: "Título de residência" },
         { value: "passaporte", label: "Passaporte" },
+        { value: "bi", label: "Bilhete de identidade" },
       ],
       group: "Documento de identificação",
+      step: "Identificação e carta",
     },
-    { key: "id_number", label: "Número do documento", input_type: "text", mandatory: true, max_length: 40, group: "Documento de identificação" },
-    { key: "id_expiry", label: "Validade do documento", input_type: "date", mandatory: true, group: "Documento de identificação" },
-    { key: "license_number", label: "Número da carta de condução", input_type: "text", mandatory: true, max_length: 40, group: "Carta de condução" },
+    { key: "id_number", label: "Número do documento", input_type: "text", mandatory: true, max_length: 40, group: "Documento de identificação", step: "Identificação e carta" },
+    { key: "id_expiry", label: "Válido até", input_type: "date", mandatory: true, check: "after_today", group: "Documento de identificação", step: "Identificação e carta" },
+    { key: "license_number", label: "Número da carta", input_type: "text", mandatory: true, max_length: 40, group: "Carta de condução", step: "Identificação e carta" },
+    { key: "license_expiry", label: "Válida até", input_type: "date", mandatory: true, check: "after_today", group: "Carta de condução", step: "Identificação e carta" },
     {
       key: "license_categories",
-      label: "Categorias da carta",
-      input_type: "text",
+      label: "Categorias",
+      input_type: "chips",
       mandatory: true,
-      placeholder: "B",
-      hint: "Separadas por vírgulas. Tem de incluir a categoria B.",
-      regex: "^\\s*(A|A1|A2|AM|B|B1|BE|C|C1|CE|D|D1|DE)(\\s*,\\s*(A|A1|A2|AM|B|B1|BE|C|C1|CE|D|D1|DE))*\\s*$",
-      regex_message: "Indique as categorias separadas por vírgulas (ex.: B, BE).",
+      default: "B",
+      hint: "Toque nas categorias que tem. A B é obrigatória.",
+      choices: CATEGORIES.map((c) => ({ value: c, label: c })),
+      check: "includes_b",
       group: "Carta de condução",
+      step: "Identificação e carta",
     },
-    { key: "license_expiry", label: "Validade da carta", input_type: "date", mandatory: true, group: "Carta de condução" },
-    { key: "tvde_certificate", label: "Número do certificado de motorista TVDE", input_type: "text", mandatory: false, max_length: 40, hint: "Deixe em branco se ainda está a tirar a formação TVDE.", group: "Licença TVDE" },
-    { key: "tvde_certificate_expiry", label: "Validade do certificado TVDE", input_type: "date", mandatory: false, group: "Licença TVDE" },
-    { key: "iban", label: "IBAN", input_type: "text", mandatory: true, max_length: 42, hint: "Para os pagamentos.", group: "Pagamentos" },
-    { key: "notes", label: "Observações", input_type: "textarea", mandatory: false, max_length: 1000, group: "Observações" },
-    { key: "consent", label: "Autorizo o tratamento dos meus dados pessoais para a análise desta candidatura.", input_type: "checkbox", mandatory: true, group: "Consentimento" },
+    { key: "em_formacao_tvde", label: "Ainda estou a tirar a formação TVDE e não tenho licença.", input_type: "checkbox", mandatory: false, group: "Licença TVDE", step: "Identificação e carta" },
+    { key: "tvde_certificate", label: "Número da licença TVDE", input_type: "text", mandatory: false, required_unless: "em_formacao_tvde", max_length: 40, group: "Licença TVDE", step: "Identificação e carta" },
+    { key: "tvde_certificate_expiry", label: "Válida até", input_type: "date", mandatory: false, required_unless: "em_formacao_tvde", check: "after_today", group: "Licença TVDE", step: "Identificação e carta" },
+
+    // Parte 3: pagamentos e envio
+    { key: "iban", label: "IBAN", input_type: "text", mandatory: true, max_length: 42, placeholder: "PT50 0000 0000 0000 0000 0000 0", hint: "A conta onde recebe os pagamentos.", check: "iban", format: "iban", group: "Pagamentos", step: "IBAN e envio" },
+    { key: "notes", label: "Observações", input_type: "textarea", mandatory: false, max_length: 1000, hint: "Por exemplo, o dia em que pode começar.", group: "Para terminar", step: "IBAN e envio" },
+    { key: "consent", label: "Autorizo o tratamento dos meus dados pessoais para a análise desta candidatura.", input_type: "checkbox", mandatory: true, group: "Para terminar", step: "IBAN e envio" },
   ],
 };
 
@@ -514,7 +530,8 @@ export const httpTransport: WeGestTransport = {
     const c = local().customers.get(input.customerId);
     if (!c) throw new WeGestError("validation", "Faltam os dados do motorista.", 400);
     const f = input.formData;
-    const certificate = f.tvde_certificate?.trim();
+    // Em formação, a licença não vai (a API dispensa-a com em_formacao_tvde: true)
+    const inTraining = f.em_formacao_tvde === "true";
     const res = await wegestRequest<ApiCandidatura>("/tvde/candidaturas", {
       method: "POST",
       retry: true,
@@ -532,12 +549,12 @@ export const httpTransport: WeGestTransport = {
         documento: { tipo: f.id_type, numero: f.id_number, validade: f.id_expiry },
         carta_conducao: {
           numero: f.license_number,
-          categorias: (f.license_categories ?? "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean),
+          categorias: licenseCategories(f.license_categories ?? ""),
           validade: f.license_expiry,
         },
-        licenca_tvde: certificate ? { numero: certificate, validade: f.tvde_certificate_expiry } : null,
-        em_formacao_tvde: !certificate,
-        iban: f.iban,
+        licenca_tvde: inTraining ? null : { numero: f.tvde_certificate?.trim(), validade: f.tvde_certificate_expiry },
+        em_formacao_tvde: inTraining,
+        iban: normalizeIban(f.iban ?? ""),
         modelo_pretendido_id: input.vehicleId,
         data_inicio_pretendida: input.pickupDatetime.slice(0, 10),
         observacoes: f.notes || null,

@@ -3,6 +3,29 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.20.1]: 2026-10-16
+
+### Changed
+
+- The TVDE driver registration form (/tvde/candidatura) checks the rules in
+  the WeGest document "Cadastro de motorista TVDE no WeGest" (16/10/2026)
+  before sending POST /tvde/candidaturas: phone in international format, a
+  valid Portuguese NIF (check digit), a valid IBAN (mod 97), ID document,
+  licence and TVDE licence expiring after today, and licence categories that
+  include B.
+- New "Ainda estou a tirar a formação TVDE e não tenho licença." box. The TVDE
+  licence number and expiry are required unless it is ticked; ticked, they are
+  hidden and the API gets `em_formacao_tvde: true` with no licence. Before,
+  the licence was optional and a blank number meant "in training".
+- The IBAN goes to the API without spaces and in capitals.
+- The registration form is split into three short parts (Sobre si,
+  Identificação e carta, IBAN e envio), each checked before "Continuar", with
+  "Voltar" to go back. ID type and licence categories are tap buttons (B
+  already ticked) instead of a list and a text box. The postal code and IBAN
+  format themselves while typing, a filled field says what is wrong when the
+  driver leaves it, and optional fields say "(opcional)". Browser autofill and
+  the numeric keyboard work on the known fields.
+
 ## [0.20.0]: 2026-10-15
 
 ### Added
