@@ -100,7 +100,8 @@ export function DynamicWeGestForm({
                         return (
                           <label key={o.value} className={cn(chip, on ? chipOn : "border-line", multi && "min-w-12 justify-center px-3")}>
                             <input type={multi ? "checkbox" : "radio"} name={f.field} value={o.value} checked={on} onChange={() => toggle(o.value)} className="sr-only" />
-                            {multi && on && <Check className="size-3.5" aria-hidden />}
+                            {/* O visto marca a escolha sem depender só da cor (uma ou várias) */}
+                            {on && <Check className="size-3.5" aria-hidden />}
                             {o.label}
                           </label>
                         );

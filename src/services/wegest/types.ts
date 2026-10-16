@@ -163,6 +163,7 @@ export interface WgFormField {
   group?: string;
   /** Só na ficha local da candidatura (a API não envia a definição da ficha). */
   check?: FieldCheck;
+  required_message?: string;
   required_unless?: string;
   default?: string;
   format?: "postal_code" | "iban";

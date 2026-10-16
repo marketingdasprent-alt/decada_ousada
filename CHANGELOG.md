@@ -27,6 +27,19 @@ Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
   the documents. Choosing a vehicle first still works as before.
 - The driver account page (/entrar?tipo=motorista) opens with "Preencher o
   cadastro de motorista".
+- Validation of the registration flow (`PROMPT-MASTER-VALIDACAO-CADASTRO-MOTORISTA.md`,
+  report in `docs/design/validacao-cadastro-motorista.md`): empty-field
+  messages written per field ("Indique o telemóvel.", "Indique até quando o
+  documento é válido."); without a vehicle the steps and the form share one
+  column; on mobile one line "Parte 2 de 3: Identificação e carta", which
+  takes the focus on each part; a tick on the chosen document type too;
+  "Enviar candidatura" and "Recebemos a sua candidatura."; "Abrir o portal do
+  motorista" on one line; a browser warning before leaving with typed data;
+  the driver tab on /entrar says "Cadastro e painel"; without a vehicle the
+  form and its steps are centred on the page.
+- Licence categories: the 13 buttons are replaced by one required box,
+  "Tenho carta de condução de categoria B." For TVDE only B matters, and the
+  API (which needs a list that includes B) gets `categorias: ["B"]`.
 - The registration form is split into three short parts (Sobre si,
   Identificação e carta, IBAN e envio), each checked before "Continuar", with
   "Voltar" to go back. ID type and licence categories are tap buttons (B

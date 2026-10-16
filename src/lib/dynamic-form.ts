@@ -65,7 +65,8 @@ export function validateDynamicForm(fields: FormField[], data: Record<string, st
     if (!raw) {
       if (isRequired(f, data)) {
         errors[f.field] =
-          f.type === "checkbox" ? "Tem de confirmar para continuar."
+          f.validation?.requiredMessage ? f.validation.requiredMessage
+          : f.type === "checkbox" ? "Tem de confirmar para continuar."
           : f.type === "select" || f.type === "radio" || f.type === "chips" ? `Escolha ${lowerLabel(f.label)}.`
           : `Indique ${lowerLabel(f.label)}.`;
       }

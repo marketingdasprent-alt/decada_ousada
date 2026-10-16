@@ -340,7 +340,8 @@ async function prepare(region) {
   }
 
   const privateRoutes = [
-    checkout, "/rent-a-car/confirmacao?reserva=BK-1", ...tvdeSteps, "/tvde/candidatura/confirmacao?id=APP-1",
+    // "/tvde/candidatura" sem viatura: o cadastro de motorista sozinho (Conta, Cadastro, Enviado)
+    checkout, "/rent-a-car/confirmacao?reserva=BK-1", "/tvde/candidatura", ...tvdeSteps, "/tvde/candidatura/confirmacao?id=APP-1",
     "/minha-conta", "/minha-conta/reservas", "/minha-conta/reservas/BK-1", "/minha-conta/perfil", "/minha-conta/faturas", "/minha-conta/seguranca",
     "/tvde/minha-conta", "/tvde/minha-conta/candidaturas", "/tvde/minha-conta/candidaturas/APP-1", "/tvde/minha-conta/perfil", "/tvde/minha-conta/suporte",
   ].filter(Boolean);

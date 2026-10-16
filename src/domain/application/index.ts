@@ -54,6 +54,8 @@ export interface FormField {
     min?: string | number;
     max?: string | number;
     check?: FieldCheck;
+    /** Mensagem de campo vazio escrita à mão (com artigo), em vez da gerada pelo rótulo. */
+    requiredMessage?: string;
   };
   /** Obrigatório, salvo quando a caixa com esta chave está marcada (ex.: licença TVDE em formação). */
   requiredUnless?: string;

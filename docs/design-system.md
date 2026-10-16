@@ -308,9 +308,25 @@ Checked by `npm run qa:layout` at 375, 560, 768, 880, 1024, 1200, 1280,
   results strip ("Viaturas com levantamento em X." and "Alterar", to
   `/tvde#pesquisa`) is one row at every width; the list never claims
   availability, which only `PickupSelector` shows.
-  `DynamicWeGestForm`, `DocumentUploader`, `ApplicationStatusBadge`,
+  `DynamicWeGestForm` (fields from the form definition; `radio` and `chips`
+  are tap buttons, the chosen one with a `Check` as well as the colour;
+  `format` formats `postal_code` and `iban` while typing; optional fields say
+  "(opcional)"; a field with `requiredUnless` is hidden while that box is
+  ticked; known fields get browser autofill and the right mobile keyboard),
+  `RegistrationStep` (the registration form in parts by `step`: "Continuar"
+  validates the current part, "Voltar" keeps what was typed, a filled field
+  shows its error on blur, an error in an earlier part goes back to it;
+  `PartProgress` shows the parts as bars and, on mobile, one line "Parte 2
+  de 3: <parte>" that takes the focus when the part changes; warns before
+  leaving with typed data and stores nothing in the browser; with a vehicle
+  it ends in "Guardar e continuar" to the documents, without one in "Enviar
+  candidatura" to the confirmation), `ApplicationLayout` (`steps`:
+  `TVDE_STEPS` with a vehicle, `SIGNUP_STEPS` Conta, Cadastro, Enviado
+  without; without `aside` the steps and the form share one `max-w-3xl`
+  column, centred on the page), `DocumentUploader`, `ApplicationStatusBadge`,
   `ApplicationTimeline` (vertical on mobile, step state in text, payment
-  step from the real payment), `ApplicationChecklist` ("Vai precisar de",
+  step from the real payment; `withVehicle={false}` keeps only Cadastro,
+  Análise, Aprovação), `ApplicationChecklist` ("Vai precisar de",
   from the API form), `ApplicationCard`, `TvdeSummary`, step
   components in `application-steps.tsx`.
 - Payment: `PaymentForm` (UI only; card data never leaves the browser,

@@ -43,7 +43,7 @@ async function Confirmation({ searchParams }: { searchParams: Promise<Record<str
         <p className="mt-2 text-on-dark/70">
           {withVehicle
             ? "Estamos a analisar os seus dados e documentação. Recebe um email com a decisão."
-            : "Recebemos o seu cadastro. A equipa pede-lhe depois os documentos, e também os pode carregar no portal do motorista."}
+            : "Recebemos a sua candidatura. A equipa pede-lhe depois os documentos, que também pode carregar no portal do motorista."}
         </p>
       </div>
       <div className="border-b border-line p-6">
@@ -80,7 +80,7 @@ async function Confirmation({ searchParams }: { searchParams: Promise<Record<str
         <ButtonLink href={`/tvde/minha-conta/candidaturas/${app.id}`} className="w-full">Acompanhar candidatura</ButtonLink>
         {!withVehicle && (
           <a href={DRIVER_AREA_URL} className={buttonClass("outline", "md", "w-full")}>
-            Carregar documentos no portal do motorista
+            Abrir o portal do motorista
             <ExternalLink className="size-4" aria-hidden />
           </a>
         )}

@@ -28,17 +28,26 @@ const without = (o: Record<string, string>, key: string) => Object.fromEntries(O
 
 const focusFirstError = () => requestAnimationFrame(() => document.querySelector<HTMLElement>("[aria-invalid=true]")?.focus());
 
-/** Partes da ficha: barras curtas com o nome de cada parte. */
-function PartProgress({ parts, current }: { parts: string[]; current: number }) {
+/**
+ * Partes do cadastro: barras curtas com o nome de cada parte. Em mobile, os nomes dão lugar
+ * a uma só linha ("Parte 2 de 3: Identificação e carta"), que também recebe o foco ao mudar
+ * de parte para o leitor de ecrã a anunciar.
+ */
+function PartProgress({ parts, current, headingRef }: { parts: string[]; current: number; headingRef: React.Ref<HTMLHeadingElement> }) {
   return (
-    <ol className="mb-6 flex gap-2" aria-label={`Parte ${current + 1} de ${parts.length}`}>
-      {parts.map((name, i) => (
-        <li key={name} className="min-w-0 flex-1" aria-current={i === current ? "step" : undefined}>
-          <span className={cn("block h-1 rounded-pill", i <= current ? "bg-brand" : "bg-line")} aria-hidden />
-          <span className={cn("mt-2 block text-caption", i === current ? "font-semibold text-copy" : "text-copy-muted", i !== current && "max-sm:sr-only")}>{name}</span>
-        </li>
-      ))}
-    </ol>
+    <div className="mb-6">
+      <h2 ref={headingRef} tabIndex={-1} className="mb-2 text-caption font-semibold text-copy focus:outline-none sm:sr-only">
+        Parte {current + 1} de {parts.length}: {parts[current]}
+      </h2>
+      <ol className="flex gap-2" aria-hidden>
+        {parts.map((name, i) => (
+          <li key={name} className="min-w-0 flex-1">
+            <span className={cn("block h-1 rounded-pill", i <= current ? "bg-brand" : "bg-line")} />
+            <span className={cn("mt-2 block text-caption max-sm:hidden", i === current ? "font-semibold text-copy" : "text-copy-muted")}>{name}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 
@@ -75,6 +84,17 @@ export function RegistrationStep({
   const [sessionEnded, setSessionEnded] = useState(false);
   const [part, setPart] = useState(0);
   const top = useRef<HTMLDivElement>(null);
+  const partHeading = useRef<HTMLHeadingElement>(null);
+  const dirty = useRef(false);
+
+  // Sem rascunho: avisar antes de sair com dados escritos (nada fica guardado no browser)
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (dirty.current) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, []);
 
   const parts = partsOf(fields);
   const last = part === parts.length - 1;
@@ -85,11 +105,12 @@ export function RegistrationStep({
     // Novo ecrã: o topo da ficha fica à vista e o leitor de ecrã anuncia a parte
     requestAnimationFrame(() => {
       top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      top.current?.focus({ preventScroll: true });
+      (partHeading.current ?? top.current)?.focus({ preventScroll: true });
     });
   }
 
   function change(field: string, value: string) {
+    dirty.current = true;
     setValues((s) => ({ ...s, [field]: value }));
     if (errors[field]) setErrors((prev) => without(prev, field));
   }
@@ -143,6 +164,7 @@ export function RegistrationStep({
       res = await send();
     }
     if (res.ok) {
+      dirty.current = false;
       track("tvde_application_started", { vehicleId, applicationId: res.data.applicationId });
       const id = encodeURIComponent(res.data.applicationId);
       router.push(vehicleId ? `/tvde/candidatura/documentos?id=${id}` : `/tvde/candidatura/confirmacao?id=${id}`);
@@ -161,7 +183,7 @@ export function RegistrationStep({
   return (
     <form onSubmit={submit} noValidate>
       <div ref={top} tabIndex={-1} className="scroll-mt-24 focus:outline-none">
-        {parts.length > 1 && <PartProgress parts={parts.map((p) => p.name)} current={part} />}
+        {parts.length > 1 && <PartProgress parts={parts.map((p) => p.name)} current={part} headingRef={partHeading} />}
       </div>
       <Card className="p-5 sm:p-6">
         <DynamicWeGestForm
@@ -188,9 +210,9 @@ export function RegistrationStep({
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         {part > 0 ? (
           <Button type="button" variant="ghost" size="lg" className="max-sm:w-full" onClick={() => goTo(part - 1)} disabled={submitting}>Voltar</Button>
-        ) : <span aria-hidden />}
+        ) : <span className="max-sm:hidden" aria-hidden />}
         <Button type="submit" size="lg" className="max-sm:w-full" loading={submitting}>
-          {!last ? "Continuar" : vehicleId ? "Guardar e continuar" : "Enviar cadastro"}
+          {!last ? "Continuar" : vehicleId ? "Guardar e continuar" : "Enviar candidatura"}
         </Button>
       </div>
     </form>

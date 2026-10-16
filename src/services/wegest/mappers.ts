@@ -296,6 +296,7 @@ export function mapFormField(f: WgFormField): FormField {
       minLength: f.min_length,
       maxLength: f.max_length,
       check: f.check,
+      requiredMessage: f.required_message,
     },
     requiredUnless: f.required_unless,
     defaultValue: f.default,
