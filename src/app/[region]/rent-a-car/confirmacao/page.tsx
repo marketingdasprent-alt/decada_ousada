@@ -46,8 +46,8 @@ async function Confirmation({ searchParams }: { searchParams: Promise<Record<str
           {confirmed
             ? "Está tudo pronto. Até breve!"
             : pending
-              ? "Falta concluir o pagamento. Depois, a equipa DÉCADA OUSADA confirma a sua reserva e recebe um email."
-              : "A equipa DÉCADA OUSADA vai confirmar a sua reserva. Recebe um email assim que estiver confirmada."}
+              ? "Falta concluir o pagamento. Depois, a equipa DÉCADA OUSADA confirma a sua reserva."
+              : "A equipa DÉCADA OUSADA vai confirmar a sua reserva. Pode acompanhar o estado em As minhas reservas."}
         </p>
       </div>
       {pending && <PendingPayment payment={pending} className="px-6 pt-6" />}

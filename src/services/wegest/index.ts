@@ -289,7 +289,7 @@ export async function createBooking(input: {
   coverageId?: string | null;
   driver: { birthDate: string; licenseNumber: string; licenseExpiry: string; licenseCountry: string };
   message?: string;
-  paymentReference: string;
+  paymentReference?: string;
   idempotencyKey: string;
   expectedTotal: number;
 }): Promise<Booking> {

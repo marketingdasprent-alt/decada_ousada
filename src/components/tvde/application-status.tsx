@@ -29,8 +29,12 @@ const CHARGED: PaymentStatus[] = ["paid", "refunded", "partially_refunded"];
  * pagamento real quando existe. Em mobile é vertical, para os rótulos não se
  * sobreporem; o estado de cada passo também está em texto.
  */
-/** `withVehicle`: sem viatura escolhida (só o cadastro) não há pagamento nem levantamento. */
-export function ApplicationTimeline({ status, paymentStatus, withVehicle = true }: { status: Status; paymentStatus?: PaymentStatus; withVehicle?: boolean }) {
+/**
+ * `withVehicle`: sem viatura escolhida (só o cadastro) não há pagamento nem levantamento.
+ * `showPayment`: sem cobrança online e sem pagamento registado, o passo do pagamento não
+ * aparece (nunca se marca como feito um pagamento que não houve).
+ */
+export function ApplicationTimeline({ status, paymentStatus, withVehicle = true, showPayment = true }: { status: Status; paymentStatus?: PaymentStatus; withVehicle?: boolean; showPayment?: boolean }) {
   const all: Array<{ key: string; label: string }> = [
     { key: "registered", label: "Cadastro" },
     { key: "paid", label: "Pagamento" },
@@ -38,7 +42,7 @@ export function ApplicationTimeline({ status, paymentStatus, withVehicle = true 
     { key: "decision", label: status === "rejected" ? "Não aprovada" : "Aprovação" },
     { key: "pickup", label: "Levantamento" },
   ];
-  const steps = withVehicle ? all : all.filter((s) => s.key !== "paid" && s.key !== "pickup");
+  const steps = all.filter((s) => (s.key !== "paid" || (withVehicle && showPayment)) && (s.key !== "pickup" || withVehicle));
   const reached: Record<Status, number> = {
     draft: 0,
     payment_pending: 1,
@@ -61,7 +65,7 @@ export function ApplicationTimeline({ status, paymentStatus, withVehicle = true 
   const currentIdx = status === "cancelled" || status === "rejected" ? -1 : steps.findIndex((_, i) => !doneAt(i));
 
   return (
-    <ol className={cn("flex flex-col gap-3 sm:grid sm:gap-2", withVehicle ? "sm:grid-cols-5" : "sm:grid-cols-3")}>
+    <ol className={cn("flex flex-col gap-3 sm:grid sm:gap-2", steps.length === 5 ? "sm:grid-cols-5" : steps.length === 4 ? "sm:grid-cols-4" : "sm:grid-cols-3")}>
       {steps.map((s, i) => {
         const failed = status === "rejected" && s.key === "decision";
         const done = doneAt(i) && !failed;

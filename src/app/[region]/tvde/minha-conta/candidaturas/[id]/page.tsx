@@ -15,8 +15,10 @@ import { REFUND_STATUS_LABEL } from "@/domain/refund";
 import { formatDateTime } from "@/lib/dates";
 import { requireSession } from "@/lib/guard";
 import { getOwnApplication } from "@/lib/ownership";
-import { reconcileApplication } from "@/services/tvde";
+import { reconcileApplication, withCatalogNames } from "@/services/tvde";
+import { DRIVER_AREA_URL } from "@/domain/drivers";
 import { getApplicationForm } from "@/services/wegest";
+import { onlinePaymentsEnabled } from "@/services/payments";
 
 export const metadata: Metadata = { title: "Candidatura" };
 
@@ -34,7 +36,8 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
   const own = await getOwnApplication(id);
   if (!own) notFound();
   // Estado do WeGest + pagamento/reembolso do fornecedor (independentes, doc §66)
-  const app = await reconcileApplication(own.application, own.session.user.email);
+  const app = await withCatalogNames(await reconcileApplication(own.application, own.session.user.email), region === "azores" ? "azores" : "mainland");
+  const payments = onlinePaymentsEnabled();
   const form = await getApplicationForm(region === "azores" ? "azores" : "mainland");
   const requestedTypes = app.requestedDocuments?.map((r) => r.type) ?? [];
 
@@ -51,10 +54,10 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
       {(app.status === "approved" || app.status === "rejected") && (
         <TrackEvent name={app.status === "approved" ? "tvde_application_approved" : "tvde_application_rejected"} data={{ applicationId: app.id }} once={`decision:${app.id}`} />
       )}
-      <Card className="p-6"><ApplicationTimeline status={app.status} paymentStatus={app.payment?.status} /></Card>
+      <Card className="p-6"><ApplicationTimeline status={app.status} paymentStatus={app.payment?.status} withVehicle={!!app.vehicleId} showPayment={!!app.payment || onlinePaymentsEnabled()} /></Card>
 
       {(app.status === "submitted" || app.status === "under_review") && (
-        <Notice title="Candidatura em análise">Estamos a analisar os seus dados e documentação. Recebe um email quando houver uma decisão.</Notice>
+        <Notice title="Candidatura em análise">Estamos a analisar a sua candidatura. O estado atualiza-se nesta página.</Notice>
       )}
 
       {app.status === "additional_documents_required" && (
@@ -94,19 +97,29 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
 
       <Card>
         <dl className="divide-y divide-line text-body-small">
-          {[
+          {/* Só o que se sabe: a API real não devolve preço nem caução da candidatura */}
+          {([
             ["Viatura", app.vehicleName],
-            ["Levantamento pretendido", formatDateTime(app.pickupAt)],
+            ["Levantamento pretendido", app.vehicleId && app.pickupAt ? formatDateTime(app.pickupAt) : ""],
             ["Local", app.pickupLocation.name],
-            ["Preço semanal", `${formatMoney(app.weeklyPrice)}/semana`],
-            ["Caução", formatMoney(app.deposit)],
-            ["Pagamento", app.payment ? `${formatMoney(app.payment.amount)}, ${PAYMENT_STATUS_LABEL[app.payment.status]}` : "Sem pagamento"],
-          ].map(([k, v]) => (
+            ["Preço semanal", app.weeklyPrice > 0 ? `${formatMoney(app.weeklyPrice)}/semana` : ""],
+            ["Caução", app.deposit > 0 ? formatMoney(app.deposit) : ""],
+            ["Pagamento", app.payment ? `${formatMoney(app.payment.amount)}, ${PAYMENT_STATUS_LABEL[app.payment.status]}` : payments && app.vehicleId ? "Sem pagamento" : ""],
+          ] as Array<[string, string]>).filter(([, v]) => v).map(([k, v]) => (
             <div key={k} className="grid gap-1 px-5 py-3.5 sm:grid-label-value"><dt className="text-copy-muted">{k}</dt><dd>{v}</dd></div>
           ))}
         </dl>
       </Card>
 
+      {form.documents.length === 0 && app.documents.length === 0 ? (
+        <Card className="p-5">
+          <h3 className="font-semibold">Documentos</h3>
+          <p className="mt-2 text-body-small text-copy-secondary">
+            A equipa pede-lhe os documentos. Também os pode carregar no{" "}
+            <a href={DRIVER_AREA_URL} className="font-medium text-brand underline-offset-4 hover:underline">portal do motorista</a>.
+          </p>
+        </Card>
+      ) : (
       <Card className="p-5">
         <h3 className="font-semibold">Documentos enviados</h3>
         <ul className="mt-3 space-y-2 text-body-small">
@@ -118,6 +131,7 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
           )) : <li className="text-copy-muted">Nenhum documento.</li>}
         </ul>
       </Card>
+      )}
     </div>
   );
 }

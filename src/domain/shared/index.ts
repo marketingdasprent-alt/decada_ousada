@@ -18,7 +18,7 @@ export interface ApiError {
   message: string;
   fieldErrors?: Record<string, string>;
   /** Motivo específico, para a UI oferecer a saída certa. */
-  reason?: "vehicle_unavailable" | "session_expired" | "price_changed";
+  reason?: "vehicle_unavailable" | "session_expired" | "price_changed" | "application_exists";
   requestId?: string;
 }
 

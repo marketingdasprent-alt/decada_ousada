@@ -21,13 +21,15 @@ import { PasswordInput } from "./auth-forms";
  */
 
 const ACCOUNT_HOME = "/entrar?tipo=motorista";
+/** Depois de entrar sem destino pedido: a lista de viaturas TVDE (a conta fica em "A minha conta"). */
+const DRIVER_HOME = "/tvde/viaturas";
 const withNext = (path: string, next?: string) => (next ? `${path}${path.includes("?") ? "&" : "?"}next=${encodeURIComponent(next)}` : path);
 const link = "font-medium text-brand underline-offset-4 hover:underline max-md:tap-target";
 
-/** Depois de entrar no WeGest: abre a sessão do site e segue (recarrega, para o servidor ver a sessão). */
+/** Depois de entrar no WeGest: abre a sessão do site e segue para `next` ou para as viaturas (recarrega, para o servidor ver a sessão). */
 async function enterSite(next?: string | null): Promise<string | null> {
   if (!(await startSiteSession())) return "Não foi possível iniciar a sessão. Tente de novo.";
-  window.location.assign(next ?? ACCOUNT_HOME);
+  window.location.assign(next ?? DRIVER_HOME);
   return null;
 }
 

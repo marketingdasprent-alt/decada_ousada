@@ -1,9 +1,28 @@
 import "server-only";
 
 import type { TvdeApplication } from "@/domain/application";
+import type { Region } from "@/domain/region";
 import { sendEmail } from "@/services/email";
 import { refundPayment } from "@/services/payments";
 import { paymentsRepo, refundsRepo } from "@/services/store";
+import { getVehicleById, listLocations } from "@/services/wegest";
+
+/**
+ * A API real não devolve o nome da viatura nem do local da candidatura (só o estado):
+ * completa-os a partir do catálogo, que também vem da API. Sem catálogo, ficam vazios.
+ */
+export async function withCatalogNames(app: TvdeApplication, region: Region): Promise<TvdeApplication> {
+  if (!app.vehicleId || (app.vehicleName && app.pickupLocation.name)) return app;
+  const [vehicle, locations] = await Promise.all([
+    app.vehicleName ? null : getVehicleById(region, app.vehicleId).catch(() => null),
+    app.pickupLocation.name || !app.pickupLocation.id ? [] : listLocations(region, "tvde").catch(() => []),
+  ]);
+  return {
+    ...app,
+    vehicleName: app.vehicleName || vehicle?.name || "",
+    pickupLocation: { ...app.pickupLocation, name: app.pickupLocation.name || locations.find((l) => l.id === app.pickupLocation.id)?.name || "" },
+  };
+}
 
 /**
  * Junta à candidatura (estado do WeGest) o estado do pagamento e do reembolso

@@ -3,13 +3,15 @@ import { regionFromRequest } from "@/lib/region";
 import { bookingRequestSchema } from "@/lib/validation";
 import { getCustomerId, getSession, linkCustomer, register } from "@/services/auth";
 import { sendEmail } from "@/services/email";
-import { createPayment, linkPayment, refundPayment } from "@/services/payments";
+import { createPayment, linkPayment, onlinePaymentsEnabled, refundPayment } from "@/services/payments";
 import { checkVehicleAvailability, createBooking, onlineRequestsEnabled, quoteRentACar, upsertCustomer, WeGestError } from "@/services/wegest";
 
 /**
  * POST /api/rentacar/bookings: fluxo completo de reserva (doc §27):
  * conta → cotação (preço protegido) → disponibilidade → cliente WeGest → pagamento → reserva WeGest.
  * Se o WeGest recusar depois do pagamento, o pagamento é reembolsado automaticamente.
+ * Sem cobrança online (onlinePaymentsEnabled), o passo 5 não existe: a reserva entra no
+ * WeGest como pendente e a equipa confirma-a.
  */
 const ONLINE_OFF = "As reservas online ainda não estão disponíveis. Contacte-nos para reservar esta viatura.";
 
@@ -56,19 +58,23 @@ export async function POST(req: Request) {
     const customer = await upsertCustomer("rentacar", input.customer, existingId ?? undefined);
     if (!existingId) await linkCustomer(session.user.id, { wegestCustomerId: customer.id, customerType: "rentacar", region });
 
-    // 5. Pagamento
-    const payment = await createPayment({
-      amount: quote.total,
-      currency: "EUR",
-      purpose: "rentacar_booking",
-      method: input.payment.method,
-      reference: quote.id,
-      customerEmail: input.customer.email,
-      paymentToken: input.payment.token,
-      phone: input.payment.phone,
-      idempotencyKey: input.idempotencyKey,
-    });
-    if (payment.status === "failed") return fail("payment_failed", "O pagamento foi recusado. Verifique os dados ou use outro método.", 402);
+    // 5. Pagamento (só com cobrança online)
+    const charge = onlinePaymentsEnabled();
+    if (charge && !input.payment) return fail("validation", "Escolha o método de pagamento.", 422);
+    const payment = charge && input.payment
+      ? await createPayment({
+          amount: quote.total,
+          currency: "EUR",
+          purpose: "rentacar_booking",
+          method: input.payment.method,
+          reference: quote.id,
+          customerEmail: input.customer.email,
+          paymentToken: input.payment.token,
+          phone: input.payment.phone,
+          idempotencyKey: input.idempotencyKey,
+        })
+      : null;
+    if (payment?.status === "failed") return fail("payment_failed", "O pagamento foi recusado. Verifique os dados ou use outro método.", 402);
 
     // 6. Reserva no WeGest
     try {
@@ -88,18 +94,18 @@ export async function POST(req: Request) {
           licenseCountry: input.customer.licenseCountry,
         },
         message: input.message,
-        paymentReference: payment.id,
+        paymentReference: payment?.id,
         idempotencyKey: input.idempotencyKey,
       });
-      await linkPayment(payment.id, booking.id);
+      if (payment) await linkPayment(payment.id, booking.id);
       await sendEmail(input.customer.email, "rac.booking_received", { reference: booking.reference });
-      if (payment.status === "paid") await sendEmail(input.customer.email, "rac.payment_confirmed", { reference: booking.reference });
-      return ok({ bookingId: booking.id, reference: booking.reference, status: booking.status, paymentStatus: payment.status });
+      if (payment?.status === "paid") await sendEmail(input.customer.email, "rac.payment_confirmed", { reference: booking.reference });
+      return ok({ bookingId: booking.id, reference: booking.reference, status: booking.status, paymentStatus: payment?.status ?? "none" });
     } catch (err) {
       // Nunca deixar um cliente pago sem reserva
-      if (payment.status === "paid") await refundPayment(payment.id, undefined, "Reserva recusada pelo sistema de gestão");
+      if (payment?.status === "paid") await refundPayment(payment.id, undefined, "Reserva recusada pelo sistema de gestão");
       if (err instanceof WeGestError && err.code === "conflict") {
-        const money = payment.status === "paid" ? "O valor pago foi devolvido." : "Não foi cobrado nada.";
+        const money = payment?.status === "paid" ? "O valor pago foi devolvido." : "Não foi cobrado nada.";
         return fail("conflict", `Esta viatura acabou de ser reservada por outra pessoa. ${money}`, 409, { reason: "vehicle_unavailable" });
       }
       throw err;

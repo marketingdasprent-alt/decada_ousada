@@ -7,6 +7,7 @@ import { ButtonLink, Skeleton } from "@/components/shared/ui";
 import { attempt } from "@/lib/attempt";
 import { customerToForm } from "@/lib/customer-form";
 import { requireCustomer } from "@/lib/guard";
+import { getCustomerId } from "@/services/auth";
 import { getCustomer } from "@/services/wegest";
 
 export const metadata: Metadata = { title: "Dados pessoais" };
@@ -26,11 +27,19 @@ export default function ProfilePage() {
 }
 
 async function Profile() {
-  const { customerId } = await requireCustomer("rentacar", "/minha-conta/perfil");
+  const { session, customerId: racId } = await requireCustomer("rentacar", "/minha-conta/perfil");
+  // Sem ficha Rent a Car, mostra a ficha preenchida no cadastro (ficha pessoal), se existir
+  const tvdeId = racId ? null : await getCustomerId(session, "tvde");
+  const customerId = racId ?? tvdeId;
   if (!customerId) {
-    return <EmptyState title="Ainda não tem ficha de cliente" description="A ficha é criada automaticamente na primeira reserva." action={<ButtonLink href="/rent-a-car" size="sm">Fazer uma reserva</ButtonLink>} />;
+    return (
+      <EmptyState
+        title="Ainda não tem ficha pessoal"
+        action={<ButtonLink href="/tvde/candidatura" size="sm">Preencher ficha pessoal</ButtonLink>}
+      />
+    );
   }
   const res = await attempt(() => getCustomer(customerId));
   if (!res.ok || !res.data) return <ErrorState timeout={!res.ok && res.timeout} retryHref="/minha-conta/perfil" />;
-  return <ProfileForm initial={customerToForm(res.data)} type="rentacar" />;
+  return <ProfileForm initial={customerToForm(res.data)} type={racId ? "rentacar" : "tvde"} />;
 }

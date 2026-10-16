@@ -50,12 +50,17 @@ pagamentos reais, base de dados e CAPTCHA (`WEGEST_PEDIDOS_ONLINE`).
 
 ## Antes de ligar `WEGEST_PEDIDOS_ONLINE=on`
 
+Estado a 16/10/2026: pontos 2 e 3 resolvidos no código; o 1 fica para a
+integração da base de dados com o WeGest.
+
 1. **Base de dados persistente** (`DATABASE_URL`). Hoje contas, pagamentos, fichas
    de cliente e a lista de reservas de cada cliente vivem em memória: no Vercel
-   perdem-se entre pedidos.
-2. **Pagamentos reais** (`PAYMENT_PROVIDER`), ou a decisão de não cobrar online
-   (gap 4 em `analise-gaps.md`).
-3. **CAPTCHA** no formulário TVDE (exigido pela API: 50 candidaturas por dia por chave).
+   perdem-se entre pedidos. Até lá, a confirmação da candidatura lê o estado ao
+   WeGest, mas "As minhas reservas" e a área TVDE podem não mostrar o pedido.
+2. **Pagamentos:** decisão de 16/10/2026, sem cobrança online por enquanto. Sem um
+   `PAYMENT_PROVIDER` real, os pedidos seguem sem pagamento (`onlinePaymentsEnabled`).
+3. **CAPTCHA** no formulário TVDE (exigido pela API: 50 candidaturas por dia por chave):
+   Turnstile no fim do cadastro, ativo com `TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY`.
 4. **Fluxo TVDE ajustado à API:** a candidatura vai inteira num só pedido; os
    documentos não vão pela API (a equipa pede-os depois); decidir se o sinal de 50 €
    continua a ser pago online.
