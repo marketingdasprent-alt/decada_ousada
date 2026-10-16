@@ -27,7 +27,16 @@ export type FormFieldType =
   | "radio"
   | "checkbox"
   | "textarea"
+  /** Várias escolhas em botões; o valor é a lista separada por vírgulas (ex.: "B, BE"). */
+  | "chips"
   | "file";
+
+/**
+ * Regras que um padrão não consegue exprimir (cadastro de motorista TVDE no WeGest, 16/10/2026):
+ * telefone internacional, NIF português válido, IBAN válido, data depois de hoje e categorias
+ * da carta que incluem a B.
+ */
+export type FieldCheck = "phone_intl" | "nif" | "iban" | "after_today" | "includes_b";
 
 export interface FormField {
   field: string;
@@ -44,7 +53,18 @@ export interface FormField {
     maxLength?: number;
     min?: string | number;
     max?: string | number;
+    check?: FieldCheck;
+    /** Mensagem de campo vazio escrita à mão (com artigo), em vez da gerada pelo rótulo. */
+    requiredMessage?: string;
   };
+  /** Obrigatório, salvo quando a caixa com esta chave está marcada (ex.: licença TVDE em formação). */
+  requiredUnless?: string;
+  /** Valor inicial quando a conta não traz nenhum (ex.: categoria "B"). */
+  defaultValue?: string;
+  /** Formatação enquanto se escreve. */
+  format?: "postal_code" | "iban";
+  /** Parte da ficha em que o campo aparece, para a dividir em ecrãs curtos. */
+  step?: string;
   /** Para type=file */
   accept?: string[];
   maxSizeMb?: number;

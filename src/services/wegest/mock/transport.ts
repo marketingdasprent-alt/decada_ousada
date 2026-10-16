@@ -384,10 +384,35 @@ export const mockTransport: WeGestTransport = {
   async createApplication(input) {
     await delay();
     const s = state();
+    // Só o cadastro, sem viatura: fica submetida, sem sinal a pagar
+    if (!input.vehicleId) {
+      const id = nextId("APP");
+      const app: WgApplication = {
+        application_id: id,
+        application_number: `TVDE-${5100 + s.seq}`,
+        state: "SUBMITTED",
+        region_code: "PT-CONT",
+        customer_id: input.customerId,
+        vehicle_id: "",
+        vehicle_name: "",
+        rate_id: "",
+        pickup_datetime: "",
+        pickup_location_id: "",
+        pickup_location_name: "",
+        weekly_rate: 0,
+        deposit_amount: 0,
+        reservation_amount: 0,
+        documents: [],
+        created_at: nowIso(),
+        updated_at: nowIso(),
+      };
+      s.applications.set(id, app);
+      return clone(app);
+    }
     const v = vehicleOrThrow(input.vehicleId);
     const rate = v.rates.find((r) => r.rate_id === input.rateId && r.product === "TVDE");
     if (!rate?.weekly_rate) throw new WeGestError("validation", "Tarifa TVDE inválida", 422);
-    const av = availabilityFor(v.vehicle_id, "TVDE", input.pickupDatetime);
+    const av = availabilityFor(v.vehicle_id, "TVDE", input.pickupDatetime ?? "");
     if (av.status === "UNAVAILABLE") throw new WeGestError("conflict", "A viatura já não está disponível nesta data.", 409);
     const loc = MOCK_LOCATIONS.find((l) => l.location_id === input.pickupLocationId);
     if (!loc) throw new WeGestError("validation", "Local de levantamento inválido", 422);
@@ -401,7 +426,7 @@ export const mockTransport: WeGestTransport = {
       vehicle_id: v.vehicle_id,
       vehicle_name: v.vehicle_name,
       rate_id: rate.rate_id,
-      pickup_datetime: input.pickupDatetime,
+      pickup_datetime: input.pickupDatetime ?? "",
       pickup_location_id: loc.location_id,
       pickup_location_name: loc.location_name,
       weekly_rate: rate.weekly_rate,

@@ -30,16 +30,18 @@ export default async function RegisterPage({ params, searchParams }: PageProps<"
 
 async function Register({ region, searchParams }: { region: Region; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const query = await searchParams;
-  const next = firstParam(query.next);
+  const isDriver = firstParam(query.tipo) === "motorista";
+  // Conta de motorista nova: a seguir vem o formulário de cadastro (não depende da viatura)
+  const next = firstParam(query.next) ?? (isDriver ? "/tvde/candidatura" : undefined);
   const fromApplication = next?.startsWith("/tvde/candidatura");
-  const viewingChoice = fromApplication && (
+  const viewingChoice = fromApplication && next?.includes("viatura=") && (
     <Notice className="mb-6" title="A sua escolha de viatura fica guardada">
       Depois de criar a conta, continua a candidatura na viatura e data que escolheu.
     </Notice>
   );
 
   // Conta de motorista: conta WeGest, a mesma do portal e da app do motorista
-  if (driverAuthEnabled() && (firstParam(query.tipo) === "motorista" || fromApplication)) {
+  if (driverAuthEnabled() && (isDriver || fromApplication)) {
     return (
       <AuthShell region={region} title="Criar conta de motorista" description="Com esta conta candidata-se no site e entra no portal e na app do motorista do WeGest.">
         {viewingChoice}

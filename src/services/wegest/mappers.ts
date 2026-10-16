@@ -276,7 +276,7 @@ export function mapInvoice(i: WgInvoice): Invoice {
   return { id: i.invoice_id, number: i.invoice_number, issuedAt: i.issue_date, total: i.total, bookingReference: i.booking_number, downloadPath: `/api/invoices/${encodeURIComponent(i.invoice_id)}` };
 }
 
-const FIELD_TYPES: FormFieldType[] = ["text", "email", "tel", "date", "number", "select", "radio", "checkbox", "textarea", "file"];
+const FIELD_TYPES: FormFieldType[] = ["text", "email", "tel", "date", "number", "select", "radio", "checkbox", "textarea", "chips", "file"];
 
 export function mapFormField(f: WgFormField): FormField {
   const type = (FIELD_TYPES as string[]).includes(f.input_type) ? (f.input_type as FormFieldType) : "text";
@@ -295,7 +295,13 @@ export function mapFormField(f: WgFormField): FormField {
       max: f.max,
       minLength: f.min_length,
       maxLength: f.max_length,
+      check: f.check,
+      requiredMessage: f.required_message,
     },
+    requiredUnless: f.required_unless,
+    defaultValue: f.default,
+    format: f.format,
+    step: f.step,
     section: f.group,
   };
 }

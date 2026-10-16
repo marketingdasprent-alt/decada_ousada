@@ -6,7 +6,7 @@ export type LoginType = "rentacar" | "motorista";
 
 const TYPES: Array<{ id: LoginType; title: string; text: string }> = [
   { id: "rentacar", title: "Rent a Car", text: "Reservas e faturas" },
-  { id: "motorista", title: "Motorista TVDE", text: "Painel do motorista" },
+  { id: "motorista", title: "Motorista TVDE", text: "Cadastro e painel" },
 ];
 
 /**

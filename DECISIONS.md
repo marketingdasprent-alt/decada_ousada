@@ -1085,3 +1085,49 @@ Project rule (Rent a Car flow).
 DATE:
 2026-10-15
 ```
+
+---
+
+```
+DECISION:
+Driver registration does not depend on a vehicle (team decision,
+2026-10-16). The flow is Entrar > Motorista TVDE > Criar conta >
+registration form > sent. /tvde/candidatura without viatura, inicio and
+local shows only the form, with the steps Conta, Cadastro, Enviado, and
+sends POST /tvde/candidaturas without modelo_pretendido_id and
+data_inicio_pretendida (optional in the API). The confirmation has no
+vehicle, pickup or payment, and points to the WeGest driver portal for the
+documents (the API takes no files). Choosing a vehicle first still works:
+the same page with the three parameters keeps documents and deposit.
+The form follows the WeGest document "Cadastro de motorista TVDE no
+WeGest" (16/10/2026): international phone, Portuguese NIF check digit,
+IBAN mod 97, expiry dates after today, TVDE licence required unless "em
+formação". Licence categories: the driver confirms category B in one box
+and the API gets ["B"]; the other categories are not asked (only B matters
+for TVDE). It is split into three parts (Sobre
+si, Identificação e carta, IBAN e envio), each validated before
+"Continuar". The form is "cadastro"; what is sent and followed is the
+"candidatura".
+
+REASON:
+A new driver signs up before knowing which vehicle they will get; asking
+for a vehicle first stopped the registration. The long single form was
+tiring on mobile; the parts keep each screen short and the WeGest rules
+catch errors before the API does.
+
+SCOPE:
+src/app/[region]/registar/page.tsx, entrar/page.tsx,
+tvde/candidatura/page.tsx, tvde/candidatura/confirmacao/page.tsx,
+src/app/api/tvde/applications/route.ts,
+src/components/account/login-type-switch.tsx,
+src/components/tvde/application-layout.tsx, application-steps.tsx,
+application-status.tsx, dynamic-form.tsx, src/domain/application,
+src/lib/dynamic-form.ts, src/services/wegest (types, transport, mappers,
+http-transport, index, mock/transport).
+
+LEVEL:
+Project rule (TVDE registration flow).
+
+DATE:
+2026-10-16
+```

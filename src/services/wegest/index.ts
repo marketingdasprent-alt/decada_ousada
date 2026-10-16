@@ -348,13 +348,17 @@ export async function getApplicationForm(region: Region): Promise<ApplicationFor
   return mapApplicationForm(await transport().getApplicationForm(REGION_CODE[region]));
 }
 
+/**
+ * Candidatura TVDE. A viatura é opcional: o cadastro do motorista não depende dela
+ * (modelo_pretendido_id e data_inicio_pretendida são opcionais na API).
+ */
 export async function createApplication(input: {
   region: Region;
   customerId: string;
-  vehicleId: string;
-  offerId: string;
-  pickupAt: string;
-  pickupLocationId: string;
+  vehicleId?: string;
+  offerId?: string;
+  pickupAt?: string;
+  pickupLocationId?: string;
   formData: Record<string, string>;
   driverToken?: string;
 }): Promise<TvdeApplication> {
@@ -364,7 +368,7 @@ export async function createApplication(input: {
       customerId: input.customerId,
       vehicleId: input.vehicleId,
       rateId: input.offerId,
-      pickupDatetime: toApiDateTime(input.pickupAt, input.region),
+      pickupDatetime: input.pickupAt ? toApiDateTime(input.pickupAt, input.region) : undefined,
       pickupLocationId: input.pickupLocationId,
       formData: input.formData,
       driverToken: input.driverToken,
