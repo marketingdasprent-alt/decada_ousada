@@ -3,6 +3,36 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.20.2]: 2026-10-19
+
+### Fixed
+
+- /tvde/candidatura with online requests off (`WEGEST_PEDIDOS_ONLINE` not
+  `on`) shows "O cadastro online ainda não está disponível" and a link to
+  /contactos, instead of the 3-step form that failed with 503 on submit.
+- `POST /api/tvde/applications` with online requests off answers about
+  applications ("O envio de candidaturas online ainda não está disponível")
+  instead of bookings and vehicles.
+- Default Zod messages in API `fieldErrors` and client forms are pt-PT
+  ("Campo obrigatório.", "Valor inválido.") instead of "Invalid input: ...".
+  Messages written in the schemas are unchanged.
+- Checkout: the account password error is announced by screen readers
+  (`aria-describedby` on the field, as in the other fields).
+- TVDE documents: a WeGest description ending in a full stop no longer reads
+  "(frente e verso)., máx. 10 MB"; the limit becomes its own sentence
+  ("Máximo 10 MB.").
+- Touch targets under 768 px: "Nova reserva" (/minha-conta and
+  /minha-conta/reservas) uses the standard 44 px button, and the team phone
+  on the booking detail page is 44 px tall.
+- `GET /api/invoices/:id` with the real API answers 501 ("O PDF desta fatura
+  ainda não está disponível online") instead of the demo invoice page. Only
+  mock mode renders the demo document.
+
+### Documentation
+
+- DECISIONS.md: a missing vehicle page keeps HTTP 200 with `noindex`
+  (Next.js 16 streaming), recorded as an override.
+
 ## [0.20.1]: 2026-10-16
 
 ### Changed

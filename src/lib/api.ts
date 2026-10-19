@@ -3,6 +3,8 @@ import "server-only";
 import { NextResponse } from "next/server";
 import type { ZodError } from "zod";
 
+import "@/lib/zod-messages";
+
 import type { ApiError, ErrorCode } from "@/domain/shared";
 import { WeGestError } from "@/services/wegest/types";
 

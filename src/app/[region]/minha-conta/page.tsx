@@ -60,7 +60,7 @@ async function Dashboard() {
         {upcoming[0] ? (
           <BookingListItem booking={upcoming[0]} />
         ) : (
-          <EmptyState title="Sem reservas futuras" action={<ButtonLink href="/rent-a-car" size="sm">Nova reserva</ButtonLink>} />
+          <EmptyState title="Sem reservas futuras" action={<ButtonLink href="/rent-a-car">Nova reserva</ButtonLink>} />
         )}
       </section>
 

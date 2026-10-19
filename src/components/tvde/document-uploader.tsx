@@ -53,6 +53,9 @@ export function DocumentUploader({
       {requirements.map((req) => {
         const doc = docs.find((d) => d.type === req.type);
         const isBusy = busy === req.type;
+        // A descrição do WeGest pode acabar em ponto: aí o limite vem como frase própria
+        const hint = doc ? `Enviado: ${doc.fileName}` : (req.description ?? "PDF, JPG ou PNG");
+        const sizeHint = hint.endsWith(".") ? `${hint} Máximo ${req.maxSizeMb} MB.` : `${hint}, máx. ${req.maxSizeMb} MB`;
         const requested = highlight?.includes(req.type);
         return (
           <li key={req.type} className={cn("rounded-panel border bg-panel p-4 sm:p-5", requested ? "border-caution" : doc ? "border-positive/40" : "border-line")}>
@@ -64,7 +67,7 @@ export function DocumentUploader({
                 <p className="font-semibold">
                   {req.label} {req.required ? <span className="text-brand" aria-label="obrigatório">*</span> : <span className="text-caption font-normal text-copy-muted">(opcional)</span>}
                 </p>
-                <p className="text-body-small text-copy-muted">{doc ? `Enviado: ${doc.fileName}` : (req.description ?? "PDF, JPG ou PNG")}, máx. {req.maxSizeMb} MB</p>
+                <p className="text-body-small text-copy-muted">{sizeHint}</p>
                 {requested && <p className="mt-1 text-body-small font-medium text-caution">Pedido pela equipa: envie uma versão atualizada.</p>}
               </div>
               <input

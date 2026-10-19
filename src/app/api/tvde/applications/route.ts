@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   if (!parsed.success) return fromZod(parsed.error);
   const { vehicleId, pickupAt, pickupLocationId, formData } = parsed.data;
   if (!onlineRequestsEnabled()) {
-    return fail("unavailable", "As reservas online ainda não estão disponíveis. Contacte-nos para reservar esta viatura.", 503);
+    return fail("unavailable", "O envio de candidaturas online ainda não está disponível. Contacte a equipa para se candidatar.", 503);
   }
   const region = regionFromRequest(req);
 

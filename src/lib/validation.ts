@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import "./zod-messages";
+
 const LOCAL_DT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
