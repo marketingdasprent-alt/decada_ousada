@@ -204,7 +204,7 @@ export function RegistrationStep({
   }
 
   return (
-    <form onSubmit={submit} noValidate>
+    <form onSubmit={submit} method="post" noValidate>
       <div ref={top} tabIndex={-1} className="scroll-mt-24 focus:outline-none">
         {parts.length > 1 && <PartProgress parts={parts.map((p) => p.name)} current={part} headingRef={partHeading} />}
       </div>

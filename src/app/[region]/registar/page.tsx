@@ -3,7 +3,8 @@ import { Suspense } from "react";
 
 import { RegisterForm } from "@/components/account/auth-forms";
 import { AuthShell } from "@/components/account/auth-shell";
-import { DriverRegisterForm } from "@/components/account/driver-auth-forms";
+import { WeGestRegisterForm } from "@/components/account/wegest-register-form";
+import { RegistrationUnavailable } from "@/components/account/auth-captcha";
 import { Notice } from "@/components/shared/states";
 import { Skeleton } from "@/components/shared/ui";
 import type { Region } from "@/domain/region";
@@ -45,7 +46,7 @@ async function Register({ region, searchParams }: { region: Region; searchParams
     return (
       <AuthShell region={region} title="Criar conta de motorista" description="Com esta conta candidata-se no site e entra no portal e na app do motorista do WeGest.">
         {viewingChoice}
-        <DriverRegisterForm next={next} />
+        <WeGestRegisterForm next={next} kind="motorista" />
       </AuthShell>
     );
   }
@@ -53,7 +54,7 @@ async function Register({ region, searchParams }: { region: Region; searchParams
   return (
     <AuthShell region={region} title="Criar conta" description="A conta serve para entrar no site. Os seus dados de cliente ficam no nosso sistema de gestão.">
       {viewingChoice}
-      <RegisterForm next={next} />
+      {driverAuthEnabled() ? <WeGestRegisterForm next={next} /> : process.env.WEGEST_MODE === "http" ? <RegistrationUnavailable /> : <RegisterForm next={next} />}
     </AuthShell>
   );
 }

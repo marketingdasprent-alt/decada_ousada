@@ -22,11 +22,11 @@ export async function currentDriverToken(): Promise<string | null> {
 }
 
 /** Abre a sessão do site para a conta WeGest (o servidor confirma o token no WeGest). */
-export async function startSiteSession(): Promise<boolean> {
+export async function startSiteSession(): Promise<{ kind: "cliente" | "motorista" } | null> {
   const token = await currentDriverToken();
-  if (!token) return false;
-  const res = await apiFetch("/api/driver-session", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-  return res.ok;
+  if (!token) return null;
+  const res = await apiFetch<{ kind: "cliente" | "motorista" }>("/api/driver-session", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+  return res.ok ? res.data : null;
 }
 
 export async function signOutDriver() {
@@ -42,7 +42,7 @@ const NEXT_KEY = "do_driver_next";
 
 export function rememberNext(next: string | undefined) {
   try {
-    if (next?.startsWith("/") && !next.startsWith("//")) localStorage.setItem(NEXT_KEY, next);
+    if (next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\")) localStorage.setItem(NEXT_KEY, next);
     else localStorage.removeItem(NEXT_KEY);
   } catch {
     // Sem armazenamento (modo privado): volta à página da conta

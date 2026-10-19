@@ -84,7 +84,7 @@ export async function getSession(): Promise<Session | null> {
   await ensureSeed();
   const subject = decodeSession((await cookies()).get(COOKIE)?.value);
   if (!subject) return null;
-  const user = subject.startsWith(DRIVER_PREFIX) ? await driverUser(subject) : await usersRepo.findById(subject);
+  const user = (subject.startsWith(DRIVER_PREFIX) || subject.startsWith(CUSTOMER_PREFIX)) ? await driverUser(subject) : await usersRepo.findById(subject);
   if (!user) return null;
   const userId = user.id;
   const { passwordHash: _omit, ...publicUser } = user;
@@ -142,17 +142,19 @@ export async function changePassword(userId: string, current: string, next: stri
  * sobreviver a um servidor sem a base de dados local (hoje em memória). Nunca leva o token.
  */
 const DRIVER_PREFIX = "wegest:";
+const CUSTOMER_PREFIX = "wegest-client:";
 
 async function driverUser(subject: string) {
-  const [, accountId, emailB64] = subject.split(":");
+  const [provider, accountId, emailB64, nameB64] = subject.split(":");
   if (!accountId || !emailB64) return null;
-  const id = `${DRIVER_PREFIX}${accountId}`;
+  const id = `${provider}:${accountId}`;
   return (
     (await usersRepo.findById(id)) ??
     (await usersRepo.create({
       id,
       authProviderId: id,
       email: Buffer.from(emailB64, "base64url").toString("utf8"),
+      name: nameB64 ? Buffer.from(nameB64, "base64url").toString("utf8") : undefined,
       createdAt: new Date().toISOString(),
       passwordHash: "",
     }))
@@ -161,7 +163,8 @@ async function driverUser(subject: string) {
 
 /** Sessão do site para uma conta WeGest já confirmada no servidor (verifyDriverToken). */
 export async function startDriverSession(account: DriverAccount) {
-  await startSession(`${DRIVER_PREFIX}${account.id}:${Buffer.from(account.email).toString("base64url")}`);
+  const prefix = account.kind === "motorista" ? DRIVER_PREFIX : CUSTOMER_PREFIX;
+  await startSession(`${prefix}${account.id}:${Buffer.from(account.email).toString("base64url")}:${Buffer.from(account.name ?? "").toString("base64url")}`);
 }
 
 export const isDriverSession = (session: Session | null) => Boolean(session?.user.authProviderId.startsWith(DRIVER_PREFIX));

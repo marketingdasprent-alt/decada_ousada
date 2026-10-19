@@ -2,9 +2,11 @@ import { Suspense } from "react";
 
 import { EmptyState, ErrorState, Notice } from "@/components/shared/states";
 import { ButtonLink, Skeleton } from "@/components/shared/ui";
+import { AccountApplicationSummary } from "@/components/tvde/account-application";
 import { ApplicationCard } from "@/components/tvde/application-card";
 import { attempt } from "@/lib/attempt";
-import { requireCustomer } from "@/lib/guard";
+import { requireCustomer, requireSession } from "@/lib/guard";
+import { accountApplicationEnabled, accountApplicationMock } from "@/services/account-application";
 import { reconcileApplication } from "@/services/tvde";
 import { getCustomer, listCustomerApplications } from "@/services/wegest";
 
@@ -17,6 +19,16 @@ export default function TvdeDashboard() {
 }
 
 async function Dashboard() {
+  if (accountApplicationEnabled()) {
+    const session = await requireSession("/tvde/minha-conta");
+    const first = session.user.name?.split(" ")[0];
+    return (
+      <div className="space-y-6">
+        <h2 className="text-h2 font-bold">Olá{first ? `, ${first}` : ""}.</h2>
+        <AccountApplicationSummary mock={accountApplicationMock()} />
+      </div>
+    );
+  }
   const { session, customerId } = await requireCustomer("tvde", "/tvde/minha-conta");
   if (!customerId) {
     return (

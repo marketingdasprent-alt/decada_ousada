@@ -3,6 +3,32 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.21.0]: 2026-10-19
+
+### Added
+
+- Customer (Rent a Car) and driver accounts are created in the WeGest
+  Supabase Auth from /registar, with the fields from docs.wegest.pt
+  ("Contas de cliente"); optional fields left blank are not sent. Driver
+  sign-up asks for name, phone, email and password.
+- Turnstile CAPTCHA on account sign-up, login and password recovery
+  (`NEXT_PUBLIC_WEGEST_AUTH_CAPTCHA_SITE_KEY`; the secret lives in the
+  WeGest Supabase). Without the key, /registar shows sign-up as unavailable.
+- /minha-conta/faturas lists the customer's invoices from `/conta/faturas`
+  and downloads the WeGest PDF.
+- /termos page, with the legal text shown as pending.
+- TVDE application in steps at /tvde/minha-conta/candidaturas (WeGest
+  `/conta/candidatura` routes): save each section, upload the 8 documents
+  (request URL, upload straight to storage, confirm), submit, then read-only
+  status (submetida, aprovada, rejeitada with reason). A customer account
+  sees that a driver account is needed. Mock mode mirrors the same contract.
+
+### Fixed
+
+- Account and application forms use `method="post"`, so a submit before
+  hydration no longer puts the password, NIF or IBAN in the URL.
+- Sign-up shows every field error on the first attempt.
+
 ## [0.20.2]: 2026-10-19
 
 ### Fixed

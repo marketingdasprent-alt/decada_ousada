@@ -23,6 +23,7 @@ export async function loginAction(_: FormState, form: FormData): Promise<FormSta
 }
 
 export async function registerAction(_: FormState, form: FormData): Promise<FormState> {
+  if (process.env.WEGEST_MODE === "http") return { error: "Utilize o registo da conta WeGest." };
   const email = String(form.get("email") ?? "");
   const res = await register(email, String(form.get("password") ?? ""), String(form.get("name") ?? "") || undefined);
   if (!res.ok) return { error: res.error };
