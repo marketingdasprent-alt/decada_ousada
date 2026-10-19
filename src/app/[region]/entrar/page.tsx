@@ -117,7 +117,7 @@ async function Login({ region, searchParams }: { region: Region; searchParams: P
   return (
     <AuthShell region={region} title="Entrar" description="Aceda à sua área de cliente Rent a Car.">
       <LoginTypeSwitch current="rentacar" next={next} />
-      <LoginForm next={next} />
+      {driverAccounts ? <DriverLoginForm next={next} kind="cliente" /> : <LoginForm next={next} />}
     </AuthShell>
   );
 }

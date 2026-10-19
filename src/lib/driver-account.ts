@@ -32,6 +32,7 @@ export function driverPasswordError(password: string): string | null {
  * nunca é mostrada; o que não está na lista cai numa mensagem genérica.
  */
 const AUTH_MESSAGES: Array<[test: (m: string) => boolean, message: string]> = [
+  [(m) => m.includes("captcha"), "A verificação de segurança expirou ou falhou. Conclua-a novamente."],
   [(m) => m.includes("invalid login credentials"), "Email ou password errados."],
   [(m) => m.includes("email not confirmed"), "Confirme primeiro o email. Abra o link que lhe enviámos."],
   [(m) => m.includes("pwned"), "Esta password apareceu em fugas de dados. Escolha outra."],

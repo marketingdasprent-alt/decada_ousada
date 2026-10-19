@@ -61,7 +61,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
       </div>
       <div className="mt-6 space-y-3">
         {list.length ? list.map((b) => <BookingListItem key={b.id} booking={b} />) : (
-          <EmptyState title="Sem reservas nesta lista" action={tab === "proximas" ? <ButtonLink href="/rent-a-car" size="sm">Nova reserva</ButtonLink> : undefined} />
+          <EmptyState title="Sem reservas nesta lista" action={tab === "proximas" ? <ButtonLink href="/rent-a-car">Nova reserva</ButtonLink> : undefined} />
         )}
       </div>
     </>

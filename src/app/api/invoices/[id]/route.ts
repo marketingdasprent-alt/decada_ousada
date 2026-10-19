@@ -2,7 +2,7 @@ import { connection } from "next/server";
 
 import { fail } from "@/lib/api";
 import { getCustomerId, getSession } from "@/services/auth";
-import { listCustomerInvoices } from "@/services/wegest";
+import { integrationMode, listCustomerInvoices } from "@/services/wegest";
 
 /**
  * GET /api/invoices/:id: proxy autenticado do documento (doc §38, §57).
@@ -17,6 +17,10 @@ export async function GET(_: Request, { params }: RouteContext<"/api/invoices/[i
   if (!customerId) return fail("unauthorized", "Sessão expirada.", 401);
   const invoice = (await listCustomerInvoices(customerId)).find((i) => i.id === id);
   if (!invoice) return fail("not_found", "Fatura não encontrada.", 404);
+  // O documento de demonstração só existe no modo mock: com a API real não se mostra um falso PDF
+  if (integrationMode() !== "mock") {
+    return fail("unavailable", "O PDF desta fatura ainda não está disponível online. Peça-o à nossa equipa.", 501);
+  }
   const total = new Intl.NumberFormat("pt-PT", { style: "currency", currency: "EUR" }).format(invoice.total);
   const html = `<!doctype html><html lang="pt-PT"><meta charset="utf-8"><title>${invoice.number}</title>
 <body style="font-family:system-ui;max-width:640px;margin:40px auto;padding:0 16px">

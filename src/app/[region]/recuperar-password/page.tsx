@@ -7,7 +7,6 @@ import { DriverRecoverForm } from "@/components/account/driver-auth-forms";
 import { Skeleton } from "@/components/shared/ui";
 import { driverAuthEnabled } from "@/lib/driver-account";
 import { regionFromParams } from "@/lib/region";
-import { firstParam } from "@/lib/search";
 
 export const metadata: Metadata = { title: "Recuperar password", robots: { index: false } };
 
@@ -24,6 +23,7 @@ export default async function RecoverPage({ params, searchParams }: PageProps<"/
 
 async function Recover({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   // Conta de motorista: o link vem do WeGest e abre /nova-password
-  if (driverAuthEnabled() && firstParam((await searchParams).tipo) === "motorista") return <DriverRecoverForm />;
+  await searchParams;
+  if (driverAuthEnabled()) return <DriverRecoverForm />;
   return <RecoverForm />;
 }

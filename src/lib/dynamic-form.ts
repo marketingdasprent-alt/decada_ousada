@@ -9,7 +9,7 @@ function lowerLabel(label: string): string {
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Lisbon" }).format(new Date());
 
 /** NIF português: 9 dígitos e dígito de controlo (módulo 11). */
-function validNif(nif: string): boolean {
+export function validNif(nif: string): boolean {
   if (!/^[1-9]\d{8}$/.test(nif)) return false;
   const sum = [...nif.slice(0, 8)].reduce((acc, d, i) => acc + Number(d) * (9 - i), 0);
   const check = 11 - (sum % 11);
@@ -18,7 +18,7 @@ function validNif(nif: string): boolean {
 
 /** IBAN: país, dígitos de controlo e módulo 97 (ISO 13616). Um IBAN português tem 25 caracteres. */
 export const normalizeIban = (iban: string) => iban.replace(/\s+/g, "").toUpperCase();
-function validIban(raw: string): boolean {
+export function validIban(raw: string): boolean {
   const iban = normalizeIban(raw);
   if (!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(iban) || (iban.startsWith("PT") && iban.length !== 25)) return false;
   const digits = (iban.slice(4) + iban.slice(0, 4)).replace(/[A-Z]/g, (c) => String(c.charCodeAt(0) - 55));

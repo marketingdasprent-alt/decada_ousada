@@ -1,11 +1,14 @@
 import "server-only";
 
+import { getAccount } from "@/services/wegest/account";
 import { DRIVER_AUTH } from "@/lib/driver-account";
 
 export interface DriverAccount {
   /** Id da conta no Supabase Auth do WeGest. */
   id: string;
   email: string;
+  kind: "cliente" | "motorista";
+  name?: string;
 }
 
 export class DriverAuthUnavailable extends Error {}
@@ -30,7 +33,10 @@ export async function verifyDriverToken(token: string): Promise<DriverAccount | 
   if (!res.ok) throw new DriverAuthUnavailable(`Serviço de contas do WeGest: ${res.status}`);
   const user = (await res.json().catch(() => null)) as { id?: string; email?: string; email_confirmed_at?: string | null } | null;
   if (!user?.id || !user.email || !user.email_confirmed_at) return null;
-  return { id: user.id, email: user.email.toLowerCase() };
+  // O tipo vem da API da organização, nunca de metadados editáveis pelo utilizador.
+  const account = await getAccount(token);
+  if (!account.email_confirmado || !["cliente", "motorista"].includes(account.tipo) || account.email.toLowerCase() !== user.email.toLowerCase()) return null;
+  return { id: user.id, email: user.email.toLowerCase(), kind: account.tipo, name: account.cliente?.nome };
 }
 
 /** Lê o token de `Authorization: Bearer …`. */

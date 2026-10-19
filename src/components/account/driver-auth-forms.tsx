@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 
-import { track } from "@/lib/analytics";
-import { DRIVER_ACCOUNT, DRIVER_AUTH, DRIVER_CONFIRM_PATH, DRIVER_NEW_PASSWORD_PATH, driverAuthMessage, driverPasswordError, isEmailNotConfirmed } from "@/lib/driver-account";
-import { driverAuth, rememberNext, startSiteSession, takeNext } from "@/lib/driver-auth-client";
+import { DRIVER_ACCOUNT, DRIVER_CONFIRM_PATH, DRIVER_NEW_PASSWORD_PATH, driverAuthMessage, driverPasswordError, isEmailNotConfirmed } from "@/lib/driver-account";
+import { driverAuth, startSiteSession, takeNext } from "@/lib/driver-auth-client";
 
 import { Field, Input } from "../shared/form";
 import { Notice } from "../shared/states";
 import { Button, ButtonLink, Skeleton } from "../shared/ui";
 import { PasswordInput } from "./auth-forms";
+import { useAuthCaptcha } from "./auth-captcha";
 
 /**
  * Formulários da conta de motorista (conta WeGest). O browser fala diretamente com o
@@ -18,38 +18,42 @@ import { PasswordInput } from "./auth-forms";
  * Guia: "Contas de motorista no site da Década" (WeGest, 2026-10-14).
  */
 
-/** Ecrã de login de motorista. */
-const LOGIN = "/entrar?tipo=motorista";
-
 const withNext = (path: string, next?: string) => (next ? `${path}${path.includes("?") ? "&" : "?"}next=${encodeURIComponent(next)}` : path);
 const link = "font-medium text-brand underline-offset-4 hover:underline max-md:tap-target";
 
 /** Depois de entrar no WeGest: abre a sessão do site e segue para `next` ou para a área do motorista (recarrega, para o servidor ver a sessão). */
-async function enterSite(next?: string | null): Promise<string | null> {
-  if (!(await startSiteSession())) return "Não foi possível iniciar a sessão. Tente de novo.";
-  window.location.assign(next ?? DRIVER_ACCOUNT);
+export async function enterSite(next?: string | null): Promise<string | null> {
+  const session = await startSiteSession();
+  if (!session) return "Não foi possível iniciar a sessão. Tente de novo.";
+  const destination = next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : session.kind === "motorista" ? DRIVER_ACCOUNT : "/minha-conta";
+  window.location.assign(destination);
   return null;
 }
 
-function ResendConfirmation({ email }: { email: string }) {
+export function ResendConfirmation({ email }: { email: string }) {
+  const captcha = useAuthCaptcha();
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   async function resend() {
+    if (captcha.configured && !captcha.ready) return;
     setState("sending");
-    const { error } = await driverAuth().auth.resend({ type: "signup", email, options: { emailRedirectTo: `${window.location.origin}${DRIVER_CONFIRM_PATH}` } });
+    const { error } = await driverAuth().auth.resend({ type: "signup", email, options: { captchaToken: captcha.token || undefined, emailRedirectTo: `${window.location.origin}${DRIVER_CONFIRM_PATH}` } });
+    captcha.reset();
     setState(error ? "error" : "sent");
   }
   if (state === "sent") return <p className="mt-2 text-body-small">Enviámos de novo o email de confirmação.</p>;
   return (
-    <p className="mt-2 text-body-small">
+    <div className="mt-2 space-y-3 text-body-small">
+      {captcha.field}
       {state === "error" && "Não foi possível reenviar agora. "}
-      <button type="button" onClick={resend} disabled={state === "sending"} className={`${link} cursor-pointer`}>
+      <button type="button" onClick={resend} disabled={state === "sending" || (captcha.configured && !captcha.ready)} className={`${link} cursor-pointer`}>
         {state === "sending" ? "A reenviar…" : "Reenviar email de confirmação"}
       </button>
-    </p>
+    </div>
   );
 }
 
-export function DriverLoginForm({ next, secondary = false }: { next?: string; secondary?: boolean }) {
+export function DriverLoginForm({ next, secondary = false, kind = "motorista" }: { next?: string; secondary?: boolean; kind?: "cliente" | "motorista" }) {
+  const captcha = useAuthCaptcha();
   const uid = useId();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<{ message: string; unconfirmedEmail?: string } | null>(null);
@@ -59,9 +63,11 @@ export function DriverLoginForm({ next, secondary = false }: { next?: string; se
     const data = new FormData(e.currentTarget);
     const email = String(data.get("email") ?? "").trim();
     const password = String(data.get("password") ?? "");
+    if (captcha.configured && !captcha.ready) { setError({ message: "Conclua a verificação de segurança." }); return; }
     setPending(true);
     setError(null);
-    const { error: authError } = await driverAuth().auth.signInWithPassword({ email, password });
+    const { error: authError } = await driverAuth().auth.signInWithPassword({ email, password, options: { captchaToken: captcha.token || undefined } });
+    captcha.reset();
     if (authError) {
       setPending(false);
       setError({ message: driverAuthMessage(authError), unconfirmedEmail: isEmailNotConfirmed(authError) ? email : undefined });
@@ -75,7 +81,7 @@ export function DriverLoginForm({ next, secondary = false }: { next?: string; se
   }
 
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form onSubmit={submit} method="post" className="space-y-5">
       <Field label="Email" htmlFor={`${uid}-email`} required>
         <Input id={`${uid}-email`} name="email" type="email" autoComplete="email" required />
       </Field>
@@ -84,9 +90,10 @@ export function DriverLoginForm({ next, secondary = false }: { next?: string; se
           <PasswordInput id={`${uid}-password`} name="password" autoComplete="current-password" required />
         </Field>
         <p className="mt-2 text-right text-body-small">
-          <Link href="/recuperar-password?tipo=motorista" className="text-copy-secondary underline-offset-4 hover:text-copy hover:underline max-md:tap-target">Esqueci-me da password</Link>
+          <Link href={kind === "motorista" ? "/recuperar-password?tipo=motorista" : "/recuperar-password"} className="text-copy-secondary underline-offset-4 hover:text-copy hover:underline max-md:tap-target">Esqueci-me da password</Link>
         </p>
       </div>
+      {captcha.field}
       {error && (
         <Notice tone="danger">
           {error.message}
@@ -96,102 +103,16 @@ export function DriverLoginForm({ next, secondary = false }: { next?: string; se
       <Button type="submit" size="lg" variant={secondary ? "outline" : "primary"} className="w-full" loading={pending}>Entrar</Button>
       {!secondary && (
         <div className="border-t border-line pt-5 text-center">
-          <p className="text-body-small text-copy-secondary">Ainda não tem conta de motorista?</p>
-          <ButtonLink href={withNext("/registar?tipo=motorista", next)} variant="outline" size="lg" className="mt-3 w-full">Criar conta</ButtonLink>
+          <p className="text-body-small text-copy-secondary">Ainda não tem conta?</p>
+          <ButtonLink href={withNext(kind === "motorista" ? "/registar?tipo=motorista" : "/registar", next)} variant="outline" size="lg" className="mt-3 w-full">Criar conta</ButtonLink>
         </div>
       )}
     </form>
   );
 }
 
-export function DriverRegisterForm({ next }: { next?: string }) {
-  const uid = useId();
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [sentTo, setSentTo] = useState<string | null>(null);
-
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    const email = String(data.get("email") ?? "").trim();
-    const password = String(data.get("password") ?? "");
-    const weak = driverPasswordError(password);
-    setPasswordError(weak);
-    if (weak) return;
-    setPending(true);
-    setError(null);
-    if (next?.startsWith("/tvde/candidatura")) track("tvde_registration_started");
-    rememberNext(next);
-    const { data: result, error: authError } = await driverAuth().auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}${DRIVER_CONFIRM_PATH}`,
-        // Só estes três campos: o WeGest ignora cargo e permissões vindos do browser
-        data: { tipo_utilizador: "motorista", cargo_nome: "Motorista", org_id: DRIVER_AUTH.orgId },
-      },
-    });
-    if (authError) {
-      setPending(false);
-      setError(driverAuthMessage(authError));
-      return;
-    }
-    // Confirmação de email desligada no WeGest: a conta já vem com sessão
-    if (result.session) {
-      const failure = await enterSite(takeNext());
-      if (failure) {
-        setPending(false);
-        setError(failure);
-      }
-      return;
-    }
-    // Conta nova ou email que já tinha conta (identities vazio): o mesmo ecrã, sem revelar qual
-    setPending(false);
-    setSentTo(email);
-  }
-
-  if (sentTo) {
-    return (
-      <div className="space-y-5">
-        <Notice tone="ok" title="Enviámos um email para confirmar a sua conta">
-          Abra o link que enviámos para <strong className="text-copy">{sentTo}</strong>. A conta fica ativa depois de confirmar.
-          <ResendConfirmation email={sentTo} />
-        </Notice>
-        <p className="text-body-small text-copy-secondary">
-          Já tinha conta com este email? <Link href={withNext(LOGIN, next)} className={link}>Entrar</Link> ou{" "}
-          <Link href="/recuperar-password?tipo=motorista" className={link}>recuperar a password</Link>.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-5" noValidate>
-      <Field label="Email" htmlFor={`${uid}-email`} required>
-        <Input id={`${uid}-email`} name="email" type="email" autoComplete="email" required />
-      </Field>
-      <Field label="Password" htmlFor={`${uid}-password`} required error={passwordError ?? undefined} help="Mínimo 8 caracteres, com letras e números.">
-        <PasswordInput
-          id={`${uid}-password`}
-          name="password"
-          autoComplete="new-password"
-          minLength={8}
-          required
-          aria-invalid={passwordError ? true : undefined}
-          aria-describedby={passwordError ? `${uid}-password-error` : undefined}
-        />
-      </Field>
-      {error && <Notice tone="danger">{error}</Notice>}
-      <Button type="submit" size="lg" className="w-full" loading={pending}>Criar conta</Button>
-      <p className="text-center text-body-small text-copy-secondary">
-        Já tem conta? <Link href={withNext(LOGIN, next)} className={link}>Entrar</Link>
-      </p>
-    </form>
-  );
-}
-
 export function DriverRecoverForm() {
+  const captcha = useAuthCaptcha();
   const uid = useId();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -200,13 +121,15 @@ export function DriverRecoverForm() {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = String(new FormData(e.currentTarget).get("email") ?? "").trim();
+    if (captcha.configured && !captcha.ready) { setError("Conclua a verificação de segurança."); return; }
     setPending(true);
     setError(null);
-    const { error: authError } = await driverAuth().auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}${DRIVER_NEW_PASSWORD_PATH}` });
+    const { error: authError } = await driverAuth().auth.resetPasswordForEmail(email, { captchaToken: captcha.token || undefined, redirectTo: `${window.location.origin}${DRIVER_NEW_PASSWORD_PATH}` });
     setPending(false);
-    // A resposta é a mesma com ou sem conta; só a falta de ligação e o limite de tentativas aparecem
+    captcha.reset();
+    // A API não revela se existe uma conta para este email.
     const message = authError ? driverAuthMessage(authError) : null;
-    if (message && /ligação|tentativas/.test(message)) setError(message);
+    if (message) setError(message);
     else setSent(true);
   }
 
@@ -218,11 +141,12 @@ export function DriverRecoverForm() {
     );
   }
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form onSubmit={submit} method="post" className="space-y-5">
       <Field label="Email" htmlFor={`${uid}-email`} required>
         <Input id={`${uid}-email`} name="email" type="email" autoComplete="email" required />
       </Field>
       {error && <Notice tone="danger">{error}</Notice>}
+      {captcha.field}
       <Button type="submit" size="lg" className="w-full" loading={pending}>Enviar link</Button>
     </form>
   );
@@ -294,7 +218,7 @@ export function NewPasswordForm() {
     );
   }
   return (
-    <form onSubmit={submit} className="space-y-5" noValidate>
+    <form onSubmit={submit} method="post" className="space-y-5" noValidate>
       <Field label="Nova password" htmlFor={`${uid}-password`} required help="Mínimo 8 caracteres, com letras e números." error={fieldError ?? undefined}>
         <PasswordInput
           id={`${uid}-password`}

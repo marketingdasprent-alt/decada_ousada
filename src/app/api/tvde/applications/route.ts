@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   if (!parsed.success) return fromZod(parsed.error);
   const { vehicleId, pickupAt, pickupLocationId, formData } = parsed.data;
   if (!onlineRequestsEnabled()) {
-    return fail("unavailable", "As reservas online ainda não estão disponíveis. Contacte-nos para reservar esta viatura.", 503);
+    return fail("unavailable", "O envio de candidaturas online ainda não está disponível. Contacte a equipa para se candidatar.", 503);
   }
   const region = regionFromRequest(req);
 
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       const token = bearerToken(req);
       if (!isDriverSession(session) || !token) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
       const account = await verifyDriverToken(token);
-      if (!account || account.id !== driverAccountId(session)) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
+      if (!account || account.kind !== "motorista" || account.id !== driverAccountId(session)) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
       if (formData.email && formData.email.trim().toLowerCase() !== account.email) {
         return fail("validation", "Verifique os campos assinalados.", 422, { fieldErrors: { email: "Use o email da sua conta de motorista." } });
       }

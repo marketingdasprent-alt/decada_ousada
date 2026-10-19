@@ -93,7 +93,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
           b.status !== "cancelled" && <p className="text-body text-copy-secondary">Para alterar ou cancelar esta reserva, contacte a nossa equipa.</p>
         )}
         <p className="flex items-center gap-2 text-body-small font-medium text-copy-secondary">
-          <Phone className="size-4" aria-hidden /> <ContactValue kind="phone" value={contact.phone} className="hover:text-copy" />
+          <Phone className="size-4" aria-hidden /> <ContactValue kind="phone" value={contact.phone} className="inline-flex items-center hover:text-copy max-md:min-h-(--layout-tap)" />
         </p>
       </div>
     </div>
