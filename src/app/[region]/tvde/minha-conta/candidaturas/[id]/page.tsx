@@ -74,7 +74,7 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
       {app.status === "approved" && (
         <Card className="border-positive/40 p-6">
           <p className="display text-h2 text-positive">Candidatura aprovada</p>
-          <p className="mt-2 text-copy-secondary">Levantamento: <strong>{formatDateTime(app.pickupAt)}</strong>, {app.pickupLocation.name}</p>
+          {app.vehicleId && app.pickupAt && <p className="mt-2 text-copy-secondary">Levantamento: <strong>{formatDateTime(app.pickupAt)}</strong>, {app.pickupLocation.name}</p>}
           {app.contract?.available && (
             <p className="mt-4 flex items-center gap-2 text-body-small"><FileCheck2 className="size-4 text-positive" aria-hidden /> Contrato {app.contract.id} disponível: apresentado no levantamento.</p>
           )}
