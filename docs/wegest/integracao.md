@@ -43,10 +43,32 @@ pagamentos reais, base de dados e CAPTCHA (`WEGEST_PEDIDOS_ONLINE`).
 | `quote` | `POST /cotacoes` | A API não dá id à cotação |
 | `createBooking` | `POST /reservas` | Cliente e carta no corpo; `total_esperado` protege o preço; `referencia_externa` = chave de idempotência |
 | `getBooking` / `cancelBooking` | `GET` / `DELETE /reservas/{codigo}` | Cancelar só enquanto pendente |
-| `createApplication` | `POST /tvde/candidaturas` | Todos os dados num pedido; sem documentos nem pagamento |
+| `createApplication` | `POST /tvde/candidaturas` | Todos os dados num pedido; sem documentos nem pagamento; token da conta em `X-Conta-Token` |
 | `getApplication` | `GET /tvde/candidaturas/{id}` | Só estado e datas |
 | `getApplicationForm` | (local) | Ficha com os campos que a API pede |
-| clientes, listas por cliente, faturas, pré-visualização de cancelamento, documentos TVDE | (sem endpoint) | Ver `analise-gaps.md` |
+| clientes, listas por cliente, faturas | `/conta` (por ligar) | Ver "Contas no WeGest (16/10/2026)" abaixo |
+| pré-visualização de cancelamento, documentos TVDE | (sem endpoint) | Ver `analise-gaps.md` |
+
+## Contas no WeGest (16/10/2026)
+
+O registo de alterações do WeGest de 16/10/2026 acrescenta a conta de cliente.
+O `openapi.json` deste repositório (v1.0.0) ainda não tem estas rotas.
+
+- Conta de cliente: `signUp` no Supabase Auth do WeGest com
+  `tipo_utilizador: "cliente"`, o mesmo mecanismo e os mesmos campos da conta de
+  motorista (decisão do cliente).
+- Rotas novas, todas com o cabeçalho `X-Conta-Token` (o `access_token` da pessoa):
+  `GET /conta`, `GET /conta/reservas`, `DELETE /conta/reservas/{codigo}`,
+  `GET /conta/faturas` e `GET /conta/faturas/{id}` (o PDF).
+- `POST /reservas` aceita o mesmo cabeçalho e põe a reserva na ficha da conta.
+- `POST /tvde/candidaturas` passa a usar `X-Conta-Token` (feito no site);
+  `X-Motorista-Token` continua aceite.
+- A chave `WEGEST_API_KEY` precisa das permissões novas `conta:read` e `conta:write`.
+
+Por ligar no site, à espera do formato das respostas (`openapi.json` atualizado):
+conta de cliente do Rent a Car no WeGest, reserva ligada à conta, e a área do
+cliente com `GET /conta`, reservas e faturas. Por confirmar com o WeGest: se
+`GET /conta` devolve a ficha e as candidaturas de um motorista.
 
 ## Antes de ligar `WEGEST_PEDIDOS_ONLINE=on`
 

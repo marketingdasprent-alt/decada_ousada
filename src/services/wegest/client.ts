@@ -24,7 +24,7 @@ interface RequestOptions {
   /** FormData para upload de documentos. */
   form?: FormData;
   idempotencyKey?: string;
-  /** Cabeçalhos extra do pedido (ex.: X-Motorista-Token). Nunca são escritos em logs. */
+  /** Cabeçalhos extra do pedido (ex.: X-Conta-Token). Nunca são escritos em logs. */
   headers?: Record<string, string>;
   /** Força retry mesmo em POST (só quando o endpoint é idempotente com Idempotency-Key). */
   retry?: boolean;

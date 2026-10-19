@@ -7,6 +7,14 @@ Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
 ### Changed
 
+- The account token goes to `POST /tvde/candidaturas` as `X-Conta-Token`, the
+  header name in the WeGest changelog of 16/10/2026 (`X-Motorista-Token` is
+  still accepted). `docs/wegest/integracao.md` lists the new `/conta` routes,
+  still to be wired once their response format is published.
+- Driver area: an application sent without a vehicle no longer breaks
+  /tvde/minha-conta ("Algo correu mal"). The card shows "Candidatura TVDE"
+  and its number, without pickup or price.
+
 - The TVDE driver registration form (/tvde/candidatura) checks the rules in
   the WeGest document "Cadastro de motorista TVDE no WeGest" (16/10/2026)
   before sending POST /tvde/candidaturas: phone in international format, a

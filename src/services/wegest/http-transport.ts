@@ -523,8 +523,9 @@ export const httpTransport: WeGestTransport = {
     const res = await wegestRequest<ApiCandidatura>("/tvde/candidaturas", {
       method: "POST",
       retry: true,
-      // Liga a candidatura à conta WeGest do motorista (resposta com com_conta: true)
-      headers: input.driverToken ? { "X-Motorista-Token": input.driverToken } : undefined,
+      // Liga a candidatura à conta WeGest do motorista (resposta com com_conta: true).
+      // X-Conta-Token desde 16/10/2026; o nome antigo X-Motorista-Token continua aceite.
+      headers: input.driverToken ? { "X-Conta-Token": input.driverToken } : undefined,
       body: {
         referencia_externa: `site-cand-${crypto.randomUUID()}`,
         nome: f.full_name ?? c.name,

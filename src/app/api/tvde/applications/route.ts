@@ -33,7 +33,7 @@ const schema = z
  * O motorista é criado/atualizado no WeGest; a candidatura fica a aguardar documentos e pagamento.
  *
  * Com contas de motorista (WeGest): o browser envia o token da conta (Authorization: Bearer),
- * que segue para o WeGest em X-Motorista-Token e liga a candidatura à conta. O token não é
+ * que segue para o WeGest em X-Conta-Token e liga a candidatura à conta. O token não é
  * guardado nem escrito em logs. O email da candidatura é sempre o da conta.
  */
 export async function POST(req: Request) {

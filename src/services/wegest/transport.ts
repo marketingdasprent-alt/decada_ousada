@@ -99,7 +99,7 @@ export interface WeGestTransport {
     pickupDatetime?: string;
     pickupLocationId?: string;
     formData: Record<string, string>;
-    /** access_token da conta de motorista (X-Motorista-Token). Só passa por este pedido. */
+    /** access_token da conta de motorista (X-Conta-Token). Só passa por este pedido. */
     driverToken?: string;
   }): Promise<WgApplication>;
   getApplication(applicationId: string): Promise<WgApplication | null>;
