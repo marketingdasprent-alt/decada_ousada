@@ -1,0 +1,1201 @@
+From 1474607cd4d944ce0e0f411f2251426b2a1d74de Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 16 Oct 2026 15:12:20 +0000
+Subject: [PATCH 1/2] Login de motorista: depois de entrar, segue para as
+ viaturas TVDE
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Sem destino pedido (next), quem entra com a conta de motorista vai para
+/tvde/viaturas em vez da página da conta. Vale para o login, a confirmação
+do email e a nova password. A página da conta, com "Terminar sessão",
+continua em "A minha conta"; uma conta nova continua a ir para o cadastro.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01PgW5WXBDPKB9ZCUGfKLpEY
+---
+ src/components/account/driver-auth-forms.tsx | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/components/account/driver-auth-forms.tsx b/src/components/account/driver-auth-forms.tsx
+index 5ae8343..e281d3c 100644
+--- a/src/components/account/driver-auth-forms.tsx
++++ b/src/components/account/driver-auth-forms.tsx
+@@ -21,13 +21,15 @@ import { PasswordInput } from "./auth-forms";
+  */
+ 
+ const ACCOUNT_HOME = "/entrar?tipo=motorista";
++/** Depois de entrar sem destino pedido: a lista de viaturas TVDE (a conta fica em "A minha conta"). */
++const DRIVER_HOME = "/tvde/viaturas";
+ const withNext = (path: string, next?: string) => (next ? `${path}${path.includes("?") ? "&" : "?"}next=${encodeURIComponent(next)}` : path);
+ const link = "font-medium text-brand underline-offset-4 hover:underline max-md:tap-target";
+ 
+-/** Depois de entrar no WeGest: abre a sessão do site e segue (recarrega, para o servidor ver a sessão). */
++/** Depois de entrar no WeGest: abre a sessão do site e segue para `next` ou para as viaturas (recarrega, para o servidor ver a sessão). */
+ async function enterSite(next?: string | null): Promise<string | null> {
+   if (!(await startSiteSession())) return "Não foi possível iniciar a sessão. Tente de novo.";
+-  window.location.assign(next ?? ACCOUNT_HOME);
++  window.location.assign(next ?? DRIVER_HOME);
+   return null;
+ }
+ 
+-- 
+2.43.0
+
+
+From d6343025ce61952caba8aaf2e46036c99e497269 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 16 Oct 2026 15:12:31 +0000
+Subject: [PATCH 2/2] =?UTF-8?q?Pedidos=20online=20sem=20cobran=C3=A7a,=20C?=
+ =?UTF-8?q?APTCHA=20e=20ficha=20pessoal=20nos=20dados=20pessoais?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Sem fornecedor de pagamento real, o site não cobra (onlinePaymentsEnabled):
+o Rent a Car pede a reserva sem pagamento ("Confirmar", "Pedir reserva") e
+o TVDE não tem passo do sinal. A candidatura com viatura segue direto para
+a confirmação; confirmação e detalhe mostram viatura e local do catálogo e
+escondem preços e pagamentos que a API não devolve. A confirmação lê o
+estado ao WeGest quando o site já não liga a candidatura à conta. Uma
+candidatura por conta (409) com "Contactar a equipa". Turnstile no fim do
+cadastro, verificado na API (ativo com as chaves TURNSTILE_*). Nenhuma
+página promete email. "Dados pessoais" sem ficha mostra só "Preencher
+ficha pessoal", que abre o cadastro.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01PgW5WXBDPKB9ZCUGfKLpEY
+---
+ CHANGELOG.md                                  | 30 +++++++++++
+ DECISIONS.md                                  | 30 +++++++++++
+ docs/wegest/integracao.md                     | 13 +++--
+ src/app/[region]/minha-conta/perfil/page.tsx  | 15 ++++--
+ .../minha-conta/reservas/[id]/page.tsx        |  2 +-
+ .../[region]/rent-a-car/confirmacao/page.tsx  |  4 +-
+ src/app/[region]/rent-a-car/reserva/page.tsx  |  2 +
+ .../tvde/candidatura/confirmacao/page.tsx     | 29 +++++++----
+ src/app/[region]/tvde/candidatura/page.tsx    | 14 +++++-
+ .../minha-conta/candidaturas/[id]/page.tsx    | 34 +++++++++----
+ .../[region]/tvde/minha-conta/perfil/page.tsx | 10 +++-
+ src/app/[region]/tvde/viatura/[slug]/page.tsx |  9 ++--
+ src/app/api/rentacar/bookings/route.ts        | 46 +++++++++--------
+ src/app/api/tvde/applications/route.ts        | 13 +++++
+ src/components/booking/booking-wizard.tsx     | 45 +++++++++++------
+ src/components/shared/turnstile.tsx           | 50 +++++++++++++++++++
+ src/components/tvde/application-status.tsx    | 12 +++--
+ src/components/tvde/application-steps.tsx     | 45 +++++++++++++++--
+ src/components/tvde/tvde-summary.tsx          |  7 ++-
+ src/components/vehicles/vehicle-card.tsx      |  2 +-
+ src/domain/shared/index.ts                    |  2 +-
+ src/lib/validation.ts                         |  3 +-
+ src/services/payments/index.ts                | 12 +++++
+ src/services/tvde.ts                          | 19 +++++++
+ src/services/wegest/index.ts                  |  2 +-
+ src/services/wegest/transport.ts              |  3 +-
+ 26 files changed, 366 insertions(+), 87 deletions(-)
+ create mode 100644 src/components/shared/turnstile.tsx
+
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 7ebd1a2..53cad41 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -40,6 +40,36 @@ Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
+ - Licence categories: the 13 buttons are replaced by one required box,
+   "Tenho carta de condução de categoria B." For TVDE only B matters, and the
+   API (which needs a list that includes B) gets `categorias: ["B"]`.
++- "Dados pessoais" (/minha-conta/perfil and /tvde/minha-conta/perfil) without a
++  record now offers only "Preencher ficha pessoal", which opens the registration
++  form (/tvde/candidatura) without a vehicle. On /minha-conta/perfil, with no
++  Rent a Car record, the record filled in that form is shown. Choosing a
++  vehicle without a record still asks for the form, as before.
++- Signing in with a driver account and no other destination now goes straight
++  to /tvde/viaturas. The driver account page stays under "A minha conta" (with
++  "Terminar sessão"); a new account still goes to the registration form.
++- Online requests with the real API (`WEGEST_PEDIDOS_ONLINE=on`), checked
++  against a local fake of the WeGest API:
++  - No online charging for now (`onlinePaymentsEnabled`: only in demo mode or
++    with a real `PAYMENT_PROVIDER`). Rent a Car: the last step is "Confirmar",
++    with "Pedir reserva"; the booking goes to WeGest as pending, with no
++    payment. TVDE: "Sinal" without "(pago agora)", and nothing says it is paid
++    at the end.
++  - TVDE with a vehicle: after sending, straight to the confirmation (the API
++    takes no documents and there is no deposit to pay); steps Levantamento,
++    Cadastro, Enviado. The confirmation and the application page take the
++    vehicle and location names from the catalogue, and hide price, deposit and
++    payment rows the API does not return. The timeline never marks a payment
++    that did not happen.
++  - The confirmation reads the status from WeGest when the site no longer
++    links the application to the account (no database yet).
++  - A second application on the same account (WeGest 409): one application per
++    account, with "Contactar a equipa".
++  - Cloudflare Turnstile on the last part of the registration, checked by the
++    API route; active only with `TURNSTILE_SITE_KEY` and
++    `TURNSTILE_SECRET_KEY`.
++  - No page in the booking flows promises an email: the site does not send
++    emails yet.
+ - The registration form is split into three short parts (Sobre si,
+   Identificação e carta, IBAN e envio), each checked before "Continuar", with
+   "Voltar" to go back. ID type and licence categories are tap buttons (B
+diff --git a/DECISIONS.md b/DECISIONS.md
+index 4106cf9..9635b6c 100644
+--- a/DECISIONS.md
++++ b/DECISIONS.md
+@@ -1131,3 +1131,33 @@ Project rule (TVDE registration flow).
+ DATE:
+ 2026-10-16
+ ```
++
++---
++
++```
++DECISION:
++No online charging for now (team decision, 2026-10-16). With the real API,
++the site charges only when a real payment provider is configured
++(PAYMENT_PROVIDER other than "mock"); demo mode keeps the test provider.
++Without it, Rent a Car requests go to WeGest as pending bookings with no
++payment ("Confirmar" step, "Pedir reserva"), and TVDE has no deposit step:
++after the registration form, straight to the confirmation. One TVDE
++application per account (WeGest returns 409 on a second one); the site says
++so and points to the team.
++
++REASON:
++A payment provider is not chosen yet, and the only gateway in the code is
++the test one, which would show payments as made without charging anything.
++
++SCOPE:
++src/services/payments (onlinePaymentsEnabled), src/app/api/rentacar/bookings,
++src/app/api/tvde/applications, src/components/booking/booking-wizard.tsx,
++src/app/[region]/rent-a-car/reserva, src/app/[region]/tvde/**,
++src/components/tvde/*, src/components/vehicles/vehicle-card.tsx.
++
++LEVEL:
++Project rule (payments and online requests).
++
++DATE:
++2026-10-16
++```
+diff --git a/docs/wegest/integracao.md b/docs/wegest/integracao.md
+index a1ef12b..07e0c63 100644
+--- a/docs/wegest/integracao.md
++++ b/docs/wegest/integracao.md
+@@ -50,12 +50,17 @@ pagamentos reais, base de dados e CAPTCHA (`WEGEST_PEDIDOS_ONLINE`).
+ 
+ ## Antes de ligar `WEGEST_PEDIDOS_ONLINE=on`
+ 
++Estado a 16/10/2026: pontos 2 e 3 resolvidos no código; o 1 fica para a
++integração da base de dados com o WeGest.
++
+ 1. **Base de dados persistente** (`DATABASE_URL`). Hoje contas, pagamentos, fichas
+    de cliente e a lista de reservas de cada cliente vivem em memória: no Vercel
+-   perdem-se entre pedidos.
+-2. **Pagamentos reais** (`PAYMENT_PROVIDER`), ou a decisão de não cobrar online
+-   (gap 4 em `analise-gaps.md`).
+-3. **CAPTCHA** no formulário TVDE (exigido pela API: 50 candidaturas por dia por chave).
++   perdem-se entre pedidos. Até lá, a confirmação da candidatura lê o estado ao
++   WeGest, mas "As minhas reservas" e a área TVDE podem não mostrar o pedido.
++2. **Pagamentos:** decisão de 16/10/2026, sem cobrança online por enquanto. Sem um
++   `PAYMENT_PROVIDER` real, os pedidos seguem sem pagamento (`onlinePaymentsEnabled`).
++3. **CAPTCHA** no formulário TVDE (exigido pela API: 50 candidaturas por dia por chave):
++   Turnstile no fim do cadastro, ativo com `TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY`.
+ 4. **Fluxo TVDE ajustado à API:** a candidatura vai inteira num só pedido; os
+    documentos não vão pela API (a equipa pede-os depois); decidir se o sinal de 50 €
+    continua a ser pago online.
+diff --git a/src/app/[region]/minha-conta/perfil/page.tsx b/src/app/[region]/minha-conta/perfil/page.tsx
+index a13d436..04d812c 100644
+--- a/src/app/[region]/minha-conta/perfil/page.tsx
++++ b/src/app/[region]/minha-conta/perfil/page.tsx
+@@ -7,6 +7,7 @@ import { ButtonLink, Skeleton } from "@/components/shared/ui";
+ import { attempt } from "@/lib/attempt";
+ import { customerToForm } from "@/lib/customer-form";
+ import { requireCustomer } from "@/lib/guard";
++import { getCustomerId } from "@/services/auth";
+ import { getCustomer } from "@/services/wegest";
+ 
+ export const metadata: Metadata = { title: "Dados pessoais" };
+@@ -26,11 +27,19 @@ export default function ProfilePage() {
+ }
+ 
+ async function Profile() {
+-  const { customerId } = await requireCustomer("rentacar", "/minha-conta/perfil");
++  const { session, customerId: racId } = await requireCustomer("rentacar", "/minha-conta/perfil");
++  // Sem ficha Rent a Car, mostra a ficha preenchida no cadastro (ficha pessoal), se existir
++  const tvdeId = racId ? null : await getCustomerId(session, "tvde");
++  const customerId = racId ?? tvdeId;
+   if (!customerId) {
+-    return <EmptyState title="Ainda não tem ficha de cliente" description="A ficha é criada automaticamente na primeira reserva." action={<ButtonLink href="/rent-a-car" size="sm">Fazer uma reserva</ButtonLink>} />;
++    return (
++      <EmptyState
++        title="Ainda não tem ficha pessoal"
++        action={<ButtonLink href="/tvde/candidatura" size="sm">Preencher ficha pessoal</ButtonLink>}
++      />
++    );
+   }
+   const res = await attempt(() => getCustomer(customerId));
+   if (!res.ok || !res.data) return <ErrorState timeout={!res.ok && res.timeout} retryHref="/minha-conta/perfil" />;
+-  return <ProfileForm initial={customerToForm(res.data)} type="rentacar" />;
++  return <ProfileForm initial={customerToForm(res.data)} type={racId ? "rentacar" : "tvde"} />;
+ }
+diff --git a/src/app/[region]/minha-conta/reservas/[id]/page.tsx b/src/app/[region]/minha-conta/reservas/[id]/page.tsx
+index 1b4133d..f6c683b 100644
+--- a/src/app/[region]/minha-conta/reservas/[id]/page.tsx
++++ b/src/app/[region]/minha-conta/reservas/[id]/page.tsx
+@@ -48,7 +48,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
+         <ReservationStatus status={b.status} />
+       </div>
+       {b.status === "pending" && (
+-        <Notice title="A aguardar confirmação">A equipa DÉCADA OUSADA está a confirmar a disponibilidade da viatura. Recebe um email quando estiver confirmada.</Notice>
++        <Notice title="A aguardar confirmação">A equipa DÉCADA OUSADA está a confirmar a disponibilidade da viatura. O estado atualiza-se nesta página.</Notice>
+       )}
+ 
+       {pending && <PendingPayment payment={pending} />}
+diff --git a/src/app/[region]/rent-a-car/confirmacao/page.tsx b/src/app/[region]/rent-a-car/confirmacao/page.tsx
+index 4a34d7f..cdcb703 100644
+--- a/src/app/[region]/rent-a-car/confirmacao/page.tsx
++++ b/src/app/[region]/rent-a-car/confirmacao/page.tsx
+@@ -46,8 +46,8 @@ async function Confirmation({ searchParams }: { searchParams: Promise<Record<str
+           {confirmed
+             ? "Está tudo pronto. Até breve!"
+             : pending
+-              ? "Falta concluir o pagamento. Depois, a equipa DÉCADA OUSADA confirma a sua reserva e recebe um email."
+-              : "A equipa DÉCADA OUSADA vai confirmar a sua reserva. Recebe um email assim que estiver confirmada."}
++              ? "Falta concluir o pagamento. Depois, a equipa DÉCADA OUSADA confirma a sua reserva."
++              : "A equipa DÉCADA OUSADA vai confirmar a sua reserva. Pode acompanhar o estado em As minhas reservas."}
+         </p>
+       </div>
+       {pending && <PendingPayment payment={pending} className="px-6 pt-6" />}
+diff --git a/src/app/[region]/rent-a-car/reserva/page.tsx b/src/app/[region]/rent-a-car/reserva/page.tsx
+index c393083..ee188a4 100644
+--- a/src/app/[region]/rent-a-car/reserva/page.tsx
++++ b/src/app/[region]/rent-a-car/reserva/page.tsx
+@@ -12,6 +12,7 @@ import { regionFromParams } from "@/lib/region";
+ import { firstParam, parseCheckoutDraft, parseRentalSearch, rentalSearchQuery } from "@/lib/search";
+ import { getCustomerId, getSession } from "@/services/auth";
+ import { checkVehicleAvailability, getCustomer, getVehicleById, listCoverages, listExtras, listLocations, quoteRentACar } from "@/services/wegest";
++import { onlinePaymentsEnabled } from "@/services/payments";
+ 
+ export const metadata: Metadata = { title: "Reserva", robots: { index: false } };
+ 
+@@ -87,6 +88,7 @@ async function Checkout({ region, searchParams }: { region: Region; searchParams
+       backHref={backHref}
+       checkoutPath={`/rent-a-car/reserva?viatura=${vehicleId}&${query}`}
+       alternativesHref={`/rent-a-car/viaturas?${query}`}
++      payments={onlinePaymentsEnabled()}
+       customer={c ? customerToForm(c) : session ? { email: session.user.email, fullName: session.user.name } : null}
+     />
+   );
+diff --git a/src/app/[region]/tvde/candidatura/confirmacao/page.tsx b/src/app/[region]/tvde/candidatura/confirmacao/page.tsx
+index 6b15558..2ccdbad 100644
+--- a/src/app/[region]/tvde/candidatura/confirmacao/page.tsx
++++ b/src/app/[region]/tvde/candidatura/confirmacao/page.tsx
+@@ -12,25 +12,36 @@ import { formatMoney } from "@/domain/pricing";
+ import { formatDateTime } from "@/lib/dates";
+ import { getOwnApplication } from "@/lib/ownership";
+ import { firstParam } from "@/lib/search";
+-import { withPayment } from "@/services/tvde";
++import { withCatalogNames, withPayment } from "@/services/tvde";
++import { regionFromParams } from "@/lib/region";
++import { getSession } from "@/services/auth";
++import { getApplication } from "@/services/wegest";
++import { attempt } from "@/lib/attempt";
++import { onlinePaymentsEnabled } from "@/services/payments";
+ 
+ export const metadata: Metadata = { title: "Candidatura recebida", robots: { index: false } };
+ 
+-export default function TvdeConfirmacaoPage({ searchParams }: PageProps<"/[region]/tvde/candidatura/confirmacao">) {
++export default function TvdeConfirmacaoPage({ params, searchParams }: PageProps<"/[region]/tvde/candidatura/confirmacao">) {
+   return (
+     <Section><Container variant="narrow">
+       <Suspense fallback={<Skeleton className="h-120" />}>
+-        <Confirmation searchParams={searchParams} />
++        <Confirmation params={params} searchParams={searchParams} />
+       </Suspense>
+     </Container></Section>
+   );
+ }
+ 
+-async function Confirmation({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
++async function Confirmation({ params, searchParams }: { params: Promise<{ region: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
++  const region = await regionFromParams(params);
+   const id = firstParam((await searchParams).id);
+   const own = id ? await getOwnApplication(id) : null;
+-  if (!own) return <EmptyState title="Candidatura não encontrada" action={<ButtonLink href="/tvde/minha-conta">Área TVDE</ButtonLink>} />;
+-  const app = await withPayment(own.application);
++  // Sem base de dados, o site pode já não saber que a candidatura é desta conta (outra
++  // instância). O WeGest devolve só o estado e as datas, sem dados pessoais: chega para
++  // confirmar o envio. A área do motorista continua a exigir a ligação à conta.
++  const fallback = !own && id && (await getSession()) ? await attempt(() => getApplication(id)) : null;
++  const found = own?.application ?? (fallback?.ok ? fallback.data : null);
++  if (!found) return <EmptyState title="Candidatura não encontrada" action={<ButtonLink href="/tvde/minha-conta">Área TVDE</ButtonLink>} />;
++  const app = await withCatalogNames(await withPayment(found), region);
+   // Só o cadastro (sem viatura escolhida): sem levantamento nem pagamento
+   const withVehicle = Boolean(app.vehicleId);
+ 
+@@ -42,12 +53,12 @@ async function Confirmation({ searchParams }: { searchParams: Promise<Record<str
+         <h1 className="display mt-4 text-h1">Candidatura recebida</h1>
+         <p className="mt-2 text-on-dark/70">
+           {withVehicle
+-            ? "Estamos a analisar os seus dados e documentação. Recebe um email com a decisão."
++            ? "Estamos a analisar a sua candidatura. Pode acompanhar o estado na sua área de motorista."
+             : "Recebemos a sua candidatura. A equipa pede-lhe depois os documentos, que também pode carregar no portal do motorista."}
+         </p>
+       </div>
+       <div className="border-b border-line p-6">
+-        <ApplicationTimeline status={app.status} paymentStatus={app.payment?.status} withVehicle={withVehicle} />
++        <ApplicationTimeline status={app.status} paymentStatus={app.payment?.status} withVehicle={withVehicle} showPayment={!!app.payment || onlinePaymentsEnabled()} />
+       </div>
+       <dl className="divide-y divide-line text-body-small">
+         {[
+@@ -59,7 +70,7 @@ async function Confirmation({ searchParams }: { searchParams: Promise<Record<str
+                 ["Local", app.pickupLocation.name],
+               ]
+             : []),
+-        ].map(([k, v]) => (
++        ].filter(([, v]) => v).map(([k, v]) => (
+           <div key={k} className="grid grid-label-value gap-4 px-6 py-3.5">
+             <dt className="text-copy-muted">{k}</dt>
+             <dd className="font-medium">{v}</dd>
+diff --git a/src/app/[region]/tvde/candidatura/page.tsx b/src/app/[region]/tvde/candidatura/page.tsx
+index fd89e7a..ad22024 100644
+--- a/src/app/[region]/tvde/candidatura/page.tsx
++++ b/src/app/[region]/tvde/candidatura/page.tsx
+@@ -17,6 +17,7 @@ import { regionFromParams } from "@/lib/region";
+ import { firstParam } from "@/lib/search";
+ import { getCustomerId, isDriverSession } from "@/services/auth";
+ import { checkVehicleAvailability, getApplicationForm, getCustomer, getVehicleById, listLocations } from "@/services/wegest";
++import { onlinePaymentsEnabled } from "@/services/payments";
+ 
+ export const metadata: Metadata = { title: "Candidatura TVDE", robots: { index: false } };
+ 
+@@ -61,10 +62,16 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
+   }
+ 
+   const initial = await prefill(session, driverAccount);
++  // Depois do envio: só os passos que existem (a API real não recebe documentos e, sem
++  // cobrança online, não há sinal a pagar no site)
++  const payments = onlinePaymentsEnabled();
++  const after = form.data.documents.length > 0 ? "documents" : payments ? "payment" : "confirmation";
+ 
+   return (
+     <ApplicationLayout
+       step={1}
++      // Só os passos que existem: com a API real não há documentos nem sinal no site
++      steps={after === "confirmation" ? ["Levantamento", "Cadastro", "Enviado"] : undefined}
+       title="Cadastro de motorista"
+       description="Os dados são enviados para a sua ficha no nosso sistema de gestão."
+       asideLabel={tvdeSummaryLabel({ vehicleName: vehicle.name, weeklyPrice: offer.pricing.amount, deposit: offer.deposit, reservationAmount: offer.pricing.reservationAmount })}
+@@ -76,12 +83,13 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
+           reservationAmount={offer.pricing.reservationAmount}
+           pickupAt={pickupAt!}
+           locationName={locations.find((l) => l.id === locationId)?.name}
++          payments={payments}
+         />
+       }
+     >
+       <ApplicationChecklist
+         form={form.data}
+-        reservationAmount={offer.pricing.reservationAmount ?? offer.deposit}
++        reservationAmount={payments ? (offer.pricing.reservationAmount ?? offer.deposit) : undefined}
+         filled={form.data.fields.filter((f) => initial[f.field]).length}
+         className="mb-6"
+       />
+@@ -91,6 +99,8 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
+         vehicleId={vehicleId!}
+         pickupAt={pickupAt!}
+         pickupLocationId={locationId!}
++        after={after}
++        captchaSiteKey={process.env.TURNSTILE_SITE_KEY || undefined}
+         driverAccount={driverAccount}
+         loginHref={`/entrar?next=${encodeURIComponent(here)}`}
+       />
+@@ -135,7 +145,7 @@ async function SignupOnly({ region, session, driverAccount, loginHref }: { regio
+       title="Cadastro de motorista"
+       description="Os dados são enviados para a sua ficha no nosso sistema de gestão."
+     >
+-      <RegistrationStep fields={form.data.fields} initial={initial} driverAccount={driverAccount} loginHref={loginHref} />
++      <RegistrationStep fields={form.data.fields} initial={initial} driverAccount={driverAccount} loginHref={loginHref} captchaSiteKey={process.env.TURNSTILE_SITE_KEY || undefined} />
+     </ApplicationLayout>
+   );
+ }
+diff --git a/src/app/[region]/tvde/minha-conta/candidaturas/[id]/page.tsx b/src/app/[region]/tvde/minha-conta/candidaturas/[id]/page.tsx
+index 45e3872..057bd96 100644
+--- a/src/app/[region]/tvde/minha-conta/candidaturas/[id]/page.tsx
++++ b/src/app/[region]/tvde/minha-conta/candidaturas/[id]/page.tsx
+@@ -15,8 +15,10 @@ import { REFUND_STATUS_LABEL } from "@/domain/refund";
+ import { formatDateTime } from "@/lib/dates";
+ import { requireSession } from "@/lib/guard";
+ import { getOwnApplication } from "@/lib/ownership";
+-import { reconcileApplication } from "@/services/tvde";
++import { reconcileApplication, withCatalogNames } from "@/services/tvde";
++import { DRIVER_AREA_URL } from "@/domain/drivers";
+ import { getApplicationForm } from "@/services/wegest";
++import { onlinePaymentsEnabled } from "@/services/payments";
+ 
+ export const metadata: Metadata = { title: "Candidatura" };
+ 
+@@ -34,7 +36,8 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
+   const own = await getOwnApplication(id);
+   if (!own) notFound();
+   // Estado do WeGest + pagamento/reembolso do fornecedor (independentes, doc §66)
+-  const app = await reconcileApplication(own.application, own.session.user.email);
++  const app = await withCatalogNames(await reconcileApplication(own.application, own.session.user.email), region === "azores" ? "azores" : "mainland");
++  const payments = onlinePaymentsEnabled();
+   const form = await getApplicationForm(region === "azores" ? "azores" : "mainland");
+   const requestedTypes = app.requestedDocuments?.map((r) => r.type) ?? [];
+ 
+@@ -51,10 +54,10 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
+       {(app.status === "approved" || app.status === "rejected") && (
+         <TrackEvent name={app.status === "approved" ? "tvde_application_approved" : "tvde_application_rejected"} data={{ applicationId: app.id }} once={`decision:${app.id}`} />
+       )}
+-      <Card className="p-6"><ApplicationTimeline status={app.status} paymentStatus={app.payment?.status} /></Card>
++      <Card className="p-6"><ApplicationTimeline status={app.status} paymentStatus={app.payment?.status} withVehicle={!!app.vehicleId} showPayment={!!app.payment || onlinePaymentsEnabled()} /></Card>
+ 
+       {(app.status === "submitted" || app.status === "under_review") && (
+-        <Notice title="Candidatura em análise">Estamos a analisar os seus dados e documentação. Recebe um email quando houver uma decisão.</Notice>
++        <Notice title="Candidatura em análise">Estamos a analisar a sua candidatura. O estado atualiza-se nesta página.</Notice>
+       )}
+ 
+       {app.status === "additional_documents_required" && (
+@@ -94,19 +97,29 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
+ 
+       <Card>
+         <dl className="divide-y divide-line text-body-small">
+-          {[
++          {/* Só o que se sabe: a API real não devolve preço nem caução da candidatura */}
++          {([
+             ["Viatura", app.vehicleName],
+-            ["Levantamento pretendido", formatDateTime(app.pickupAt)],
++            ["Levantamento pretendido", app.vehicleId && app.pickupAt ? formatDateTime(app.pickupAt) : ""],
+             ["Local", app.pickupLocation.name],
+-            ["Preço semanal", `${formatMoney(app.weeklyPrice)}/semana`],
+-            ["Caução", formatMoney(app.deposit)],
+-            ["Pagamento", app.payment ? `${formatMoney(app.payment.amount)}, ${PAYMENT_STATUS_LABEL[app.payment.status]}` : "Sem pagamento"],
+-          ].map(([k, v]) => (
++            ["Preço semanal", app.weeklyPrice > 0 ? `${formatMoney(app.weeklyPrice)}/semana` : ""],
++            ["Caução", app.deposit > 0 ? formatMoney(app.deposit) : ""],
++            ["Pagamento", app.payment ? `${formatMoney(app.payment.amount)}, ${PAYMENT_STATUS_LABEL[app.payment.status]}` : payments && app.vehicleId ? "Sem pagamento" : ""],
++          ] as Array<[string, string]>).filter(([, v]) => v).map(([k, v]) => (
+             <div key={k} className="grid gap-1 px-5 py-3.5 sm:grid-label-value"><dt className="text-copy-muted">{k}</dt><dd>{v}</dd></div>
+           ))}
+         </dl>
+       </Card>
+ 
++      {form.documents.length === 0 && app.documents.length === 0 ? (
++        <Card className="p-5">
++          <h3 className="font-semibold">Documentos</h3>
++          <p className="mt-2 text-body-small text-copy-secondary">
++            A equipa pede-lhe os documentos. Também os pode carregar no{" "}
++            <a href={DRIVER_AREA_URL} className="font-medium text-brand underline-offset-4 hover:underline">portal do motorista</a>.
++          </p>
++        </Card>
++      ) : (
+       <Card className="p-5">
+         <h3 className="font-semibold">Documentos enviados</h3>
+         <ul className="mt-3 space-y-2 text-body-small">
+@@ -118,6 +131,7 @@ async function Detail({ params }: { params: Promise<{ id: string; region: string
+           )) : <li className="text-copy-muted">Nenhum documento.</li>}
+         </ul>
+       </Card>
++      )}
+     </div>
+   );
+ }
+diff --git a/src/app/[region]/tvde/minha-conta/perfil/page.tsx b/src/app/[region]/tvde/minha-conta/perfil/page.tsx
+index 129236c..228d053 100644
+--- a/src/app/[region]/tvde/minha-conta/perfil/page.tsx
++++ b/src/app/[region]/tvde/minha-conta/perfil/page.tsx
+@@ -27,7 +27,15 @@ export default function TvdeProfilePage() {
+ 
+ async function Profile() {
+   const { customerId } = await requireCustomer("tvde", "/tvde/minha-conta/perfil");
+-  if (!customerId) return <EmptyState title="Ainda não tem ficha de motorista" description="É criada quando submete a primeira candidatura." action={<ButtonLink href="/tvde/viaturas" size="sm">Ver viaturas</ButtonLink>} />;
++  if (!customerId) {
++    return (
++      <EmptyState
++        title="Ainda não tem ficha pessoal"
++        description="Pode preenchê-la já, sem escolher viatura."
++        action={<ButtonLink href="/tvde/candidatura" size="sm">Preencher ficha pessoal</ButtonLink>}
++      />
++    );
++  }
+   const res = await attempt(() => getCustomer(customerId));
+   if (!res.ok || !res.data) return <ErrorState timeout={!res.ok && res.timeout} retryHref="/tvde/minha-conta/perfil" />;
+   return <ProfileForm initial={customerToForm(res.data)} type="tvde" />;
+diff --git a/src/app/[region]/tvde/viatura/[slug]/page.tsx b/src/app/[region]/tvde/viatura/[slug]/page.tsx
+index 474fb43..865b457 100644
+--- a/src/app/[region]/tvde/viatura/[slug]/page.tsx
++++ b/src/app/[region]/tvde/viatura/[slug]/page.tsx
+@@ -17,6 +17,7 @@ import { attempt } from "@/lib/attempt";
+ import { firstParam } from "@/lib/search";
+ import { getApplicationForm, getVehicleBySlug, listLocations, listVehicles, onlineRequestsEnabled } from "@/services/wegest";
+ import { atLeastOne } from "@/lib/static-params";
++import { onlinePaymentsEnabled } from "@/services/payments";
+ 
+ export async function generateStaticParams({ params }: { params: { region: string } }) {
+   const regions = isRegion(params?.region) ? [params.region] : REGIONS;
+@@ -58,6 +59,8 @@ async function TvdeVehicle({ params, searchParams }: { params: Promise<{ region:
+   const [allLocations, form] = await Promise.all([listLocations(region, "tvde"), attempt(() => getApplicationForm(region))]);
+   const locations = allLocations.filter((l) => !vehicle.locations || vehicle.locations.some((vl) => vl.id === l.id));
+   const reservation = offer.pricing.reservationAmount ?? offer.deposit ?? 0;
++  // Sem cobrança online, nada diz que o sinal se paga agora (decisão de 2026-10-16)
++  const payments = onlinePaymentsEnabled();
+ 
+   return (
+     <>
+@@ -78,12 +81,12 @@ async function TvdeVehicle({ params, searchParams }: { params: Promise<{ region:
+               <p className="text-h1 font-bold tabular">{formatMoney(offer.pricing.amount)}<span className="text-body font-medium text-copy-muted">/semana</span></p>
+               <dl className="mt-5 grid grid-cols-2 gap-3 rounded-card bg-panel-alt p-4 text-body-small">
+                 {offer.deposit !== undefined && <div><dt className="text-copy-muted">Caução</dt><dd className="font-bold tabular">{formatMoney(offer.deposit)}</dd></div>}
+-                {reservation > 0 && <div><dt className="text-copy-muted">Sinal (pago agora)</dt><dd className="font-bold tabular">{formatMoney(reservation)}</dd></div>}
++                {reservation > 0 && <div><dt className="text-copy-muted">{payments ? "Sinal (pago agora)" : "Sinal"}</dt><dd className="font-bold tabular">{formatMoney(reservation)}</dd></div>}
+                 {offer.mileageLimit !== undefined && <div><dt className="text-copy-muted">Km incluídos</dt><dd className="font-bold tabular">{formatMileage(offer)}</dd></div>}
+                 {offer.extraKmPrice !== undefined && <div><dt className="text-copy-muted">Km adicional</dt><dd className="font-bold tabular">{formatMoney(offer.extraKmPrice, "EUR", { decimals: true })}</dd></div>}
+                 {offer.minimumPeriod !== undefined && <div><dt className="text-copy-muted">Período mínimo</dt><dd className="font-bold">{offer.minimumPeriod} semanas</dd></div>}
+               </dl>
+-              {offer.deposit !== undefined && reservation > 0 && reservation < offer.deposit && (
++              {payments && offer.deposit !== undefined && reservation > 0 && reservation < offer.deposit && (
+                 <p className="mt-3 text-caption text-copy-muted">O restante da caução ({formatMoney(offer.deposit - reservation)}) é pago no levantamento.</p>
+               )}
+               <hr className="my-6 border-line" />
+@@ -93,7 +96,7 @@ async function TvdeVehicle({ params, searchParams }: { params: Promise<{ region:
+                 </Suspense>
+               ) : <p className="text-body-small text-copy-secondary">Sem pontos de levantamento TVDE disponíveis.</p>}
+             </Card>
+-            {form.ok && <ApplicationChecklist form={form.data} reservationAmount={reservation || undefined} />}
++            {form.ok && <ApplicationChecklist form={form.data} reservationAmount={payments ? reservation || undefined : undefined} />}
+             </div>
+           }
+         />
+diff --git a/src/app/api/rentacar/bookings/route.ts b/src/app/api/rentacar/bookings/route.ts
+index a5c7d28..b7bde97 100644
+--- a/src/app/api/rentacar/bookings/route.ts
++++ b/src/app/api/rentacar/bookings/route.ts
+@@ -3,13 +3,15 @@ import { regionFromRequest } from "@/lib/region";
+ import { bookingRequestSchema } from "@/lib/validation";
+ import { getCustomerId, getSession, linkCustomer, register } from "@/services/auth";
+ import { sendEmail } from "@/services/email";
+-import { createPayment, linkPayment, refundPayment } from "@/services/payments";
++import { createPayment, linkPayment, onlinePaymentsEnabled, refundPayment } from "@/services/payments";
+ import { checkVehicleAvailability, createBooking, onlineRequestsEnabled, quoteRentACar, upsertCustomer, WeGestError } from "@/services/wegest";
+ 
+ /**
+  * POST /api/rentacar/bookings: fluxo completo de reserva (doc §27):
+  * conta → cotação (preço protegido) → disponibilidade → cliente WeGest → pagamento → reserva WeGest.
+  * Se o WeGest recusar depois do pagamento, o pagamento é reembolsado automaticamente.
++ * Sem cobrança online (onlinePaymentsEnabled), o passo 5 não existe: a reserva entra no
++ * WeGest como pendente e a equipa confirma-a.
+  */
+ const ONLINE_OFF = "As reservas online ainda não estão disponíveis. Contacte-nos para reservar esta viatura.";
+ 
+@@ -56,19 +58,23 @@ export async function POST(req: Request) {
+     const customer = await upsertCustomer("rentacar", input.customer, existingId ?? undefined);
+     if (!existingId) await linkCustomer(session.user.id, { wegestCustomerId: customer.id, customerType: "rentacar", region });
+ 
+-    // 5. Pagamento
+-    const payment = await createPayment({
+-      amount: quote.total,
+-      currency: "EUR",
+-      purpose: "rentacar_booking",
+-      method: input.payment.method,
+-      reference: quote.id,
+-      customerEmail: input.customer.email,
+-      paymentToken: input.payment.token,
+-      phone: input.payment.phone,
+-      idempotencyKey: input.idempotencyKey,
+-    });
+-    if (payment.status === "failed") return fail("payment_failed", "O pagamento foi recusado. Verifique os dados ou use outro método.", 402);
++    // 5. Pagamento (só com cobrança online)
++    const charge = onlinePaymentsEnabled();
++    if (charge && !input.payment) return fail("validation", "Escolha o método de pagamento.", 422);
++    const payment = charge && input.payment
++      ? await createPayment({
++          amount: quote.total,
++          currency: "EUR",
++          purpose: "rentacar_booking",
++          method: input.payment.method,
++          reference: quote.id,
++          customerEmail: input.customer.email,
++          paymentToken: input.payment.token,
++          phone: input.payment.phone,
++          idempotencyKey: input.idempotencyKey,
++        })
++      : null;
++    if (payment?.status === "failed") return fail("payment_failed", "O pagamento foi recusado. Verifique os dados ou use outro método.", 402);
+ 
+     // 6. Reserva no WeGest
+     try {
+@@ -88,18 +94,18 @@ export async function POST(req: Request) {
+           licenseCountry: input.customer.licenseCountry,
+         },
+         message: input.message,
+-        paymentReference: payment.id,
++        paymentReference: payment?.id,
+         idempotencyKey: input.idempotencyKey,
+       });
+-      await linkPayment(payment.id, booking.id);
++      if (payment) await linkPayment(payment.id, booking.id);
+       await sendEmail(input.customer.email, "rac.booking_received", { reference: booking.reference });
+-      if (payment.status === "paid") await sendEmail(input.customer.email, "rac.payment_confirmed", { reference: booking.reference });
+-      return ok({ bookingId: booking.id, reference: booking.reference, status: booking.status, paymentStatus: payment.status });
++      if (payment?.status === "paid") await sendEmail(input.customer.email, "rac.payment_confirmed", { reference: booking.reference });
++      return ok({ bookingId: booking.id, reference: booking.reference, status: booking.status, paymentStatus: payment?.status ?? "none" });
+     } catch (err) {
+       // Nunca deixar um cliente pago sem reserva
+-      if (payment.status === "paid") await refundPayment(payment.id, undefined, "Reserva recusada pelo sistema de gestão");
++      if (payment?.status === "paid") await refundPayment(payment.id, undefined, "Reserva recusada pelo sistema de gestão");
+       if (err instanceof WeGestError && err.code === "conflict") {
+-        const money = payment.status === "paid" ? "O valor pago foi devolvido." : "Não foi cobrado nada.";
++        const money = payment?.status === "paid" ? "O valor pago foi devolvido." : "Não foi cobrado nada.";
+         return fail("conflict", `Esta viatura acabou de ser reservada por outra pessoa. ${money}`, 409, { reason: "vehicle_unavailable" });
+       }
+       throw err;
+diff --git a/src/app/api/tvde/applications/route.ts b/src/app/api/tvde/applications/route.ts
+index 72503a8..007e086 100644
+--- a/src/app/api/tvde/applications/route.ts
++++ b/src/app/api/tvde/applications/route.ts
+@@ -8,6 +8,7 @@ import { KNOWN_FIELD_MAP, validateDynamicForm } from "@/lib/dynamic-form";
+ import { regionFromRequest } from "@/lib/region";
+ import { driverAccountId, getCustomerId, getSession, isDriverSession, linkCustomer } from "@/services/auth";
+ import { bearerToken, DriverAuthUnavailable, verifyDriverToken } from "@/services/auth/driver";
++import { verifyCaptcha } from "@/services/captcha";
+ import { sendEmail } from "@/services/email";
+ import { checkVehicleAvailability, createApplication, getApplicationForm, getVehicleById, onlineRequestsEnabled, upsertCustomer } from "@/services/wegest";
+ import { WeGestError } from "@/services/wegest/types";
+@@ -20,6 +21,8 @@ const schema = z
+     pickupAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/).optional(),
+     pickupLocationId: z.string().min(1).optional(),
+     formData: z.record(z.string(), z.string().max(2000)),
++    /** Token do Turnstile (obrigatório com TURNSTILE_SECRET_KEY). */
++    captcha: z.string().max(4096).optional(),
+   })
+   // A viatura é opcional, mas vem completa (viatura, data e local) ou não vem
+   .refine((b) => [b.vehicleId, b.pickupAt, b.pickupLocationId].every(Boolean) || ![b.vehicleId, b.pickupAt, b.pickupLocationId].some(Boolean), { path: ["vehicleId"], message: "Viatura, data e local vêm juntos." });
+@@ -42,6 +45,12 @@ export async function POST(req: Request) {
+   }
+   const region = regionFromRequest(req);
+ 
++  // A API do WeGest exige CAPTCHA (50 candidaturas por dia por chave)
++  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
++  if (!(await verifyCaptcha(parsed.data.captcha ?? "", ip))) {
++    return fail("validation", "Confirme que não é um robô e tente novamente.", 422, { fieldErrors: { captcha: "Confirme que não é um robô." } });
++  }
++
+   try {
+     const session = await getSession();
+     if (!session) return fail("unauthorized", "Inicie sessão para se candidatar.", 401);
+@@ -95,6 +104,10 @@ export async function POST(req: Request) {
+     // Erros da conta de motorista no WeGest: sessão a renovar ou conta que não se pode candidatar
+     if (err instanceof WeGestError && err.apiCode === "SESSAO_INVALIDA") return fail("unauthorized", err.message, 401, { reason: "session_expired" });
+     if (err instanceof WeGestError && err.apiCode === "CONTA_INVALIDA") return fail("unauthorized", err.message, 403);
++    // Uma candidatura (e uma viatura) por conta. Mensagem genérica: não revela de quem é o NIF ou o email
++    if (err instanceof WeGestError && err.apiCode === "CANDIDATURA_EXISTENTE") {
++      return fail("conflict", "Já existe uma candidatura em curso com estes dados. Só é possível uma candidatura por conta: para mudar a viatura ou corrigir dados, contacte a equipa.", 409, { reason: "application_exists" });
++    }
+     return fromError(err);
+   }
+ }
+diff --git a/src/components/booking/booking-wizard.tsx b/src/components/booking/booking-wizard.tsx
+index 8c1cdc0..ad3dbbb 100644
+--- a/src/components/booking/booking-wizard.tsx
++++ b/src/components/booking/booking-wizard.tsx
+@@ -35,6 +35,8 @@ const ICONS: Record<NonNullable<Extra["icon"]>, typeof Baby> = {
+ };
+ 
+ const STEPS = ["Proteção e extras", "Dados", "Pagamento"];
++/** Sem cobrança online: o último passo confirma o pedido, sem pagamento. */
++const STEPS_NO_PAYMENT = ["Proteção e extras", "Dados", "Confirmar"];
+ 
+ const QTY_BUTTON = "flex size-11 items-center justify-center rounded-control border border-line disabled:cursor-not-allowed disabled:border-transparent disabled:bg-panel-sunken disabled:text-copy-muted";
+ 
+@@ -56,6 +58,7 @@ export function BookingWizard({
+   backHref,
+   checkoutPath,
+   alternativesHref,
++  payments = true,
+ }: {
+   vehicle: Vehicle;
+   offerId: string;
+@@ -75,6 +78,8 @@ export function BookingWizard({
+   checkoutPath: string;
+   /** Resultados para as mesmas datas, quando a viatura deixa de estar disponível. */
+   alternativesHref: string;
++  /** Cobrança online ligada (onlinePaymentsEnabled). Sem ela, o pedido segue sem pagamento. */
++  payments?: boolean;
+ }) {
+   const router = useRouter();
+   const [step, setStep] = useState(initialStep);
+@@ -182,10 +187,10 @@ export function BookingWizard({
+   }
+ 
+   async function submit() {
+-    if (!payment.valid || !acceptTerms) return;
++    if ((payments && !payment.valid) || !acceptTerms) return;
+     setSubmitting(true);
+     setSubmitError(null);
+-    track("rentacar_payment_started", { method: payment.method, total: quote.total });
++    if (payments) track("rentacar_payment_started", { method: payment.method, total: quote.total });
+     const res = await apiFetch<{ bookingId: string; paymentStatus: string }>("/api/rentacar/bookings", {
+       method: "POST",
+       timeoutMs: 45_000,
+@@ -200,13 +205,13 @@ export function BookingWizard({
+         account: loggedIn ? undefined : { password },
+         message: message || undefined,
+         acceptTerms,
+-        payment: { method: payment.method, token: payment.token, phone: payment.phone },
++        payment: payments ? { method: payment.method, token: payment.token, phone: payment.phone } : undefined,
+         idempotencyKey: idempotencyKey.current,
+       }),
+     });
+     if (res.ok) {
+       if (!loggedIn) track("rentacar_customer_created", { vehicleId: vehicle.id });
+-      track("rentacar_payment_completed", { method: payment.method, status: res.data.paymentStatus, total: quote.total });
++      if (payments) track("rentacar_payment_completed", { method: payment.method, status: res.data.paymentStatus, total: quote.total });
+       router.push(`/rent-a-car/confirmacao?reserva=${encodeURIComponent(res.data.bookingId)}`);
+       return;
+     }
+@@ -243,15 +248,15 @@ export function BookingWizard({
+   // Viatura indisponível ou sessão expirada: o pagamento não pode seguir daqui
+   const blocked = submitError?.reason === "vehicle_unavailable" || submitError?.reason === "session_expired";
+   const payButton = (
+-    <Button size="lg" className="w-full" onClick={submit} loading={submitting} disabled={!payment.valid || !acceptTerms || quoting}>
+-      {submitting ? "A processar…" : `Pagar ${formatMoney(quote.total, "EUR", { decimals: true })} e reservar`}
++    <Button size="lg" className="w-full" onClick={submit} loading={submitting} disabled={(payments && !payment.valid) || !acceptTerms || quoting}>
++      {submitting ? "A processar…" : payments ? `Pagar ${formatMoney(quote.total, "EUR", { decimals: true })} e reservar` : "Pedir reserva"}
+     </Button>
+   );
+   const mobileAction: ReactNode =
+     step === 0 ? (
+       <Button size="lg" className="w-full" onClick={() => go(1)} disabled={quoting}>Continuar</Button>
+     ) : step === 1 ? (
+-      <Button type="submit" form="dados-form" size="lg" className="w-full">Continuar para pagamento</Button>
++      <Button type="submit" form="dados-form" size="lg" className="w-full">{payments ? "Continuar para pagamento" : "Continuar"}</Button>
+     ) : blocked ? null : (
+       payButton
+     );
+@@ -262,7 +267,7 @@ export function BookingWizard({
+         <Link href={backHref} className="flex items-center gap-1.5 text-body-small font-medium text-copy-secondary hover:text-copy max-md:min-h-(--layout-tap)">
+           <ArrowLeft className="size-4" aria-hidden /> Voltar à viatura
+         </Link>
+-        <Stepper steps={STEPS} current={step} />
++        <Stepper steps={payments ? STEPS : STEPS_NO_PAYMENT} current={step} />
+       </div>
+ 
+       <div className="grid grid-cols-1 gap-8 lg:grid-main-aside">
+@@ -374,20 +379,28 @@ export function BookingWizard({
+               <ErrorSummary count={Object.keys(errors).length} className="mt-6" />
+               <div className="mt-6 flex justify-between gap-3">
+                 <Button type="button" variant="ghost" onClick={() => go(0)}>Voltar</Button>
+-                <Button type="submit" size="lg" className="max-lg:hidden">Continuar para pagamento</Button>
++                <Button type="submit" size="lg" className="max-lg:hidden">{payments ? "Continuar para pagamento" : "Continuar"}</Button>
+               </div>
+             </form>
+           )}
+ 
+           {step === 2 && (
+             <div>
+-              <h2 data-step-heading tabIndex={-1} className="text-h3 font-bold focus:outline-none">Pagamento</h2>
+-              <Card className="mt-6 p-5 sm:p-6">
+-                <PaymentForm onChange={setPayment} />
+-              </Card>
+-              <Notice className="mt-6" title="Como funciona a confirmação">
+-                A sua reserva entra no nosso sistema de gestão e é confirmada pela equipa DÉCADA OUSADA. Recebe um email em cada passo.
+-              </Notice>
++              <h2 data-step-heading tabIndex={-1} className="text-h3 font-bold focus:outline-none">{payments ? "Pagamento" : "Confirmar pedido"}</h2>
++              {payments ? (
++                <>
++                  <Card className="mt-6 p-5 sm:p-6">
++                    <PaymentForm onChange={setPayment} />
++                  </Card>
++                  <Notice className="mt-6" title="Como funciona a confirmação">
++                    A sua reserva entra no nosso sistema de gestão e é confirmada pela equipa DÉCADA OUSADA.
++                  </Notice>
++                </>
++              ) : (
++                <Notice className="mt-6" title="Sem pagamento online">
++                  O pedido entra no nosso sistema de gestão como reserva pendente e é confirmado pela equipa DÉCADA OUSADA. Não é cobrado nada agora.
++                </Notice>
++              )}
+               <Checkbox
+                 className="mt-6"
+                 checked={acceptTerms}
+diff --git a/src/components/shared/turnstile.tsx b/src/components/shared/turnstile.tsx
+new file mode 100644
+index 0000000..e89b41d
+--- /dev/null
++++ b/src/components/shared/turnstile.tsx
+@@ -0,0 +1,50 @@
++"use client";
++
++import Script from "next/script";
++import { useCallback, useEffect, useRef } from "react";
++
++type TurnstileApi = {
++  render: (el: HTMLElement, opts: Record<string, unknown>) => string;
++  remove: (id: string) => void;
++};
++const api = () => (window as unknown as { turnstile?: TurnstileApi }).turnstile;
++
++/**
++ * Verificação "não sou um robô" (Cloudflare Turnstile), a mesma do formulário de /motoristas.
++ * Só aparece com `siteKey` (TURNSTILE_SITE_KEY). Para pedir um token novo depois de um envio
++ * falhado, mudar a `key` do componente.
++ */
++export function TurnstileWidget({ siteKey, onToken, errorId }: { siteKey: string; onToken: (token: string) => void; errorId?: string }) {
++  const box = useRef<HTMLDivElement>(null);
++  const widget = useRef<string | null>(null);
++
++  const render = useCallback(() => {
++    const t = api();
++    if (!box.current || !t || widget.current) return;
++    widget.current = t.render(box.current, {
++      sitekey: siteKey,
++      language: "pt-PT",
++      theme: "light",
++      callback: (token: string) => onToken(token),
++      "expired-callback": () => onToken(""),
++      "error-callback": () => onToken(""),
++    });
++  }, [siteKey, onToken]);
++
++  // O script pode já estar carregado (navegação no site): desenha sem esperar pelo onReady
++  useEffect(() => {
++    render();
++    return () => {
++      const t = api();
++      if (widget.current && t) t.remove(widget.current);
++      widget.current = null;
++    };
++  }, [render]);
++
++  return (
++    <>
++      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onReady={render} />
++      <div ref={box} aria-describedby={errorId} />
++    </>
++  );
++}
+diff --git a/src/components/tvde/application-status.tsx b/src/components/tvde/application-status.tsx
+index ddd3bb3..5bfcc97 100644
+--- a/src/components/tvde/application-status.tsx
++++ b/src/components/tvde/application-status.tsx
+@@ -29,8 +29,12 @@ const CHARGED: PaymentStatus[] = ["paid", "refunded", "partially_refunded"];
+  * pagamento real quando existe. Em mobile é vertical, para os rótulos não se
+  * sobreporem; o estado de cada passo também está em texto.
+  */
+-/** `withVehicle`: sem viatura escolhida (só o cadastro) não há pagamento nem levantamento. */
+-export function ApplicationTimeline({ status, paymentStatus, withVehicle = true }: { status: Status; paymentStatus?: PaymentStatus; withVehicle?: boolean }) {
++/**
++ * `withVehicle`: sem viatura escolhida (só o cadastro) não há pagamento nem levantamento.
++ * `showPayment`: sem cobrança online e sem pagamento registado, o passo do pagamento não
++ * aparece (nunca se marca como feito um pagamento que não houve).
++ */
++export function ApplicationTimeline({ status, paymentStatus, withVehicle = true, showPayment = true }: { status: Status; paymentStatus?: PaymentStatus; withVehicle?: boolean; showPayment?: boolean }) {
+   const all: Array<{ key: string; label: string }> = [
+     { key: "registered", label: "Cadastro" },
+     { key: "paid", label: "Pagamento" },
+@@ -38,7 +42,7 @@ export function ApplicationTimeline({ status, paymentStatus, withVehicle = true
+     { key: "decision", label: status === "rejected" ? "Não aprovada" : "Aprovação" },
+     { key: "pickup", label: "Levantamento" },
+   ];
+-  const steps = withVehicle ? all : all.filter((s) => s.key !== "paid" && s.key !== "pickup");
++  const steps = all.filter((s) => (s.key !== "paid" || (withVehicle && showPayment)) && (s.key !== "pickup" || withVehicle));
+   const reached: Record<Status, number> = {
+     draft: 0,
+     payment_pending: 1,
+@@ -61,7 +65,7 @@ export function ApplicationTimeline({ status, paymentStatus, withVehicle = true
+   const currentIdx = status === "cancelled" || status === "rejected" ? -1 : steps.findIndex((_, i) => !doneAt(i));
+ 
+   return (
+-    <ol className={cn("flex flex-col gap-3 sm:grid sm:gap-2", withVehicle ? "sm:grid-cols-5" : "sm:grid-cols-3")}>
++    <ol className={cn("flex flex-col gap-3 sm:grid sm:gap-2", steps.length === 5 ? "sm:grid-cols-5" : steps.length === 4 ? "sm:grid-cols-4" : "sm:grid-cols-3")}>
+       {steps.map((s, i) => {
+         const failed = status === "rejected" && s.key === "decision";
+         const done = doneAt(i) && !failed;
+diff --git a/src/components/tvde/application-steps.tsx b/src/components/tvde/application-steps.tsx
+index bf69e0e..f2c5db4 100644
+--- a/src/components/tvde/application-steps.tsx
++++ b/src/components/tvde/application-steps.tsx
+@@ -2,7 +2,7 @@
+ 
+ import Link from "next/link";
+ import { useRouter } from "next/navigation";
+-import { useEffect, useRef, useState } from "react";
++import { useCallback, useEffect, useRef, useState } from "react";
+ 
+ import type { ApplicationDocument, DocumentRequirement, FormField } from "@/domain/application";
+ import { formatMoney } from "@/domain/pricing";
+@@ -12,7 +12,8 @@ import { cn } from "@/lib/cn";
+ import { apiFetch } from "@/lib/fetcher";
+ 
+ import { PaymentForm, type PaymentDraft } from "../payment/payment-form";
+-import { Checkbox, ErrorSummary } from "../shared/form";
++import { Checkbox, ErrorSummary, FieldError } from "../shared/form";
++import { TurnstileWidget } from "../shared/turnstile";
+ import { Notice } from "../shared/states";
+ import { Button, buttonClass, Card, disabledButtonClass } from "../shared/ui";
+ import { DocumentUploader } from "./document-uploader";
+@@ -61,6 +62,8 @@ export function RegistrationStep({
+   vehicleId,
+   pickupAt,
+   pickupLocationId,
++  after = "documents",
++  captchaSiteKey,
+   driverAccount = false,
+   loginHref,
+ }: {
+@@ -69,6 +72,10 @@ export function RegistrationStep({
+   vehicleId?: string;
+   pickupAt?: string;
+   pickupLocationId?: string;
++  /** Com viatura: o passo depois do envio (documentos, sinal ou já a confirmação). */
++  after?: "documents" | "payment" | "confirmation";
++  /** TURNSTILE_SITE_KEY: com ela, o envio pede a verificação "não sou um robô" (exigida pela API). */
++  captchaSiteKey?: string;
+   /** Contas de motorista (WeGest): envia o token da conta e fixa o email no da conta. */
+   driverAccount?: boolean;
+   loginHref?: string;
+@@ -82,6 +89,14 @@ export function RegistrationStep({
+   const [submitting, setSubmitting] = useState(false);
+   const [error, setError] = useState<string | null>(null);
+   const [sessionEnded, setSessionEnded] = useState(false);
++  const [errorReason, setErrorReason] = useState<string | undefined>();
++  const [captcha, setCaptcha] = useState("");
++  const [captchaKey, setCaptchaKey] = useState(0);
++  // Token novo: guarda-o e tira o erro da verificação
++  const onCaptcha = useCallback((token: string) => {
++    setCaptcha(token);
++    if (token) setErrors((prev) => (prev.captcha ? without(prev, "captcha") : prev));
++  }, []);
+   const [part, setPart] = useState(0);
+   const top = useRef<HTMLDivElement>(null);
+   const partHeading = useRef<HTMLHeadingElement>(null);
+@@ -132,6 +147,7 @@ export function RegistrationStep({
+       return goTo(part + 1);
+     }
+     const errs = validateDynamicForm(fields, values);
++    if (captchaSiteKey && !captcha) errs.captcha = "Confirme que não é um robô.";
+     setErrors(errs);
+     if (Object.keys(errs).length) {
+       // Um erro numa parte anterior (ex.: dados mudados ao voltar atrás) leva a essa parte
+@@ -142,7 +158,7 @@ export function RegistrationStep({
+     setSubmitting(true);
+     setError(null);
+     setSessionEnded(false);
+-    const body = JSON.stringify({ vehicleId, pickupAt, pickupLocationId, formData: values });
++    const body = JSON.stringify({ vehicleId, pickupAt, pickupLocationId, formData: values, captcha: captcha || undefined });
+     const send = (token?: string | null) =>
+       apiFetch<{ applicationId: string }>("/api/tvde/applications", { method: "POST", body, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+ 
+@@ -167,10 +183,17 @@ export function RegistrationStep({
+       dirty.current = false;
+       track("tvde_application_started", { vehicleId, applicationId: res.data.applicationId });
+       const id = encodeURIComponent(res.data.applicationId);
+-      router.push(vehicleId ? `/tvde/candidatura/documentos?id=${id}` : `/tvde/candidatura/confirmacao?id=${id}`);
++      const step = !vehicleId ? "confirmacao" : after === "documents" ? "documentos" : after === "payment" ? "pagamento" : "confirmacao";
++      router.push(`/tvde/candidatura/${step}?id=${id}`);
+       return;
+     }
+     setSubmitting(false);
++    setErrorReason(res.error.reason);
++    // Cada token serve uma vez: depois de um envio falhado, pede-se outro
++    if (captchaSiteKey) {
++      setCaptcha("");
++      setCaptchaKey((k) => k + 1);
++    }
+     if (res.error.fieldErrors) {
+       const fe = res.error.fieldErrors;
+       setErrors(fe);
+@@ -195,6 +218,12 @@ export function RegistrationStep({
+           locked={driverAccount ? { email: "O email da sua conta de motorista." } : undefined}
+         />
+       </Card>
++      {last && captchaSiteKey && (
++        <div className="mt-4">
++          <TurnstileWidget key={captchaKey} siteKey={captchaSiteKey} onToken={onCaptcha} errorId={errors.captcha ? "f-captcha-error" : undefined} />
++          <FieldError id="f-captcha-error">{errors.captcha}</FieldError>
++        </div>
++      )}
+       {error && (
+         <Notice tone="danger" className="mt-4">
+           {error}
+@@ -204,6 +233,12 @@ export function RegistrationStep({
+               <a href={loginHref} className="font-semibold underline">Entrar de novo</a>
+             </>
+           )}
++          {errorReason === "application_exists" && (
++            <>
++              {" "}
++              <Link href="/contactos" className="font-semibold underline">Contactar a equipa</Link>
++            </>
++          )}
+         </Notice>
+       )}
+       <ErrorSummary count={Object.keys(errors).length} className="mt-4" />
+@@ -212,7 +247,7 @@ export function RegistrationStep({
+           <Button type="button" variant="ghost" size="lg" className="max-sm:w-full" onClick={() => goTo(part - 1)} disabled={submitting}>Voltar</Button>
+         ) : <span className="max-sm:hidden" aria-hidden />}
+         <Button type="submit" size="lg" className="max-sm:w-full" loading={submitting}>
+-          {!last ? "Continuar" : vehicleId ? "Guardar e continuar" : "Enviar candidatura"}
++          {!last ? "Continuar" : vehicleId && after !== "confirmation" ? "Guardar e continuar" : "Enviar candidatura"}
+         </Button>
+       </div>
+     </form>
+diff --git a/src/components/tvde/tvde-summary.tsx b/src/components/tvde/tvde-summary.tsx
+index a3c1c38..03ca7a6 100644
+--- a/src/components/tvde/tvde-summary.tsx
++++ b/src/components/tvde/tvde-summary.tsx
+@@ -20,6 +20,7 @@ export function TvdeSummary({
+   pickupAt,
+   locationName,
+   reference,
++  payments = true,
+ }: {
+   vehicle?: Vehicle | null;
+   weeklyPrice: number;
+@@ -28,6 +29,8 @@ export function TvdeSummary({
+   pickupAt: string;
+   locationName?: string;
+   reference?: string;
++  /** Cobrança online ligada: o sinal paga-se agora e o resto da caução no levantamento. */
++  payments?: boolean;
+ }) {
+   const now = reservationAmount ?? deposit ?? 0;
+   return (
+@@ -49,9 +52,9 @@ export function TvdeSummary({
+       <dl className="space-y-2 p-4 text-body-small">
+         <div className="flex justify-between"><dt className="text-copy-secondary">Preço semanal</dt><dd className="font-semibold tabular">{formatMoney(weeklyPrice)}/semana</dd></div>
+         {deposit !== undefined && <div className="flex justify-between"><dt className="text-copy-secondary">Caução</dt><dd className="tabular">{formatMoney(deposit)}</dd></div>}
+-        {deposit !== undefined && now < deposit && <div className="flex justify-between"><dt className="text-copy-secondary">Restante da caução (no levantamento)</dt><dd className="tabular">{formatMoney(deposit - now)}</dd></div>}
++        {payments && deposit !== undefined && now < deposit && <div className="flex justify-between"><dt className="text-copy-secondary">Restante da caução (no levantamento)</dt><dd className="tabular">{formatMoney(deposit - now)}</dd></div>}
+         <div className="mt-3 flex items-end justify-between border-t border-line pt-3">
+-          <dt className="font-semibold">Sinal (pago agora)</dt>
++          <dt className="font-semibold">{payments ? "Sinal (pago agora)" : "Sinal"}</dt>
+           <dd className="text-h3 font-bold tabular">{formatMoney(now)}</dd>
+         </div>
+       </dl>
+diff --git a/src/components/vehicles/vehicle-card.tsx b/src/components/vehicles/vehicle-card.tsx
+index 988d8da..c17724f 100644
+--- a/src/components/vehicles/vehicle-card.tsx
++++ b/src/components/vehicles/vehicle-card.tsx
+@@ -149,7 +149,7 @@ function TvdeCard({ vehicle, offer, href, availability }: CardProps) {
+         <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-card bg-on-dark/15">
+           {now !== undefined && (
+             <div className="bg-panel-dark px-3.5 py-3">
+-              <dt className="text-caption text-on-dark/75">Sinal (pago agora)</dt>
++              <dt className="text-caption text-on-dark/75">Sinal</dt>
+               <dd className="display mt-1 text-h3 tabular">{formatMoney(now)}</dd>
+             </div>
+           )}
+diff --git a/src/domain/shared/index.ts b/src/domain/shared/index.ts
+index 4a8525d..83105a6 100644
+--- a/src/domain/shared/index.ts
++++ b/src/domain/shared/index.ts
+@@ -18,7 +18,7 @@ export interface ApiError {
+   message: string;
+   fieldErrors?: Record<string, string>;
+   /** Motivo específico, para a UI oferecer a saída certa. */
+-  reason?: "vehicle_unavailable" | "session_expired" | "price_changed";
++  reason?: "vehicle_unavailable" | "session_expired" | "price_changed" | "application_exists";
+   requestId?: string;
+ }
+ 
+diff --git a/src/lib/validation.ts b/src/lib/validation.ts
+index 40877bf..63a00e6 100644
+--- a/src/lib/validation.ts
++++ b/src/lib/validation.ts
+@@ -57,7 +57,8 @@ export const bookingRequestSchema = quoteRequestSchema.extend({
+   account: z.object({ password: z.string().min(8, "Mínimo 8 caracteres.") }).optional(),
+   message: z.string().max(500).optional(),
+   acceptTerms: z.literal(true, { error: "Tem de aceitar os termos e condições." }),
+-  payment: paymentInputSchema,
++  /** Sem cobrança online (onlinePaymentsEnabled), o pedido segue sem pagamento. */
++  payment: paymentInputSchema.optional(),
+   idempotencyKey: z.string().min(8),
+ });
+ 
+diff --git a/src/services/payments/index.ts b/src/services/payments/index.ts
+index 784d9b0..c59e97c 100644
+--- a/src/services/payments/index.ts
++++ b/src/services/payments/index.ts
+@@ -14,6 +14,18 @@ const GATEWAYS: Record<string, PaymentGateway> = {
+   mock: mockGateway,
+ };
+ 
++/**
++ * Cobrança online ligada? Na demonstração (WEGEST_MODE=mock), sim, com o fornecedor de teste.
++ * Com a API real, só com um fornecedor de pagamentos real (PAYMENT_PROVIDER, diferente de
++ * "mock"): sem ele o site não cobra nada e os pedidos seguem sem pagamento (decisão de
++ * 2026-10-16, "sem cobrança virtual por enquanto").
++ */
++export function onlinePaymentsEnabled(): boolean {
++  if (process.env.WEGEST_MODE === "mock") return true;
++  const provider = process.env.PAYMENT_PROVIDER;
++  return !!provider && provider !== "mock" && provider in GATEWAYS;
++}
++
+ export function paymentGateway(): PaymentGateway {
+   const name = process.env.PAYMENT_PROVIDER ?? "mock";
+   const gw = GATEWAYS[name];
+diff --git a/src/services/tvde.ts b/src/services/tvde.ts
+index 4f3aa0d..3165e03 100644
+--- a/src/services/tvde.ts
++++ b/src/services/tvde.ts
+@@ -1,9 +1,28 @@
+ import "server-only";
+ 
+ import type { TvdeApplication } from "@/domain/application";
++import type { Region } from "@/domain/region";
+ import { sendEmail } from "@/services/email";
+ import { refundPayment } from "@/services/payments";
+ import { paymentsRepo, refundsRepo } from "@/services/store";
++import { getVehicleById, listLocations } from "@/services/wegest";
++
++/**
++ * A API real não devolve o nome da viatura nem do local da candidatura (só o estado):
++ * completa-os a partir do catálogo, que também vem da API. Sem catálogo, ficam vazios.
++ */
++export async function withCatalogNames(app: TvdeApplication, region: Region): Promise<TvdeApplication> {
++  if (!app.vehicleId || (app.vehicleName && app.pickupLocation.name)) return app;
++  const [vehicle, locations] = await Promise.all([
++    app.vehicleName ? null : getVehicleById(region, app.vehicleId).catch(() => null),
++    app.pickupLocation.name || !app.pickupLocation.id ? [] : listLocations(region, "tvde").catch(() => []),
++  ]);
++  return {
++    ...app,
++    vehicleName: app.vehicleName || vehicle?.name || "",
++    pickupLocation: { ...app.pickupLocation, name: app.pickupLocation.name || locations.find((l) => l.id === app.pickupLocation.id)?.name || "" },
++  };
++}
+ 
+ /**
+  * Junta à candidatura (estado do WeGest) o estado do pagamento e do reembolso
+diff --git a/src/services/wegest/index.ts b/src/services/wegest/index.ts
+index 85e1bcc..7974a2d 100644
+--- a/src/services/wegest/index.ts
++++ b/src/services/wegest/index.ts
+@@ -289,7 +289,7 @@ export async function createBooking(input: {
+   coverageId?: string | null;
+   driver: { birthDate: string; licenseNumber: string; licenseExpiry: string; licenseCountry: string };
+   message?: string;
+-  paymentReference: string;
++  paymentReference?: string;
+   idempotencyKey: string;
+   expectedTotal: number;
+ }): Promise<Booking> {
+diff --git a/src/services/wegest/transport.ts b/src/services/wegest/transport.ts
+index f0af505..de10c7b 100644
+--- a/src/services/wegest/transport.ts
++++ b/src/services/wegest/transport.ts
+@@ -78,7 +78,8 @@ export interface WeGestTransport {
+     coverageId?: string | null;
+     driver: { birthDate: string; licenseNumber: string; licenseExpiry: string; licenseCountry: string };
+     message?: string;
+-    paymentReference: string;
++    /** Sem cobrança online, a reserva segue sem pagamento. */
++    paymentReference?: string;
+     idempotencyKey: string;
+     /** Total com IVA que o cliente viu; a API recusa (PRECO_ALTERADO) se já não for esse. */
+     expectedTotal: number;
+-- 
+2.43.0
+
