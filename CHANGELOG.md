@@ -3,6 +3,21 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.21.1]: 2026-10-19
+
+### Fixed
+
+- The production build no longer fails when the WeGest API does not answer.
+  `generateStaticParams` for /rent-a-car/[cidade], /rent-a-car/viatura/[slug]
+  and /tvde/viatura/[slug] falls back to on-demand pages, and a failed
+  catalog read (locations, categories, vehicles, extras, coverages) is
+  returned instead of thrown inside `"use cache"`, cached for seconds only,
+  so that part of the page renders at request time. With WeGest up, the
+  same routes stay static as before.
+- Home, /contactos, /rent-a-car, /motoristas and /tvde render their WeGest
+  content inside `Suspense` (`PageSkeleton` fallback), which lets that
+  content move to request time when the build cannot reach WeGest.
+
 ## [0.21.0]: 2026-10-19
 
 ### Added

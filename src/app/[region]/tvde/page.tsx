@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { GridFiller } from "@/components/shared/grid-filler";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
+import { PageSkeleton } from "@/components/shared/page-header";
 import { ButtonLink, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { TvdeProcess } from "@/components/tvde/tvde-process";
 import { TvdeRequirements } from "@/components/tvde/tvde-requirements";
@@ -19,7 +21,16 @@ export const metadata: Metadata = {
   description: "Alugue uma viatura TVDE à semana. Veja preço, caução e condições e candidate-se online.",
 };
 
-export default async function TvdePage({ params }: PageProps<"/[region]/tvde">) {
+// Suspense: se o WeGest falhar no build, o conteúdo é gerado no pedido (ver catalogResult em services/wegest)
+export default function TvdePage({ params }: PageProps<"/[region]/tvde">) {
+  return (
+    <Suspense fallback={<PageSkeleton tone="dark" />}>
+      <TvdeContent params={params} />
+    </Suspense>
+  );
+}
+
+async function TvdeContent({ params }: { params: PageProps<"/[region]/tvde">["params"] }) {
   const region = await regionFromParams(params);
   const [vehicles, from, locations] = await Promise.all([listVehicles(region, "tvde"), getStartingPrice(region, "tvde"), listLocations(region, "tvde")]);
 

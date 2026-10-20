@@ -1,8 +1,11 @@
+import { Suspense } from "react";
+
 import { RegionSwitch } from "@/components/layout/region-switch";
 import { RacIntro } from "@/components/rentacar/rac-intro";
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
 import { InstagramFeed } from "@/components/shared/instagram";
+import { PageSkeleton } from "@/components/shared/page-header";
 import { PickupPoints } from "@/components/shared/pickup-points";
 import { PriceDisplay } from "@/components/shared/price-display";
 import { Testimonials } from "@/components/shared/testimonials";
@@ -27,7 +30,16 @@ const HOME_COPY: Record<Region, { title: string; description: string }> = {
   },
 };
 
-export default async function HomePage({ params }: PageProps<"/[region]">) {
+// Suspense: se o WeGest falhar no build, o conteúdo é gerado no pedido (ver catalog() em services/wegest)
+export default function HomePage({ params }: PageProps<"/[region]">) {
+  return (
+    <Suspense fallback={<PageSkeleton tone="dark" />}>
+      <HomeContent params={params} />
+    </Suspense>
+  );
+}
+
+async function HomeContent({ params }: { params: PageProps<"/[region]">["params"] }) {
   const region = await regionFromParams(params);
   const [locations, tvdeLocations, tvdeFrom, racFrom] = await Promise.all([
     listLocations(region, "rentacar"),

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { Hero } from "@/components/shared/hero";
 import { HeroSearch } from "@/components/shared/hero-search";
+import { PageSkeleton } from "@/components/shared/page-header";
 import { PickupPoints } from "@/components/shared/pickup-points";
 import { ButtonLink, Container, Section } from "@/components/shared/ui";
 import { regionFromParams } from "@/lib/region";
@@ -17,7 +19,16 @@ export const metadata: Metadata = {
  * Entrada do Rent a Car: a pesquisa (local, datas e horas) é o primeiro passo, como nas
  * rent-a-car de referência. O catálogo de modelos fica na página Frota.
  */
-export default async function RentACarPage({ params }: PageProps<"/[region]/rent-a-car">) {
+// Suspense: se o WeGest falhar no build, o conteúdo é gerado no pedido (ver catalog() em services/wegest)
+export default function RentACarPage({ params }: PageProps<"/[region]/rent-a-car">) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <RentACarContent params={params} />
+    </Suspense>
+  );
+}
+
+async function RentACarContent({ params }: { params: PageProps<"/[region]/rent-a-car">["params"] }) {
   const region = await regionFromParams(params);
   const locations = await listLocations(region, "rentacar");
 

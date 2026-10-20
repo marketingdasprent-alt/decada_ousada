@@ -32,7 +32,7 @@ import {
 } from "./mappers";
 import { mockTransport } from "./mock/transport";
 import type { WeGestTransport } from "./transport";
-import { REGION_CODE } from "./types";
+import { REGION_CODE, WeGestError } from "./types";
 
 export { WeGestError } from "./types";
 
@@ -63,34 +63,74 @@ const PRODUCT_CODE: Record<ProductType, "RAC" | "TVDE"> = { rentacar: "RAC", tvd
 
 // ───────────────────────────── Catálogo (cacheável) ─────────────────────────────
 
+/**
+ * O build não depende do WeGest. Uma exceção lançada dentro de "use cache" parte a
+ * pré-renderização (o Next regista-a mesmo que seja apanhada fora), por isso a falha volta
+ * como valor e fica em cache só com o perfil "seconds": abaixo de 5 min de expire, o Next
+ * deixa essa parte fora do build e gera-a no pedido do visitante (dentro de Suspense).
+ * No pedido, catalog() relança o WeGestError (attempt → ErrorState, ou error.tsx).
+ */
+type CatalogResult<T> = { ok: true; data: T } | { ok: false; code: WeGestError["code"]; message: string; status?: number };
+
+async function catalogResult<T>(load: () => Promise<T>): Promise<CatalogResult<T>> {
+  try {
+    const data = await load();
+    cacheLife("minutes");
+    return { ok: true, data };
+  } catch (err) {
+    if (!(err instanceof WeGestError)) throw err;
+    cacheLife("seconds");
+    return { ok: false, code: err.code, message: err.message, status: err.status };
+  }
+}
+
+async function catalog<T>(result: Promise<CatalogResult<T>>): Promise<T> {
+  const r = await result;
+  if (!r.ok) throw new WeGestError(r.code, r.message, r.status);
+  return r.data;
+}
+
 export async function listLocations(region: Region, product?: ProductType): Promise<Location[]> {
+  return catalog(cachedListLocations(region, product));
+}
+
+async function cachedListLocations(region: Region, product?: ProductType): Promise<CatalogResult<Location[]>> {
   "use cache";
-  cacheLife("minutes");
   cacheTag("wegest:locations");
-  const raw = await transport().listLocations(REGION_CODE[region]);
-  const locations = raw.map(mapLocation);
-  return product ? locations.filter((l) => !l.products || l.products.includes(product)) : locations;
+  return catalogResult(async () => {
+    const raw = await transport().listLocations(REGION_CODE[region]);
+    const locations = raw.map(mapLocation);
+    return product ? locations.filter((l) => !l.products || l.products.includes(product)) : locations;
+  });
 }
 
 export async function listCategories(): Promise<VehicleCategory[]> {
+  return catalog(cachedListCategories());
+}
+
+async function cachedListCategories(): Promise<CatalogResult<VehicleCategory[]>> {
   "use cache";
-  cacheLife("minutes");
   cacheTag("wegest:categories");
-  return (await transport().listCategories()).map(mapCategory);
+  return catalogResult(async () => (await transport().listCategories()).map(mapCategory));
 }
 
 export async function listVehicles(region: Region, product?: ProductType): Promise<Vehicle[]> {
+  return catalog(cachedListVehicles(region, product));
+}
+
+async function cachedListVehicles(region: Region, product?: ProductType): Promise<CatalogResult<Vehicle[]>> {
   "use cache";
-  cacheLife("minutes");
   cacheTag("wegest:vehicles");
-  const t = transport();
-  const regionCode = REGION_CODE[region];
-  const [raw, categories, locations] = await Promise.all([
-    t.listVehicles({ regionCode, product: product ? PRODUCT_CODE[product] : undefined }),
-    t.listCategories(),
-    t.listLocations(regionCode),
-  ]);
-  return raw.map((v) => mapVehicle(v, { categories, locations }));
+  return catalogResult(async () => {
+    const t = transport();
+    const regionCode = REGION_CODE[region];
+    const [raw, categories, locations] = await Promise.all([
+      t.listVehicles({ regionCode, product: product ? PRODUCT_CODE[product] : undefined }),
+      t.listCategories(),
+      t.listLocations(regionCode),
+    ]);
+    return raw.map((v) => mapVehicle(v, { categories, locations }));
+  });
 }
 
 export async function getVehicleBySlug(region: Region, slug: string): Promise<Vehicle | null> {
@@ -104,15 +144,21 @@ export async function getVehicleById(region: Region, id: string): Promise<Vehicl
 }
 
 export async function listExtras(region: Region): Promise<Extra[]> {
+  return catalog(cachedListExtras(region));
+}
+
+async function cachedListExtras(region: Region): Promise<CatalogResult<Extra[]>> {
   "use cache";
-  cacheLife("minutes");
-  return (await transport().listExtras({ regionCode: REGION_CODE[region] })).map(mapExtra);
+  return catalogResult(async () => (await transport().listExtras({ regionCode: REGION_CODE[region] })).map(mapExtra));
 }
 
 export async function listCoverages(region: Region): Promise<Coverage[]> {
+  return catalog(cachedListCoverages(region));
+}
+
+async function cachedListCoverages(region: Region): Promise<CatalogResult<Coverage[]>> {
   "use cache";
-  cacheLife("minutes");
-  return (await transport().listCoverages({ regionCode: REGION_CODE[region] })).map(mapCoverage);
+  return catalogResult(async () => (await transport().listCoverages({ regionCode: REGION_CODE[region] })).map(mapCoverage));
 }
 
 /** "Desde X €/semana" para a homepage: calculado sobre ofertas devolvidas pela API. */

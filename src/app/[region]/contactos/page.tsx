@@ -1,7 +1,8 @@
 import { Mail, Phone } from "lucide-react";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { PageHeader } from "@/components/shared/page-header";
+import { PageHeader, PageSkeleton } from "@/components/shared/page-header";
 import { ContactValue } from "@/components/shared/pending";
 import { PickupPoints } from "@/components/shared/pickup-points";
 import { Card, Container, Section } from "@/components/shared/ui";
@@ -11,7 +12,16 @@ import { listLocations } from "@/services/wegest";
 
 export const metadata: Metadata = { title: "Contactos" };
 
-export default async function ContactsPage({ params }: PageProps<"/[region]/contactos">) {
+// Suspense: se o WeGest falhar no build, o conteúdo é gerado no pedido (ver catalog() em services/wegest)
+export default function ContactsPage({ params }: PageProps<"/[region]/contactos">) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <ContactsContent params={params} />
+    </Suspense>
+  );
+}
+
+async function ContactsContent({ params }: { params: PageProps<"/[region]/contactos">["params"] }) {
   const region = await regionFromParams(params);
   const cfg = REGION_CONFIG[region];
   const locations = await listLocations(region);
