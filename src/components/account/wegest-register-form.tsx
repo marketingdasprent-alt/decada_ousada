@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useId, useState, type FormEvent } from "react";
 import { DRIVER_AUTH, DRIVER_CONFIRM_PATH, driverAuthMessage } from "@/lib/driver-account";
 import { driverAuth, rememberNext, takeNext } from "@/lib/driver-auth-client";
-import { CUSTOMER_ROLE, registrationSchema } from "@/lib/registration";
+import { registrationSchema } from "@/lib/registration";
 import { track } from "@/lib/analytics";
 import { Checkbox, Field, Input } from "../shared/form";
 import { Notice } from "../shared/states";
@@ -53,11 +53,10 @@ export function WeGestRegisterForm({ next, kind = "cliente" }: { next?: string; 
     try {
       const { email, password, confirm: _confirm, termos: _termos, ...fields } = parsed.data;
       void _confirm; void _termos;
-      // O cliente Rent a Car entra como motorista com cargo_nome "cliente" (combinado com o WeGest a
-      // 20/10/2026): assim pode preencher a ficha de motorista. Os opcionais vazios não seguem.
+      // Os opcionais vazios não seguem: o WeGest grava o que vier na ficha de cliente
       const metadata = kind === "motorista"
         ? { tipo_utilizador: kind, nome: fields.nome, telefone: fields.telefone, cargo_nome: "Motorista" }
-        : { ...Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== "")), tipo_utilizador: "motorista", cargo_nome: CUSTOMER_ROLE };
+        : Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== ""));
       rememberNext(next ?? (kind === "cliente" ? "/minha-conta" : "/tvde/minha-conta"));
       if (kind === "motorista") track("tvde_registration_started");
       const { data: result, error: authError } = await driverAuth().auth.signUp({ email, password, options: {

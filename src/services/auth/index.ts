@@ -169,12 +169,8 @@ export async function startDriverSession(account: DriverAccount) {
 
 export const isDriverSession = (session: Session | null) => Boolean(session?.user.authProviderId.startsWith(DRIVER_PREFIX));
 
-/** Sessão de uma conta WeGest, de motorista ou de cliente: ambas podem preencher a ficha de motorista. */
-export const isWeGestSession = (session: Session | null) =>
-  Boolean(session && (session.user.authProviderId.startsWith(DRIVER_PREFIX) || session.user.authProviderId.startsWith(CUSTOMER_PREFIX)));
-
-/** Id da conta WeGest de uma sessão de motorista ou de cliente. */
-export const driverAccountId = (session: Session) => session.user.id.slice(session.user.id.indexOf(":") + 1);
+/** Id da conta WeGest de uma sessão de motorista. */
+export const driverAccountId = (session: Session) => session.user.id.slice(DRIVER_PREFIX.length);
 
 export async function linkCustomer(userId: string, link: Omit<UserIntegration, "userId">) {
   return integrationsRepo.upsert({ ...link, userId, lastSyncAt: new Date().toISOString() });

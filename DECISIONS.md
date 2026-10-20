@@ -1195,24 +1195,55 @@ DATE:
 
 ```
 DECISION:
-A Rent a Car customer account is created in WeGest's Supabase Auth as a
-driver account (tipo_utilizador: "motorista") tagged cargo_nome: "cliente",
-with the customer fields of the "Contas de cliente" guide. The site reads the
-tag from the account's user_metadata and treats the account as a customer
-(/minha-conta, header link); WeGest treats it as a driver, so the same account
-can send the TVDE driver file before the first booking. Accounts created
-earlier with tipo_utilizador: "cliente" keep working as customers but WeGest
-answers CONTA_INVALIDA to their TVDE application.
+A Rent a Car customer is a WeGest customer, never a TVDE applicant. The
+customer account is created with tipo_utilizador: "cliente". Before the first
+booking, the customer fills the customer file in /minha-conta/perfil
+(POST /api/customers/me), which goes to WeGest through the account
+(X-Conta-Token). The TVDE application (/tvde/candidatura, /conta/candidatura)
+stays for driver accounts only. Until WeGest publishes the account route for
+the customer file, the form only shows in mock mode; with the real API the
+page explains that the file is created with the first booking.
 
 REASON:
-Team decision, confirmed by WeGest on 2026-10-20 (cargo_nome "cliente" is
-accepted). With tipo_utilizador: "cliente", POST /tvde/candidaturas refused
-the account. cargo_nome is user-editable metadata, so it only drives the
-site's navigation; what the account may do is still decided by WeGest.
+WeGest (João, 2026-10-20): a Rent a Car customer must land as a customer in
+WeGest, not as an application. Registering customers as drivers tagged
+cargo_nome "cliente" (tried the same day, PR #34) was reverted.
 
 SCOPE:
-src/components/account/wegest-register-form.tsx, src/lib/registration.ts
-(CUSTOMER_ROLE), src/services/auth/driver.ts (verifyDriverToken).
+src/app/[region]/minha-conta/perfil, src/app/api/customers/me (POST),
+src/components/account/profile-form.tsx (create), src/services/wegest/account.ts
+(saveAccountCustomerFile, accountCustomerFileReady).
+
+LEVEL:
+Project rule (WeGest accounts).
+
+DATE:
+2026-10-20
+```
+
+---
+
+```
+DECISION:
+With WeGest accounts (or in demo mode), the TVDE application is only sent
+through the account flow: PUT /conta/candidatura, the documents, then
+POST /conta/candidatura. /tvde/candidatura redirects to
+/tvde/minha-conta/candidaturas; a vehicle chosen with "Reservar esta
+viatura" goes along (?viatura=&inicio=) and is saved in the draft as
+modelo_pretendido_id and data_inicio_pretendida. The pickup location and
+time are not sent: the API has no field for them. The old
+POST /tvde/candidaturas form stays only for setups without accounts.
+modelo_pretendido_id is checked as a short string, not a UUID: WeGest
+validates the format, and the demo catalogue uses non-UUID ids.
+
+REASON:
+WeGest (2026-10-20): POST /tvde/candidaturas submits without documents and
+must not be used with an account.
+
+SCOPE:
+src/app/[region]/tvde/candidatura, src/app/[region]/tvde/minha-conta/
+candidaturas and perfil, src/components/tvde/account-application.tsx
+(VehicleSection, ReadOnly), src/services/account-application (draftSchema).
 
 LEVEL:
 Project rule (WeGest accounts).
