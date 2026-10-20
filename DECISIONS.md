@@ -1163,3 +1163,30 @@ Project rule (payments and online requests).
 DATE:
 2026-10-16
 ```
+
+---
+
+```
+DECISION:
+A "not found" page reached after the response started streaming keeps HTTP
+200 with <meta name="robots" content="noindex"> (e.g.
+/rent-a-car/viatura/<unknown-slug>). Routes that call notFound() before any
+streamed output return a real 404. No workaround is added.
+
+REASON:
+With Cache Components the page shell is sent before the WeGest lookup ends,
+so the status line is already 200 when notFound() runs inside Suspense. This
+is Next.js 16 behaviour. The noindex tag keeps these URLs out of search
+results, and moving the lookup out of Suspense would make every vehicle page
+wait for WeGest before sending anything.
+
+SCOPE:
+src/app/[region]/rent-a-car/viatura/[slug], src/app/[region]/tvde/viatura/[slug]
+and any page that calls notFound() inside a Suspense boundary.
+
+LEVEL:
+Override (Blueprint expects a 404 status for missing resources).
+
+DATE:
+2026-10-19
+```

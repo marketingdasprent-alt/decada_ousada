@@ -11,13 +11,15 @@ import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { isRegion, REGIONS } from "@/domain/region";
 import { getOffer } from "@/domain/vehicle";
 import { listLocations, listVehicles } from "@/services/wegest";
-import { atLeastOne } from "@/lib/static-params";
+import { wegestStaticParams } from "@/lib/static-params";
 
 /** Páginas SEO regionais: /rent-a-car/leiria, /rent-a-car/ponta-delgada… (doc §109). */
 export async function generateStaticParams({ params }: { params: { region: string } }) {
   const regions = isRegion(params?.region) ? [params.region] : REGIONS;
-  const all = await Promise.all(regions.map((r) => listLocations(r, "rentacar")));
-  return atLeastOne(all.flat().map((l) => ({ cidade: l.slug })), "cidade");
+  return wegestStaticParams(async () => {
+    const all = await Promise.all(regions.map((r) => listLocations(r, "rentacar")));
+    return all.flat().map((l) => ({ cidade: l.slug }));
+  }, "cidade");
 }
 
 export async function generateMetadata({ params }: PageProps<"/[region]/rent-a-car/[cidade]">): Promise<Metadata> {

@@ -366,7 +366,7 @@ export function BookingWizard({
                       Para acompanhar a reserva na área de cliente. Já tem conta? <Link href={loginHref(1)} className="font-medium text-brand underline underline-offset-4">Iniciar sessão</Link>
                     </p>
                     <Field label="Password" htmlFor="new-password" required error={errors.password} help="Mínimo 8 caracteres.">
-                      <Input id="new-password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={errors.password ? true : undefined} />
+                      <Input id="new-password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={errors.password ? true : undefined} aria-describedby={errors.password ? "new-password-error" : undefined} />
                     </Field>
                   </fieldset>
                 )}

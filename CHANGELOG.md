@@ -3,6 +3,99 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.21.2]: 2026-10-20
+
+### Changed
+
+- TVDE application (/tvde/minha-conta/candidaturas): the driving licence
+  section no longer asks for the licence categories. Saving the section
+  always sends `categorias: ["B"]`, the only category that counts for TVDE,
+  so WeGest still receives the field it requires.
+
+### Fixed
+
+- TVDE application fields are now validated in the browser and again on
+  the server (`src/lib/application-rules.ts`, used by the section forms and
+  by `draftSchema`): NIF check digit, IBAN mod 97, mobile number with
+  country code (Portuguese numbers 91/92/93/96), full name with a surname,
+  address, town, ID number by document type (citizen card check digit when
+  the full number is given), licence and TVDE certificate numbers. A
+  9-digit mobile without country code is saved as +351.
+- /sitemap.xml no longer fails the build when WeGest errors: it moves to
+  request time with `connection()` and, if WeGest is still down, lists only
+  the fixed pages.
+
+## [0.21.1]: 2026-10-19
+
+### Fixed
+
+- The production build no longer fails when the WeGest API does not answer.
+  `generateStaticParams` for /rent-a-car/[cidade], /rent-a-car/viatura/[slug]
+  and /tvde/viatura/[slug] falls back to on-demand pages, and a failed
+  catalog read (locations, categories, vehicles, extras, coverages) is
+  returned instead of thrown inside `"use cache"`, cached for seconds only,
+  so that part of the page renders at request time. With WeGest up, the
+  same routes stay static as before.
+- Home, /contactos, /rent-a-car, /motoristas and /tvde render their WeGest
+  content inside `Suspense` (`PageSkeleton` fallback), which lets that
+  content move to request time when the build cannot reach WeGest.
+
+## [0.21.0]: 2026-10-19
+
+### Added
+
+- Customer (Rent a Car) and driver accounts are created in the WeGest
+  Supabase Auth from /registar, with the fields from docs.wegest.pt
+  ("Contas de cliente"); optional fields left blank are not sent. Driver
+  sign-up asks for name, phone, email and password.
+- Turnstile CAPTCHA on account sign-up, login and password recovery
+  (`NEXT_PUBLIC_WEGEST_AUTH_CAPTCHA_SITE_KEY`; the secret lives in the
+  WeGest Supabase). Without the key, /registar shows sign-up as unavailable.
+- /minha-conta/faturas lists the customer's invoices from `/conta/faturas`
+  and downloads the WeGest PDF.
+- /termos page, with the legal text shown as pending.
+- TVDE application in steps at /tvde/minha-conta/candidaturas (WeGest
+  `/conta/candidatura` routes): save each section, upload the 8 documents
+  (request URL, upload straight to storage, confirm), submit, then read-only
+  status (submetida, aprovada, rejeitada with reason). A customer account
+  sees that a driver account is needed. Mock mode mirrors the same contract.
+
+### Fixed
+
+- Account and application forms use `method="post"`, so a submit before
+  hydration no longer puts the password, NIF or IBAN in the URL.
+- Sign-up shows every field error on the first attempt.
+
+## [0.20.2]: 2026-10-19
+
+### Fixed
+
+- /tvde/candidatura with online requests off (`WEGEST_PEDIDOS_ONLINE` not
+  `on`) shows "O cadastro online ainda não está disponível" and a link to
+  /contactos, instead of the 3-step form that failed with 503 on submit.
+- `POST /api/tvde/applications` with online requests off answers about
+  applications ("O envio de candidaturas online ainda não está disponível")
+  instead of bookings and vehicles.
+- Default Zod messages in API `fieldErrors` and client forms are pt-PT
+  ("Campo obrigatório.", "Valor inválido.") instead of "Invalid input: ...".
+  Messages written in the schemas are unchanged.
+- Checkout: the account password error is announced by screen readers
+  (`aria-describedby` on the field, as in the other fields).
+- TVDE documents: a WeGest description ending in a full stop no longer reads
+  "(frente e verso)., máx. 10 MB"; the limit becomes its own sentence
+  ("Máximo 10 MB.").
+- Touch targets under 768 px: "Nova reserva" (/minha-conta and
+  /minha-conta/reservas) uses the standard 44 px button, and the team phone
+  on the booking detail page is 44 px tall.
+- `GET /api/invoices/:id` with the real API answers 501 ("O PDF desta fatura
+  ainda não está disponível online") instead of the demo invoice page. Only
+  mock mode renders the demo document.
+
+### Documentation
+
+- DECISIONS.md: a missing vehicle page keeps HTTP 200 with `noindex`
+  (Next.js 16 streaming), recorded as an override.
+
 ## [0.20.1]: 2026-10-16
 
 ### Changed

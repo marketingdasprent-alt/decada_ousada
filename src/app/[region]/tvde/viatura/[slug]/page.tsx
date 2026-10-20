@@ -16,13 +16,15 @@ import type { Location } from "@/domain/location";
 import { attempt } from "@/lib/attempt";
 import { firstParam } from "@/lib/search";
 import { getApplicationForm, getVehicleBySlug, listLocations, listVehicles, onlineRequestsEnabled } from "@/services/wegest";
-import { atLeastOne } from "@/lib/static-params";
+import { wegestStaticParams } from "@/lib/static-params";
 import { onlinePaymentsEnabled } from "@/services/payments";
 
 export async function generateStaticParams({ params }: { params: { region: string } }) {
   const regions = isRegion(params?.region) ? [params.region] : REGIONS;
-  const all = await Promise.all(regions.map((r) => listVehicles(r, "tvde")));
-  return atLeastOne(all.flat().map((v) => ({ slug: v.slug })), "slug");
+  return wegestStaticParams(async () => {
+    const all = await Promise.all(regions.map((r) => listVehicles(r, "tvde")));
+    return all.flat().map((v) => ({ slug: v.slug }));
+  }, "slug");
 }
 
 export async function generateMetadata({ params }: PageProps<"/[region]/tvde/viatura/[slug]">): Promise<Metadata> {

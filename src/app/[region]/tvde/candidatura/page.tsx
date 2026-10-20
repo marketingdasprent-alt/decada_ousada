@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { EmptyState, ErrorState } from "@/components/shared/states";
+import { EmptyState, ErrorState, Notice } from "@/components/shared/states";
 import { ButtonLink, Container, Section, Skeleton } from "@/components/shared/ui";
 import { ApplicationChecklist } from "@/components/tvde/application-checklist";
 import { ApplicationLayout, SIGNUP_STEPS } from "@/components/tvde/application-layout";
@@ -16,7 +16,7 @@ import { requireSession } from "@/lib/guard";
 import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
 import { getCustomerId, isWeGestSession } from "@/services/auth";
-import { checkVehicleAvailability, getApplicationForm, getCustomer, getVehicleById, listLocations } from "@/services/wegest";
+import { checkVehicleAvailability, getApplicationForm, getCustomer, getVehicleById, listLocations, onlineRequestsEnabled } from "@/services/wegest";
 import { onlinePaymentsEnabled } from "@/services/payments";
 
 export const metadata: Metadata = { title: "Candidatura TVDE", robots: { index: false } };
@@ -40,6 +40,8 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
   // O cadastro não depende da viatura: sem os três, é só o cadastro do motorista
   const withVehicle = Boolean(vehicleId && pickupAt && locationId);
   const here = withVehicle ? `/tvde/candidatura?${new URLSearchParams({ viatura: vehicleId!, inicio: pickupAt!, local: locationId! })}` : "/tvde/candidatura";
+  // Com os pedidos desligados o envio falharia no fim: avisa antes de pedir login e dados
+  if (!onlineRequestsEnabled()) return <RequestsOffline />;
   const session = await requireSession(here);
   // Com contas WeGest, a ficha é feita com a conta (de motorista ou de cliente Rent a Car) e fica ligada a ela
   const driverAccount = driverAuthEnabled();
@@ -131,6 +133,21 @@ async function prefill(session: AppSession, driverAccount: boolean): Promise<Rec
       license_expiry: cust?.driverLicense?.expiresAt,
       ...(cust?.extra ? Object.fromEntries(Object.entries(cust.extra).map(([k, v]) => [k, v == null ? "" : String(v)])) : {}),
     }).filter((e): e is [string, string] => typeof e[1] === "string" && e[1] !== ""),
+  );
+}
+
+/** Pedidos online desligados (WEGEST_PEDIDOS_ONLINE): o cadastro faz-se com a equipa. */
+function RequestsOffline() {
+  return (
+    <Section variant="compact">
+      <Container variant="narrow">
+        <h1 className="text-h2 font-bold">Cadastro de motorista</h1>
+        <Notice tone="info" title="O cadastro online ainda não está disponível" className="mt-6">
+          Para se candidatar como motorista TVDE, contacte a equipa por telefone ou email.
+        </Notice>
+        <ButtonLink href="/contactos" size="lg" className="mt-6">Contactar a equipa</ButtonLink>
+      </Container>
+    </Section>
   );
 }
 

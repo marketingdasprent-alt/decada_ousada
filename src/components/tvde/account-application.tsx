@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useId, useState, type FormEvent, type ReactNode } from "react";
 
-import { ID_DOCUMENT_TYPES, LICENSE_CATEGORIES, type AccountApplication, type AccountApplicationDraft } from "@/domain/customer/account";
+import { ID_DOCUMENT_TYPES, type AccountApplication, type AccountApplicationDraft } from "@/domain/customer/account";
 import { applicationFetch } from "@/lib/application-fetch";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/dates";
+import { normalizePhone, validateApplicationDraft } from "@/lib/application-rules";
 import { formatFieldValue } from "@/lib/dynamic-form";
 
 import { Checkbox, ErrorSummary, Field, Input, Select } from "../shared/form";
@@ -239,7 +240,7 @@ type Errors = Record<string, string>;
 
 /**
  * Uma secção = um formulário com o seu Guardar. Só os campos preenchidos vão no PUT (rascunho
- * parcial). O formato é validado aqui; o dígito de controlo do NIF e do IBAN é o WeGest que verifica.
+ * parcial). As regras de cada campo (lib/application-rules) correm aqui e outra vez no servidor.
  */
 function SectionForm({
   title,
@@ -259,7 +260,9 @@ function SectionForm({
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const { draft, errors: local } = build(new FormData(form));
+    const built = build(new FormData(form));
+    const draft = built.draft;
+    const local = { ...validateApplicationDraft(draft), ...built.errors };
     setStatus(null);
     setErrors(local);
     if (Object.keys(local).length) return focusFirstError(form);
@@ -322,9 +325,7 @@ function PersonalSection({ email, ...props }: SectionProps) {
           const v = value(data, key);
           if (v) draft[key] = v;
         }
-        if (draft.nif && !/^\d{9}$/.test(draft.nif)) errors.nif = "O NIF tem 9 dígitos.";
-        if (draft.codigo_postal && !/^\d{4}-\d{3}$/.test(draft.codigo_postal)) errors.codigo_postal = "Use o formato 0000-000.";
-        if (draft.telefone && !/^\+?[\d ]{9,20}$/.test(draft.telefone)) errors.telefone = "Indique o telemóvel só com números, ex. +351 912 345 678.";
+        if (draft.telefone) draft.telefone = normalizePhone(draft.telefone);
         // O email da candidatura é sempre o da conta (o WeGest recusa outro)
         if (Object.keys(draft).length && email) draft.email = email;
         return { draft, errors };
@@ -417,8 +418,8 @@ function LicenseSection(props: SectionProps) {
         const errors: Errors = {};
         const carta: NonNullable<AccountApplicationDraft["carta_conducao"]> = {};
         if (value(data, "carta_conducao.numero")) carta.numero = value(data, "carta_conducao.numero");
-        const categorias = data.getAll("carta_conducao.categorias").map(String).filter((c): c is (typeof LICENSE_CATEGORIES)[number] => (LICENSE_CATEGORIES as readonly string[]).includes(c));
-        if (categorias.length) carta.categorias = categorias;
+        // O WeGest pede as categorias; para TVDE só conta a B, por isso vai sempre a B e o motorista não escolhe
+        carta.categorias = ["B"];
         if (value(data, "carta_conducao.validade")) carta.validade = value(data, "carta_conducao.validade");
         checkDate(errors, "carta_conducao.validade", carta.validade ?? "");
         return { draft: Object.keys(carta).length ? { carta_conducao: carta } : {}, errors };
@@ -432,16 +433,6 @@ function LicenseSection(props: SectionProps) {
           <Field label="Válida até" htmlFor={uid + "validade"} error={errors["carta_conducao.validade"]}>
             <Input {...control(uid + "validade", errors, "carta_conducao.validade")} defaultValue={d.validade} type="date" min={today()} />
           </Field>
-          <fieldset className="sm:col-span-2" aria-describedby={errors["carta_conducao.categorias"] ? uid + "cat-error" : uid + "cat-help"}>
-            <legend className="mb-1.5 text-body-small font-medium text-copy-secondary">Categorias</legend>
-            <p id={uid + "cat-help"} className="mb-2 text-caption text-copy-muted">Marque todas as que constam da carta. Para TVDE conta a B.</p>
-            <div className="flex flex-wrap gap-x-5 gap-y-1">
-              {LICENSE_CATEGORIES.map((c) => (
-                <Checkbox key={c} name="carta_conducao.categorias" value={c} defaultChecked={d.categorias?.includes(c)} label={c} className="min-w-14" />
-              ))}
-            </div>
-            {errors["carta_conducao.categorias"] && <p id={uid + "cat-error"} className="mt-1.5 text-body-small text-negative">{errors["carta_conducao.categorias"]}</p>}
-          </fieldset>
         </div>
       )}
     </SectionForm>
@@ -503,7 +494,6 @@ function IbanSection(props: SectionProps) {
       build={(data) => {
         const errors: Errors = {};
         const v = value(data, "iban").replace(/\s+/g, "").toUpperCase();
-        if (v && !/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(v)) errors.iban = "Confirme o IBAN, ex. PT50 0002 0123 1234 5678 9015 4.";
         return { draft: v ? { iban: v } : {}, errors };
       }}
     >
@@ -577,7 +567,7 @@ function ReadOnly({ app }: { app: AccountApplication }) {
     ["NIF", d.nif],
     ["Morada", [d.morada, [d.codigo_postal, d.cidade].filter(Boolean).join(" ")].filter(Boolean).join(", ")],
     ["Documento de identificação", d.documento ? [d.documento.tipo ? ID_TYPE_LABEL[d.documento.tipo] : "", d.documento.numero].filter(Boolean).join(", ") : undefined],
-    ["Carta de condução", d.carta_conducao ? [d.carta_conducao.numero, d.carta_conducao.categorias?.join(", ")].filter(Boolean).join(", categorias ") : undefined],
+    ["Carta de condução", d.carta_conducao?.numero],
     ["Licença TVDE", d.em_formacao_tvde ? "Em formação" : d.licenca_tvde?.numero],
     ["IBAN", d.iban ? maskIban(d.iban) : undefined],
   ];
