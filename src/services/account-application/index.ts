@@ -15,7 +15,7 @@ import {
 import { fail, fromError, fromZod, ok } from "@/lib/api";
 import { validateApplicationDraft } from "@/lib/application-rules";
 import { driverAuthEnabled } from "@/lib/driver-account";
-import { getSession, isWeGestSession } from "@/services/auth";
+import { getSession, isDriverSession } from "@/services/auth";
 import { bearerToken } from "@/services/auth/driver";
 import {
   confirmApplicationUpload,
@@ -76,8 +76,8 @@ export async function applicationBackend(request: Request): Promise<ApplicationB
   if (accountApplicationMock()) {
     const session = await getSession();
     if (!session) return null;
-    // Conta de demonstração (local) ou conta WeGest, de motorista ou de cliente: pode preencher a ficha.
-    const driver = isWeGestSession(session) || session.user.authProviderId.startsWith("local:");
+    // Conta de demonstração (local) ou de motorista: pode candidatar-se. Conta WeGest de cliente: 403.
+    const driver = isDriverSession(session) || session.user.authProviderId.startsWith("local:");
     return mockApplicationBackend({ id: session.user.id, email: session.user.email, driver });
   }
   const token = bearerToken(request);
@@ -103,7 +103,8 @@ export const draftSchema = z
     licenca_tvde: z.strictObject({ numero: text(40), validade: date }).partial().nullable(),
     em_formacao_tvde: z.boolean(),
     iban: z.string().max(42),
-    modelo_pretendido_id: z.uuid().nullable(),
+    // Id do modelo TVDE do catálogo; o formato confirma-o o WeGest (o catálogo de demonstração não usa UUID)
+    modelo_pretendido_id: z.string().trim().min(1).max(64).nullable(),
     data_inicio_pretendida: date.nullable(),
     observacoes: text(1000).nullable(),
     consentimento: z.strictObject({ versao: text(50), aceite_em: z.iso.datetime({ offset: true }) }),

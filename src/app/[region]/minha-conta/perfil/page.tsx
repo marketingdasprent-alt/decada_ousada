@@ -8,7 +8,8 @@ import { attempt } from "@/lib/attempt";
 import { customerToForm } from "@/lib/customer-form";
 import { requireCustomer } from "@/lib/guard";
 import { getCustomerId } from "@/services/auth";
-import { getCustomer } from "@/services/wegest";
+import { getCustomer, integrationMode } from "@/services/wegest";
+import { accountCustomerFileReady } from "@/services/wegest/account";
 
 export const metadata: Metadata = { title: "Dados pessoais" };
 
@@ -32,10 +33,16 @@ async function Profile() {
   const tvdeId = racId ? null : await getCustomerId(session, "tvde");
   const customerId = racId ?? tvdeId;
   if (!customerId) {
+    // O cliente Rent a Car preenche a ficha de cliente aqui (nunca a candidatura TVDE). Com a API
+    // real, só quando a rota da conta no WeGest estiver ligada; até lá a ficha nasce na 1.ª reserva.
+    if (integrationMode() === "mock" || accountCustomerFileReady()) {
+      return <ProfileForm create type="rentacar" initial={{ fullName: session.user.name ?? "", email: session.user.email }} />;
+    }
     return (
       <EmptyState
         title="Ainda não tem ficha pessoal"
-        action={<ButtonLink href="/tvde/candidatura" size="sm">Preencher ficha pessoal</ButtonLink>}
+        description="Os seus dados ficam guardados na ficha de cliente quando fizer a primeira reserva."
+        action={<ButtonLink href="/rent-a-car" size="sm">Pesquisar viaturas</ButtonLink>}
       />
     );
   }

@@ -6,14 +6,11 @@ import { fail, fromError, fromZod, ok } from "@/lib/api";
 import { driverAuthEnabled } from "@/lib/driver-account";
 import { KNOWN_FIELD_MAP, validateDynamicForm } from "@/lib/dynamic-form";
 import { regionFromRequest } from "@/lib/region";
-import { driverAccountId, getCustomerId, getSession, isWeGestSession, linkCustomer } from "@/services/auth";
-import { bearerToken, DriverAuthUnavailable, verifyDriverToken } from "@/services/auth/driver";
+import { getCustomerId, getSession, linkCustomer } from "@/services/auth";
 import { verifyCaptcha } from "@/services/captcha";
 import { sendEmail } from "@/services/email";
 import { checkVehicleAvailability, createApplication, getApplicationForm, getVehicleById, onlineRequestsEnabled, upsertCustomer } from "@/services/wegest";
 import { WeGestError } from "@/services/wegest/types";
-
-const SESSION_ENDED = "A sua sessão terminou. Entre de novo para continuar.";
 
 const schema = z
   .object({
@@ -32,14 +29,17 @@ const schema = z
  * Sem viatura é só o cadastro; com viatura, a disponibilidade é confirmada outra vez aqui.
  * O motorista é criado/atualizado no WeGest; a candidatura fica a aguardar documentos e pagamento.
  *
- * Com contas de motorista (WeGest): o browser envia o token da conta (Authorization: Bearer),
- * que segue para o WeGest em X-Conta-Token e liga a candidatura à conta. O token não é
- * guardado nem escrito em logs. O email da candidatura é sempre o da conta.
+ * Só sem contas WeGest. Com contas, a candidatura vai pelo fluxo da conta (PUT, documentos e
+ * POST /conta/candidatura, em /api/account/application): este POST /tvde/candidaturas submete
+ * sem documentos e o WeGest pediu que não seja usado com conta (2026-10-20).
  */
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return fromZod(parsed.error);
   const { vehicleId, pickupAt, pickupLocationId, formData } = parsed.data;
+  if (driverAuthEnabled()) {
+    return fail("conflict", "A candidatura TVDE é feita na Área TVDE, com a sua conta de motorista.", 409);
+  }
   if (!onlineRequestsEnabled()) {
     return fail("unavailable", "O envio de candidaturas online ainda não está disponível. Contacte a equipa para se candidatar.", 503);
   }
@@ -54,20 +54,6 @@ export async function POST(req: Request) {
   try {
     const session = await getSession();
     if (!session) return fail("unauthorized", "Inicie sessão para se candidatar.", 401);
-
-    let driverToken: string | undefined;
-    if (driverAuthEnabled()) {
-      const token = bearerToken(req);
-      if (!isWeGestSession(session) || !token) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
-      const account = await verifyDriverToken(token);
-      // Conta de motorista ou de cliente Rent a Car: as duas preenchem a ficha; o WeGest decide (CONTA_INVALIDA)
-      if (!account || account.id !== driverAccountId(session)) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
-      if (formData.email && formData.email.trim().toLowerCase() !== account.email) {
-        return fail("validation", "Verifique os campos assinalados.", 422, { fieldErrors: { email: "Use o email da sua conta." } });
-      }
-      formData.email = account.email;
-      driverToken = token;
-    }
 
     // Validação com a definição da ficha vinda da API
     const form = await getApplicationForm(region);
@@ -94,14 +80,10 @@ export async function POST(req: Request) {
     const driver = await upsertCustomer("tvde", input, existingId ?? undefined);
     if (!existingId) await linkCustomer(session.user.id, { wegestCustomerId: driver.id, customerType: "tvde", region });
 
-    const application = await createApplication({ region, customerId: driver.id, vehicleId, offerId, pickupAt, pickupLocationId, formData, driverToken });
+    const application = await createApplication({ region, customerId: driver.id, vehicleId, offerId, pickupAt, pickupLocationId, formData });
     await sendEmail(input.email || session.user.email, "tvde.registration_received", { reference: application.reference });
     return ok({ applicationId: application.id });
   } catch (err) {
-    if (err instanceof DriverAuthUnavailable) {
-      console.warn("[tvde/applications]", err.message);
-      return fail("unavailable", "O serviço de contas está indisponível. Tente de novo dentro de minutos.", 503);
-    }
     // Erros da conta de motorista no WeGest: sessão a renovar ou conta que não se pode candidatar
     if (err instanceof WeGestError && err.apiCode === "SESSAO_INVALIDA") return fail("unauthorized", err.message, 401, { reason: "session_expired" });
     if (err instanceof WeGestError && err.apiCode === "CONTA_INVALIDA") return fail("unauthorized", err.message, 403);

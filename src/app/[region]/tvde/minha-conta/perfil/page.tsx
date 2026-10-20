@@ -7,6 +7,7 @@ import { ButtonLink, Skeleton } from "@/components/shared/ui";
 import { attempt } from "@/lib/attempt";
 import { customerToForm } from "@/lib/customer-form";
 import { requireCustomer } from "@/lib/guard";
+import { accountApplicationEnabled } from "@/services/account-application";
 import { getCustomer } from "@/services/wegest";
 
 export const metadata: Metadata = { title: "Perfil" };
@@ -32,7 +33,8 @@ async function Profile() {
       <EmptyState
         title="Ainda não tem ficha pessoal"
         description="Pode preenchê-la já, sem escolher viatura."
-        action={<ButtonLink href="/tvde/candidatura" size="sm">Preencher ficha pessoal</ButtonLink>}
+        // Conta WeGest: a ficha é a candidatura da conta (PUT, documentos, POST /conta/candidatura)
+        action={<ButtonLink href={accountApplicationEnabled() ? "/tvde/minha-conta/candidaturas" : "/tvde/candidatura"} size="sm">Preencher ficha pessoal</ButtonLink>}
       />
     );
   }

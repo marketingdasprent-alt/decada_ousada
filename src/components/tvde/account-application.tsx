@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useId, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import { ID_DOCUMENT_TYPES, type AccountApplication, type AccountApplicationDraft } from "@/domain/customer/account";
 import { applicationFetch } from "@/lib/application-fetch";
@@ -135,15 +135,29 @@ function missingSentence(app: AccountApplication) {
   return "Ainda falta " + parts.join(" e ") + ".";
 }
 
+/** Viatura escolhida em "Reservar esta viatura": modelo TVDE e dia de início pretendido. */
+export interface VehicleChoice {
+  id: string;
+  name: string;
+  startDate: string;
+}
+
 /** Candidatura completa: ficha por secções, documentos e envio; só leitura depois de submetida. */
-export function AccountApplicationForm({ mock, email }: { mock: boolean; email: string }) {
+export function AccountApplicationForm({ mock, email, choice, vehicleNames = {} }: { mock: boolean; email: string; choice?: VehicleChoice; vehicleNames?: Record<string, string> }) {
   const { load, setApp, reload } = useApplication(mock);
   const [notice, setNotice] = useState<{ tone: "ok" | "danger" | "warn"; text: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   if (load.state !== "ready") return <Blocked load={load} onRetry={() => void reload()} />;
   const app = load.app;
-  if (app && app.estado !== "rascunho") return <ReadOnly app={app} />;
+  if (app && app.estado !== "rascunho") {
+    return (
+      <div className="space-y-6">
+        {choice && <Notice tone="warn" title="A candidatura já foi submetida">Já não é possível mudar a viatura online. Para pedir o {choice.name}, fale connosco pelo <Link href="/tvde/minha-conta/suporte" className="font-semibold underline underline-offset-2">Suporte</Link>.</Notice>}
+        <ReadOnly app={app} vehicleNames={vehicleNames} />
+      </div>
+    );
+  }
 
   /** Erros que mudam o ecrã todo: sessão, conta errada, candidatura já submetida. */
   const handleFatal = (status: number) => {
@@ -173,6 +187,7 @@ export function AccountApplicationForm({ mock, email }: { mock: boolean; email: 
         <p className="text-copy-secondary">
           Preencha por partes e carregue em Guardar em cada uma. Pode sair e voltar: o que guardou fica na sua conta. Os dados só seguem para análise quando carregar em Submeter.
         </p>
+        <VehicleSection app={app} mock={mock} choice={choice} vehicleNames={vehicleNames} onSaved={setApp} onFatal={handleFatal} />
         <PersonalSection {...sectionProps} missing={missingBySection("pessoais")} />
         <IdSection {...sectionProps} missing={missingBySection("documento")} />
         <LicenseSection {...sectionProps} missing={missingBySection("carta")} />
@@ -222,6 +237,50 @@ function MissingList({ title, items }: { title: string; items: string[] }) {
         {items.map((item) => <li key={item}>{item}</li>)}
       </ul>
     </div>
+  );
+}
+
+// ───────────────────────────── Viatura pretendida ─────────────────────────────
+
+/**
+ * Viatura pretendida (opcional na API). A que vem de "Reservar esta viatura" grava-se sozinha no
+ * rascunho com o PUT: a pessoa já a escolheu, não tem de a escolher outra vez aqui.
+ */
+function VehicleSection({ app, mock, choice, vehicleNames, onSaved, onFatal }: Pick<SectionProps, "app" | "mock" | "onSaved" | "onFatal"> & { choice?: VehicleChoice; vehicleNames: Record<string, string> }) {
+  const savedId = app?.dados.modelo_pretendido_id ?? null;
+  const savedDate = app?.dados.data_inicio_pretendida ?? null;
+  const needsSave = Boolean(choice && (savedId !== choice.id || savedDate !== choice.startDate));
+  const [status, setStatus] = useState<{ tone: "ok" | "danger" | "muted"; text: string } | null>(null);
+  // Um só PUT por visita, mesmo quando o React corre o efeito duas vezes (modo estrito em desenvolvimento)
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (!choice || !needsSave || started.current) return;
+    started.current = true;
+    // Gravação única ao chegar com a viatura escolhida; o rascunho volta do WeGest já com ela
+    setStatus({ tone: "muted", text: "A guardar a viatura na candidatura…" });
+    void (async () => {
+      const res = await applicationFetch<AccountApplication>(API, mock, { method: "PUT", body: { modelo_pretendido_id: choice.id, data_inicio_pretendida: choice.startDate } });
+      if (res.ok) { onSaved(res.data); setStatus({ tone: "ok", text: "Viatura guardada na candidatura." }); return; }
+      if (onFatal(res.status)) return;
+      setStatus({ tone: "danger", text: res.error.message });
+    })();
+  }, [choice, needsSave, mock, onSaved, onFatal]);
+
+  const id = choice?.id ?? savedId;
+  const date = choice?.startDate ?? savedDate;
+  const name = choice?.name ?? (id ? vehicleNames[id] ?? "Modelo guardado na candidatura" : null);
+  return (
+    <Card className="p-5 sm:p-6">
+      <h3 className="text-h4 font-bold">Viatura pretendida</h3>
+      {name ? (
+        <p className="mt-3"><span className="font-semibold">{name}</span>{date && <>, <span className="whitespace-nowrap">a partir de {formatDate(date)}</span>.</>}</p>
+      ) : (
+        <p className="mt-3 text-body-small text-copy-secondary">Ainda não escolheu viatura. É opcional: pode escolher agora ou mais tarde, enquanto a candidatura não for submetida.</p>
+      )}
+      <p role="status" className={cn("mt-2 text-body-small", status?.tone === "danger" ? "text-negative" : status?.tone === "ok" ? "text-positive" : "text-copy-muted")}>{status?.text}</p>
+      <ButtonLink href="/tvde/viaturas" variant="outline" size="sm" className="mt-3">{name ? "Escolher outra viatura" : "Ver viaturas TVDE"}</ButtonLink>
+    </Card>
   );
 }
 
@@ -557,7 +616,7 @@ function maskIban(iban: string) {
   return clean.length > 8 ? clean.slice(0, 4) + " … " + clean.slice(-4) : clean;
 }
 
-function ReadOnly({ app }: { app: AccountApplication }) {
+function ReadOnly({ app, vehicleNames }: { app: AccountApplication; vehicleNames: Record<string, string> }) {
   const d = app.dados;
   const estado = app.estado as Exclude<AccountApplication["estado"], "rascunho">;
   const rows: Array<[string, string | undefined]> = [
@@ -570,6 +629,8 @@ function ReadOnly({ app }: { app: AccountApplication }) {
     ["Carta de condução", d.carta_conducao?.numero],
     ["Licença TVDE", d.em_formacao_tvde ? "Em formação" : d.licenca_tvde?.numero],
     ["IBAN", d.iban ? maskIban(d.iban) : undefined],
+    ["Viatura pretendida", d.modelo_pretendido_id ? vehicleNames[d.modelo_pretendido_id] ?? "Modelo guardado na candidatura" : undefined],
+    ["Início pretendido", d.data_inicio_pretendida ? formatDate(d.data_inicio_pretendida) : undefined],
   ];
   const received = Object.entries(app.documentos).filter(([, doc]) => doc?.recebido).map(([tipo]) => DOC_LABEL[tipo as keyof typeof DOC_LABEL] ?? fieldLabel(tipo));
   return (

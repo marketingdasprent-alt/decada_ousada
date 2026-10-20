@@ -13,7 +13,7 @@ import type { Region } from "@/domain/region";
 import { DRIVER_ACCOUNT, driverAuthEnabled } from "@/lib/driver-account";
 import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
-import { getSession, isDriverSession, isWeGestSession } from "@/services/auth";
+import { getSession, isDriverSession } from "@/services/auth";
 
 export const metadata: Metadata = { title: "Entrar", robots: { index: false } };
 
@@ -41,8 +41,8 @@ async function Login({ region, searchParams }: { region: Region; searchParams: P
 
   // Motorista com sessão: a conta dele é a área do motorista (/tvde/minha-conta)
   if (session && isDriverSession(session) && isDriverLogin && !next) redirect(DRIVER_ACCOUNT);
-  // Sem conta WeGest (motorista ou cliente), a ficha pede uma, por isso fica aqui
-  const needsDriverAccount = driverAccounts && next?.startsWith("/tvde/candidatura") && !isWeGestSession(session);
+  // Cliente Rent a Car a candidatar-se: a candidatura pede a conta de motorista, por isso fica aqui
+  const needsDriverAccount = driverAccounts && next?.startsWith("/tvde/candidatura") && !isDriverSession(session);
   if (session && !needsDriverAccount) redirect(next?.startsWith("/") && !next.startsWith("//") ? next : isDriverSession(session) ? DRIVER_ACCOUNT : "/minha-conta");
 
   // Link do email de confirmação da conta de motorista (chega com a sessão no URL)

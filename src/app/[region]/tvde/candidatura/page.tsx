@@ -14,14 +14,17 @@ import { attempt } from "@/lib/attempt";
 import { driverAuthEnabled } from "@/lib/driver-account";
 import { requireSession } from "@/lib/guard";
 import { regionFromParams } from "@/lib/region";
+import { accountApplicationEnabled } from "@/services/account-application";
 import { firstParam } from "@/lib/search";
-import { getCustomerId, isWeGestSession } from "@/services/auth";
+import { getCustomerId, isDriverSession } from "@/services/auth";
 import { checkVehicleAvailability, getApplicationForm, getCustomer, getVehicleById, listLocations, onlineRequestsEnabled } from "@/services/wegest";
 import { onlinePaymentsEnabled } from "@/services/payments";
 
 export const metadata: Metadata = { title: "Candidatura TVDE", robots: { index: false } };
 
 type SP = Record<string, string | string[] | undefined>;
+
+const ACCOUNT_APPLICATION = "/tvde/minha-conta/candidaturas";
 
 export default async function CandidaturaPage({ params, searchParams }: PageProps<"/[region]/tvde/candidatura">) {
   const region = await regionFromParams(params);
@@ -40,12 +43,17 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
   // O cadastro não depende da viatura: sem os três, é só o cadastro do motorista
   const withVehicle = Boolean(vehicleId && pickupAt && locationId);
   const here = withVehicle ? `/tvde/candidatura?${new URLSearchParams({ viatura: vehicleId!, inicio: pickupAt!, local: locationId! })}` : "/tvde/candidatura";
+  // Com a candidatura da conta (contas WeGest ou demonstração), o envio é o fluxo novo: PUT, documentos e
+  // POST /conta/candidatura. A viatura e o dia seguem para o rascunho (modelo_pretendido_id, data_inicio_pretendida).
+  if (accountApplicationEnabled()) {
+    redirect(withVehicle ? `${ACCOUNT_APPLICATION}?${new URLSearchParams({ viatura: vehicleId!, inicio: pickupAt!.slice(0, 10) })}` : ACCOUNT_APPLICATION);
+  }
   // Com os pedidos desligados o envio falharia no fim: avisa antes de pedir login e dados
   if (!onlineRequestsEnabled()) return <RequestsOffline />;
   const session = await requireSession(here);
-  // Com contas WeGest, a ficha é feita com a conta (de motorista ou de cliente Rent a Car) e fica ligada a ela
+  // Com contas de motorista, a candidatura é feita com a conta WeGest (fica ligada a ela)
   const driverAccount = driverAuthEnabled();
-  if (driverAccount && !isWeGestSession(session)) redirect(`/entrar?next=${encodeURIComponent(here)}`);
+  if (driverAccount && !isDriverSession(session)) redirect(`/entrar?next=${encodeURIComponent(here)}`);
   if (!withVehicle) return <SignupOnly region={region} session={session} driverAccount={driverAccount} loginHref={`/entrar?next=${encodeURIComponent(here)}`} />;
 
   const vehicle = await getVehicleById(region, vehicleId!);
