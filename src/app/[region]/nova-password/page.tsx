@@ -13,7 +13,7 @@ export default async function NewPasswordPage({ params }: PageProps<"/[region]/n
   const region = await regionFromParams(params);
   if (!driverAuthEnabled()) notFound();
   return (
-    <AuthShell region={region} title="Nova password" description="Escolha a nova password da sua conta de motorista. Serve também no portal e na app do WeGest.">
+    <AuthShell region={region} title="Nova password" description="Escolha a nova password da sua conta.">
       <NewPasswordForm />
     </AuthShell>
   );

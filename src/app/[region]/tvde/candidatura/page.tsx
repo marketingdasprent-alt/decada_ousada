@@ -15,7 +15,7 @@ import { driverAuthEnabled } from "@/lib/driver-account";
 import { requireSession } from "@/lib/guard";
 import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
-import { getCustomerId, isDriverSession } from "@/services/auth";
+import { getCustomerId, isWeGestSession } from "@/services/auth";
 import { checkVehicleAvailability, getApplicationForm, getCustomer, getVehicleById, listLocations } from "@/services/wegest";
 import { onlinePaymentsEnabled } from "@/services/payments";
 
@@ -41,9 +41,9 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
   const withVehicle = Boolean(vehicleId && pickupAt && locationId);
   const here = withVehicle ? `/tvde/candidatura?${new URLSearchParams({ viatura: vehicleId!, inicio: pickupAt!, local: locationId! })}` : "/tvde/candidatura";
   const session = await requireSession(here);
-  // Com contas de motorista, a candidatura é feita com a conta WeGest (fica ligada a ela)
+  // Com contas WeGest, a ficha é feita com a conta (de motorista ou de cliente Rent a Car) e fica ligada a ela
   const driverAccount = driverAuthEnabled();
-  if (driverAccount && !isDriverSession(session)) redirect(`/entrar?next=${encodeURIComponent(here)}`);
+  if (driverAccount && !isWeGestSession(session)) redirect(`/entrar?next=${encodeURIComponent(here)}`);
   if (!withVehicle) return <SignupOnly region={region} session={session} driverAccount={driverAccount} loginHref={`/entrar?next=${encodeURIComponent(here)}`} />;
 
   const vehicle = await getVehicleById(region, vehicleId!);

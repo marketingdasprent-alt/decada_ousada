@@ -31,7 +31,6 @@ const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit
 /** Números confirmados pela equipa (src/domain/drivers, DECISIONS.md 2026-10-12). */
 const PROOF = [
   { value: "500+", label: "motoristas ativos na nossa estrutura" },
-  { value: "100%", label: "das viaturas com seguro contra todos os riscos" },
   { value: "7 dias", label: "de suporte por semana, fins de semana incluídos" },
   { value: "24 h", label: "úteis para lhe ligarmos após a candidatura" },
 ];
@@ -121,7 +120,7 @@ export default async function DriversPage({ params }: PageProps<"/[region]/motor
       <section aria-label="A DÉCADA OUSADA em números" className="relative isolate overflow-hidden bg-panel-dark text-on-dark">
         <CoverPhoto src={photo("photo-1531259267539-a45cfb4fe070")} sizes="100vw" className="-z-10 opacity-40" />
         <Container className="py-14">
-          <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid gap-8 sm:grid-cols-3">
             {PROOF.map((p) => (
               <li key={p.value} className="border-t border-on-dark/30 pt-4">
                 <p className="display text-h1 tabular"><CountUp value={p.value} /></p>

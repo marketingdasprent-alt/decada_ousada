@@ -1,4 +1,4 @@
-import { fail, ok } from "@/lib/api";
+import { fail, ok, fromError } from "@/lib/api";
 import { driverAuthEnabled } from "@/lib/driver-account";
 import { logout, startDriverSession } from "@/services/auth";
 import { bearerToken, DriverAuthUnavailable, verifyDriverToken } from "@/services/auth/driver";
@@ -16,13 +16,13 @@ export async function POST(req: Request) {
     const account = await verifyDriverToken(token);
     if (!account) return fail("unauthorized", "A sessão terminou. Entre de novo.", 401, { reason: "session_expired" });
     await startDriverSession(account);
-    return ok({ email: account.email });
+    return ok({ email: account.email, kind: account.kind }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (err) {
     if (err instanceof DriverAuthUnavailable) {
       console.warn("[driver-session]", err.message);
       return fail("unavailable", "O serviço de contas está indisponível. Tente de novo dentro de minutos.", 503);
     }
-    throw err;
+    return fromError(err);
   }
 }
 

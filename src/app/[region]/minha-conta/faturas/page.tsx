@@ -1,3 +1,5 @@
+import { WeGestInvoices } from "@/components/account/wegest-invoices";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { Download } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
@@ -27,6 +29,7 @@ export default function InvoicesPage() {
 
 async function Invoices() {
   const { customerId } = await requireCustomer("rentacar", "/minha-conta/faturas");
+  if (driverAuthEnabled()) return <WeGestInvoices />;
   const res = customerId ? await attempt(() => listCustomerInvoices(customerId)) : ({ ok: true, data: [] } as const);
   if (!res.ok) return <ErrorState timeout={res.timeout} retryHref="/minha-conta/faturas" />;
   if (!res.data.length) return <EmptyState title="Ainda não tem faturas" description="As faturas aparecem aqui depois de emitidas." />;

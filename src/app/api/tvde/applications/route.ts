@@ -6,7 +6,7 @@ import { fail, fromError, fromZod, ok } from "@/lib/api";
 import { driverAuthEnabled } from "@/lib/driver-account";
 import { KNOWN_FIELD_MAP, validateDynamicForm } from "@/lib/dynamic-form";
 import { regionFromRequest } from "@/lib/region";
-import { driverAccountId, getCustomerId, getSession, isDriverSession, linkCustomer } from "@/services/auth";
+import { driverAccountId, getCustomerId, getSession, isWeGestSession, linkCustomer } from "@/services/auth";
 import { bearerToken, DriverAuthUnavailable, verifyDriverToken } from "@/services/auth/driver";
 import { verifyCaptcha } from "@/services/captcha";
 import { sendEmail } from "@/services/email";
@@ -58,11 +58,12 @@ export async function POST(req: Request) {
     let driverToken: string | undefined;
     if (driverAuthEnabled()) {
       const token = bearerToken(req);
-      if (!isDriverSession(session) || !token) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
+      if (!isWeGestSession(session) || !token) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
       const account = await verifyDriverToken(token);
+      // Conta de motorista ou de cliente Rent a Car: as duas preenchem a ficha; o WeGest decide (CONTA_INVALIDA)
       if (!account || account.id !== driverAccountId(session)) return fail("unauthorized", SESSION_ENDED, 401, { reason: "session_expired" });
       if (formData.email && formData.email.trim().toLowerCase() !== account.email) {
-        return fail("validation", "Verifique os campos assinalados.", 422, { fieldErrors: { email: "Use o email da sua conta de motorista." } });
+        return fail("validation", "Verifique os campos assinalados.", 422, { fieldErrors: { email: "Use o email da sua conta." } });
       }
       formData.email = account.email;
       driverToken = token;
