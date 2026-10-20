@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { driverPasswordError } from "./driver-account";
 
+/** cargo_nome da conta de cliente Rent a Car, que no WeGest é uma conta de motorista. */
+export const CUSTOMER_ROLE = "cliente";
+
 const optionalText = (max: number) => z.string().trim().max(max, "O texto é demasiado longo.");
 export const registrationSchema = z.object({
   tipo_utilizador: z.enum(["cliente", "motorista"]),

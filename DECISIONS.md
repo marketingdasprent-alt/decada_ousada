@@ -1190,3 +1190,33 @@ Override (Blueprint expects a 404 status for missing resources).
 DATE:
 2026-10-19
 ```
+
+---
+
+```
+DECISION:
+A Rent a Car customer account is created in WeGest's Supabase Auth as a
+driver account (tipo_utilizador: "motorista") tagged cargo_nome: "cliente",
+with the customer fields of the "Contas de cliente" guide. The site reads the
+tag from the account's user_metadata and treats the account as a customer
+(/minha-conta, header link); WeGest treats it as a driver, so the same account
+can send the TVDE driver file before the first booking. Accounts created
+earlier with tipo_utilizador: "cliente" keep working as customers but WeGest
+answers CONTA_INVALIDA to their TVDE application.
+
+REASON:
+Team decision, confirmed by WeGest on 2026-10-20 (cargo_nome "cliente" is
+accepted). With tipo_utilizador: "cliente", POST /tvde/candidaturas refused
+the account. cargo_nome is user-editable metadata, so it only drives the
+site's navigation; what the account may do is still decided by WeGest.
+
+SCOPE:
+src/components/account/wegest-register-form.tsx, src/lib/registration.ts
+(CUSTOMER_ROLE), src/services/auth/driver.ts (verifyDriverToken).
+
+LEVEL:
+Project rule (WeGest accounts).
+
+DATE:
+2026-10-20
+```
