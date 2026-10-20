@@ -40,7 +40,7 @@ async function Confirmation({ params, searchParams }: { params: Promise<{ region
   // confirmar o envio. A área do motorista continua a exigir a ligação à conta.
   const fallback = !own && id && (await getSession()) ? await attempt(() => getApplication(id)) : null;
   const found = own?.application ?? (fallback?.ok ? fallback.data : null);
-  if (!found) return <EmptyState title="Candidatura não encontrada" action={<ButtonLink href="/tvde/minha-conta">Área TVDE</ButtonLink>} />;
+  if (!found) return <EmptyState title="Candidatura não encontrada" action={<ButtonLink href="/minha-conta">A minha conta</ButtonLink>} />;
   const app = await withCatalogNames(await withPayment(found), region);
   // Só o cadastro (sem viatura escolhida): sem levantamento nem pagamento
   const withVehicle = Boolean(app.vehicleId);

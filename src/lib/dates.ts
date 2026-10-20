@@ -14,6 +14,13 @@ export function toApiDateTime(local: string, region: "mainland" | "azores" = "ma
   return `${d}T${t}:00${offset}`;
 }
 
+/** Instante da API (ISO com fuso, ex.: UTC) para a hora local da região, em "YYYY-MM-DDTHH:mm". */
+export function fromApiDateTime(iso: string, region: "mainland" | "azores" = "mainland"): string {
+  const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ[region], year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const p = Object.fromEntries(fmt.formatToParts(new Date(iso)).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+}
+
 const dateFmt = new Intl.DateTimeFormat("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" });
 const shortFmt = new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "short" });
 const weekdayFmt = new Intl.DateTimeFormat("pt-PT", { weekday: "short", day: "numeric", month: "short" });

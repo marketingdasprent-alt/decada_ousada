@@ -1,10 +1,7 @@
 import { fail, fromError, fromZod, ok } from "@/lib/api";
-import { regionFromRequest } from "@/lib/region";
 import { customerSchema } from "@/lib/validation";
-import { getCustomerId, getSession, linkCustomer } from "@/services/auth";
-import { bearerToken, verifyDriverToken } from "@/services/auth/driver";
-import { getCustomer, integrationMode, updateCustomer, upsertCustomer } from "@/services/wegest";
-import { saveAccountCustomerFile } from "@/services/wegest/account";
+import { getCustomerId, getSession } from "@/services/auth";
+import { getCustomer, updateCustomer } from "@/services/wegest";
 
 /** GET /api/customers/me: ficha do cliente, lida do WeGest (source of truth). */
 export async function GET(req: Request) {
@@ -33,35 +30,6 @@ export async function PATCH(req: Request) {
     const id = await getCustomerId(session, type);
     if (!id) return fail("not_found", "Ainda não tem ficha de cliente.", 404);
     return ok(await updateCustomer(id, parsed.data));
-  } catch (err) {
-    return fromError(err);
-  }
-}
-
-/**
- * POST /api/customers/me: cria a ficha de cliente Rent a Car antes da primeira reserva. Com a API
- * real vai pela conta WeGest (X-Conta-Token), nunca como candidatura TVDE; no mock fica na ficha
- * de demonstração ligada à sessão. O email é sempre o da conta.
- */
-export async function POST(req: Request) {
-  const body = await req.json().catch(() => null);
-  const parsed = customerSchema.omit({ email: true }).safeParse(body?.customer ?? {});
-  if (!parsed.success) return fromZod(parsed.error);
-  try {
-    const session = await getSession();
-    if (!session) return fail("unauthorized", "Sessão expirada.", 401);
-    if (await getCustomerId(session, "rentacar")) return fail("conflict", "Já tem ficha de cliente.", 409);
-    const input = { ...parsed.data, email: session.user.email };
-    if (integrationMode() !== "mock") {
-      const token = bearerToken(req);
-      const account = token ? await verifyDriverToken(token) : null;
-      if (!token || !account || !session.user.id.endsWith(":" + account.id)) return fail("unauthorized", "Sessão expirada.", 401);
-      await saveAccountCustomerFile(token, input);
-      return ok({ saved: true });
-    }
-    const customer = await upsertCustomer("rentacar", input);
-    await linkCustomer(session.user.id, { wegestCustomerId: customer.id, customerType: "rentacar", region: regionFromRequest(req) });
-    return ok({ saved: true });
   } catch (err) {
     return fromError(err);
   }

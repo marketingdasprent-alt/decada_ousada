@@ -1,10 +1,15 @@
 import "server-only";
-import type { AccountInvoice, WeGestAccount } from "@/domain/customer/account";
+import type { AccountBooking, AccountInvoice, WeGestAccount } from "@/domain/customer/account";
 import { wegestRequest } from "./client";
 import { WeGestError } from "./types";
 
 export const getAccount = (token: string) => wegestRequest<WeGestAccount>("/conta", { headers: { "X-Conta-Token": token } });
 export const getAccountInvoices = (token: string) => wegestRequest<AccountInvoice[]>("/conta/faturas", { headers: { "X-Conta-Token": token } });
+/** Reservas da ficha ligada à conta, mais recentes primeiro. O WeGest só devolve as da própria conta. */
+export const getAccountBookings = (token: string) => wegestRequest<AccountBooking[]>("/conta/reservas", { headers: { "X-Conta-Token": token } });
+/** Só cancela uma reserva da conta com pode_cancelar: true (pendente, levantamento por chegar). */
+export const cancelAccountBooking = (token: string, codigo: number) =>
+  wegestRequest<AccountBooking>("/conta/reservas/" + codigo, { method: "DELETE", headers: { "X-Conta-Token": token } });
 
 /** O programa de faturação pode demorar 45 s. Sem retry: cada pedido gera um PDF. */
 export async function getAccountInvoicePdf(token: string, id: string): Promise<Response> {
@@ -23,7 +28,6 @@ export async function getAccountInvoicePdf(token: string, id: string): Promise<R
 
 // Import aqui (e não no topo) para este bloco ficar acrescentado sem mexer no que está acima.
 import type { AccountApplication, AccountApplicationDraft, ApplicationDocType, ApplicationUploadTicket } from "@/domain/customer/account";
-import type { CustomerInput } from "@/domain/customer";
 
 // Candidatura TVDE da conta. Sem cache e sem retry nas escritas (wegestRequest só repete GET).
 const contaToken = (token: string) => ({ "X-Conta-Token": token });
@@ -42,16 +46,3 @@ export const confirmApplicationUpload = (token: string, tipo: ApplicationDocType
   wegestRequest<ApplicationEnvelope>(docPath(tipo), { method: "PUT", body: { caminho }, headers: contaToken(token) });
 export const deleteApplicationDocument = (token: string, tipo: ApplicationDocType) =>
   wegestRequest<ApplicationEnvelope>(docPath(tipo), { method: "DELETE", headers: contaToken(token) });
-
-// Ficha de cliente Rent a Car da conta, antes da primeira reserva: o cliente entra como cliente no
-// WeGest, nunca como candidatura TVDE. A rota está a ser feita pelo WeGest (João, 20/10/2026).
-// Enquanto CUSTOMER_FILE_ROUTE for null, o pedido não sai daqui e, com a API real, a página da
-// conta não mostra o formulário. Ao ligar: preencher a rota e o formato do corpo que o WeGest indicar.
-const CUSTOMER_FILE_ROUTE: string | null = null;
-export const accountCustomerFileReady = () => CUSTOMER_FILE_ROUTE !== null;
-
-export async function saveAccountCustomerFile(token: string, customer: CustomerInput): Promise<void> {
-  if (!CUSTOMER_FILE_ROUTE) throw new WeGestError("unavailable", "Ainda não é possível guardar a ficha online. Tente mais tarde ou contacte-nos.", 503);
-  void token;
-  void customer;
-}

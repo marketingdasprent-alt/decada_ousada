@@ -1,42 +1,56 @@
-import { CarFront, FileText, UserRound } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { AccountShortcuts } from "@/components/account/account-shortcuts";
 import { BookingListItem } from "@/components/account/booking-list-item";
+import { WeGestAccountHome } from "@/components/account/wegest-bookings";
+import { AccountApplicationSummary } from "@/components/tvde/account-application";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { ButtonLink, Skeleton } from "@/components/shared/ui";
 import { attempt } from "@/lib/attempt";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { requireCustomer } from "@/lib/guard";
+import { regionFromParams } from "@/lib/region";
+import { accountApplicationEnabled, accountApplicationMock } from "@/services/account-application";
+import { hasTvdeAccess } from "@/services/auth";
 import { getCustomer, listCustomerBookings } from "@/services/wegest";
 
-export default function AccountHome() {
+export default function AccountHome({ params }: PageProps<"/[region]/minha-conta">) {
   return (
     <Suspense fallback={<Skeleton className="h-80" />}>
-      <Dashboard />
+      <Dashboard params={params} />
     </Suspense>
   );
 }
 
-async function Dashboard() {
+async function Dashboard({ params }: { params: Promise<{ region: string }> }) {
   const { session, customerId } = await requireCustomer("rentacar", "/minha-conta");
-  const hasTvde = session.integrations.some((i) => i.customerType === "tvde");
+  // Contas WeGest: as reservas vêm de GET /conta/reservas, no browser, com o token da conta
+  if (driverAuthEnabled()) {
+    const tvde = hasTvdeAccess(session) ? { mock: accountApplicationMock() } : null;
+    return <WeGestAccountHome region={await regionFromParams(params)} name={session.user.name?.split(" ")[0]} tvde={tvde} />;
+  }
+  const hasTvde = hasTvdeAccess(session);
+  // Candidatura da conta (demonstração sem contas WeGest): o mesmo resumo da visão geral WeGest
+  const tvdeSummary = hasTvde && accountApplicationEnabled() ? <AccountApplicationSummary mock={accountApplicationMock()} /> : null;
 
   if (!customerId) {
+    const first = session.user.name?.split(" ")[0];
     return (
-      <>
-        <h2 className="text-h3 font-bold">Olá{session.user.name ? `, ${session.user.name.split(" ")[0]}` : ""}.</h2>
+      <div className="space-y-10">
+        <h2 className="text-h2 font-bold">{first ? `Olá, ${first}.` : "Visão geral"}</h2>
+        {tvdeSummary}
         <EmptyState
-          className="mt-6"
           title="Ainda não tem reservas Rent a Car"
           description="Quando fizer a primeira reserva, ela aparece aqui."
           action={
             <div className="flex flex-wrap justify-center gap-3">
               <ButtonLink href="/rent-a-car">Pesquisar viaturas</ButtonLink>
-              {hasTvde && <ButtonLink href="/tvde/minha-conta" variant="outline">Área TVDE</ButtonLink>}
+              {hasTvde && !tvdeSummary && <ButtonLink href="/tvde/minha-conta/candidaturas" variant="outline">Candidatura TVDE</ButtonLink>}
             </div>
           }
         />
-      </>
+      </div>
     );
   }
 
@@ -53,7 +67,8 @@ async function Dashboard() {
 
   return (
     <div className="space-y-10">
-      <h2 className="text-h2 font-bold">Olá{name ? `, ${name}` : ""}.</h2>
+      <h2 className="text-h2 font-bold">{name ? `Olá, ${name}.` : "Visão geral"}</h2>
+      {tvdeSummary}
 
       <section aria-labelledby="proxima">
         <h3 id="proxima" className="mb-4 text-body-large font-bold">Próxima reserva</h3>
@@ -64,23 +79,11 @@ async function Dashboard() {
         )}
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        {[
-          { href: "/minha-conta/reservas", icon: CarFront, label: "As minhas reservas", text: `${bookings.data.length} no total` },
-          { href: "/minha-conta/perfil", icon: UserRound, label: "Dados pessoais", text: "Carta, morada e NIF" },
-          { href: "/minha-conta/faturas", icon: FileText, label: "Faturas", text: "Descarregar documentos" },
-        ].map(({ href, icon: Icon, label, text }) => (
-          <Link key={href} href={href} className="rounded-panel border border-line bg-panel p-5 transition-colors hover:border-copy/25">
-            <Icon className="size-6 text-brand" aria-hidden />
-            <p className="mt-3 font-semibold">{label}</p>
-            <p className="text-body-small text-copy-muted">{text}</p>
-          </Link>
-        ))}
-      </section>
+      <AccountShortcuts bookingsText={`${bookings.data.length} no total`} />
 
-      {hasTvde && (
-        <Link href="/tvde/minha-conta" className="block rounded-panel bg-panel-dark p-5 text-on-dark">
-          <p className="font-semibold">Área TVDE</p>
+      {hasTvde && !tvdeSummary && (
+        <Link href="/tvde/minha-conta/candidaturas" className="block rounded-panel bg-panel-dark p-5 text-on-dark">
+          <p className="font-semibold">Candidatura TVDE</p>
           <p className="text-body-small text-on-dark/70">Consulte o estado da sua candidatura.</p>
         </Link>
       )}

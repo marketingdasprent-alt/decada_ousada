@@ -5,6 +5,7 @@ import { useEffect, useId, useState } from "react";
 
 import { DRIVER_ACCOUNT, DRIVER_CONFIRM_PATH, DRIVER_NEW_PASSWORD_PATH, driverAuthMessage, driverPasswordError, isEmailNotConfirmed } from "@/lib/driver-account";
 import { driverAuth, startSiteSession, takeNext } from "@/lib/driver-auth-client";
+import { apiFetch } from "@/lib/fetcher";
 
 import { Field, Input } from "../shared/form";
 import { Notice } from "../shared/states";
@@ -25,9 +26,37 @@ const link = "font-medium text-brand underline-offset-4 hover:underline max-md:t
 export async function enterSite(next?: string | null): Promise<string | null> {
   const session = await startSiteSession();
   if (!session) return "Não foi possível iniciar a sessão. Tente de novo.";
-  const destination = next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : session.kind === "motorista" ? DRIVER_ACCOUNT : "/minha-conta";
-  window.location.assign(destination);
+  goToAccount(next, session.kind);
   return null;
+}
+
+function goToAccount(next: string | null | undefined, kind: "cliente" | "motorista") {
+  const destination = next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : kind === "motorista" ? DRIVER_ACCOUNT : "/minha-conta";
+  window.location.assign(destination);
+}
+
+/**
+ * Conta de cliente no separador Motorista TVDE: o tipo da conta fica decidido no registo, por isso
+ * em vez de seguir em silêncio para a área de cliente, explica e oferece criar a conta de motorista.
+ */
+function ClientAccountNotice({ next }: { next?: string }) {
+  const [busy, setBusy] = useState(false);
+  async function createDriverAccount() {
+    setBusy(true);
+    // Sem terminar a sessão, /registar continuava ligado à conta de cliente
+    await driverAuth().auth.signOut({ scope: "local" }).catch(() => undefined);
+    await apiFetch("/api/driver-session", { method: "DELETE" });
+    window.location.assign(withNext("/registar?tipo=motorista", next));
+  }
+  return (
+    <Notice tone="warn" title="Esta conta é de cliente Rent a Car">
+      A candidatura TVDE precisa de uma conta de motorista, criada com outro email. Pode seguir para a área de cliente ou criar a conta de motorista.
+      <div className="mt-3 flex flex-wrap gap-3">
+        <Button size="sm" loading={busy} onClick={() => void createDriverAccount()}>Criar conta de motorista</Button>
+        <Button size="sm" variant="outline" disabled={busy} onClick={() => goToAccount(null, "cliente")}>Ir para a área de cliente</Button>
+      </div>
+    </Notice>
+  );
 }
 
 export function ResendConfirmation({ email }: { email: string }) {
@@ -57,6 +86,7 @@ export function DriverLoginForm({ next, secondary = false, kind = "motorista" }:
   const uid = useId();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<{ message: string; unconfirmedEmail?: string } | null>(null);
+  const [clientAccount, setClientAccount] = useState(false);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -73,12 +103,21 @@ export function DriverLoginForm({ next, secondary = false, kind = "motorista" }:
       setError({ message: driverAuthMessage(authError), unconfirmedEmail: isEmailNotConfirmed(authError) ? email : undefined });
       return;
     }
-    const failure = await enterSite(next);
-    if (failure) {
+    const session = await startSiteSession();
+    if (!session) {
       setPending(false);
-      setError({ message: failure });
+      setError({ message: "Não foi possível iniciar a sessão. Tente de novo." });
+      return;
     }
+    if (kind === "motorista" && session.kind === "cliente") {
+      setPending(false);
+      setClientAccount(true);
+      return;
+    }
+    goToAccount(next, session.kind);
   }
+
+  if (clientAccount) return <ClientAccountNotice next={next} />;
 
   return (
     <form onSubmit={submit} method="post" className="space-y-5">

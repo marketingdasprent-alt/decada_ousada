@@ -2,6 +2,7 @@ import { fail, fromError, fromZod, ok } from "@/lib/api";
 import { regionFromRequest } from "@/lib/region";
 import { bookingRequestSchema } from "@/lib/validation";
 import { getCustomerId, getSession, linkCustomer, register } from "@/services/auth";
+import { bearerToken } from "@/services/auth/driver";
 import { sendEmail } from "@/services/email";
 import { createPayment, linkPayment, onlinePaymentsEnabled, refundPayment } from "@/services/payments";
 import { checkVehicleAvailability, createBooking, onlineRequestsEnabled, quoteRentACar, upsertCustomer, WeGestError } from "@/services/wegest";
@@ -23,6 +24,9 @@ export async function POST(req: Request) {
   if (!onlineRequestsEnabled()) return fail("unavailable", ONLINE_OFF, 503);
   const region = regionFromRequest(req);
   const search = { ...input.search, region };
+  // Conta WeGest: o token liga a reserva à ficha da conta (GET /conta/reservas). Só passa por este pedido.
+  const token = bearerToken(req);
+  const accountToken = token && token.length <= 4096 ? token : undefined;
 
   try {
     // 1. Conta do website (autenticação ≠ ficha WeGest, doc §23)
@@ -96,6 +100,7 @@ export async function POST(req: Request) {
         message: input.message,
         paymentReference: payment?.id,
         idempotencyKey: input.idempotencyKey,
+        accountToken,
       });
       if (payment) await linkPayment(payment.id, booking.id);
       await sendEmail(input.customer.email, "rac.booking_received", { reference: booking.reference });
@@ -107,6 +112,10 @@ export async function POST(req: Request) {
       if (err instanceof WeGestError && err.code === "conflict") {
         const money = payment?.status === "paid" ? "O valor pago foi devolvido." : "Não foi cobrado nada.";
         return fail("conflict", `Esta viatura acabou de ser reservada por outra pessoa. ${money}`, 409, { reason: "vehicle_unavailable" });
+      }
+      if (err instanceof WeGestError && err.apiCode === "SESSAO_INVALIDA") {
+        const money = payment?.status === "paid" ? " O valor pago foi devolvido." : "";
+        return fail("unauthorized", `A sua sessão terminou. Entre novamente para concluir a reserva; as suas escolhas ficam guardadas.${money}`, 401, { reason: "session_expired" });
       }
       throw err;
     }

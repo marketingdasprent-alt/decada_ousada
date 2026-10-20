@@ -338,6 +338,7 @@ export async function createBooking(input: {
   paymentReference?: string;
   idempotencyKey: string;
   expectedTotal: number;
+  accountToken?: string;
 }): Promise<Booking> {
   await connection();
   const b = await transport().createBooking({
@@ -356,6 +357,7 @@ export async function createBooking(input: {
     paymentReference: input.paymentReference,
     idempotencyKey: input.idempotencyKey,
     expectedTotal: input.expectedTotal,
+    accountToken: input.accountToken,
   });
   return mapBooking(b);
 }

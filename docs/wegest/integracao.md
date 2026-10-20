@@ -52,11 +52,19 @@ pagamentos reais, base de dados e CAPTCHA (`WEGEST_PEDIDOS_ONLINE`).
 ## Contas no WeGest (16/10/2026)
 
 O registo de alterações do WeGest de 16/10/2026 acrescenta a conta de cliente.
-O `openapi.json` deste repositório (v1.0.0) ainda não tem estas rotas.
+O `openapi.json` deste repositório foi atualizado a 20/10/2026 a partir de
+`https://api.wegest.pt/v1/openapi.json` e já tem as rotas `/conta`. A fonte é a
+documentação em docs.wegest.pt ("Contas de cliente", "Conta de cliente",
+"Candidatura da conta"): consultar antes de assumir que falta uma rota.
 
 - Conta de cliente: `signUp` no Supabase Auth do WeGest com
-  `tipo_utilizador: "cliente"`, o mesmo mecanismo e os mesmos campos da conta de
-  motorista (decisão do cliente).
+  `tipo_utilizador: "cliente"`, o `org_id` e os dados pessoais (nome, telefone,
+  data_nascimento, pais; nif, morada, codigo_postal e localidade opcionais),
+  sem `cargo_nome`, que é só do motorista. O registo cria a ficha de cliente:
+  depois de confirmar o email, a conta liga-se a uma ficha particular com o
+  mesmo email ou a uma ficha nova com os dados do registo. O NIF fica a aguardar
+  confirmação da equipa (`cliente.nif: null` até lá). Não há rota para alterar
+  a ficha: `/minha-conta/perfil` mostra-a só para leitura (`GET /conta`).
 - Rotas novas, todas com o cabeçalho `X-Conta-Token` (o `access_token` da pessoa):
   `GET /conta`, `GET /conta/reservas`, `DELETE /conta/reservas/{codigo}`,
   `GET /conta/faturas` e `GET /conta/faturas/{id}` (o PDF).
@@ -65,10 +73,9 @@ O `openapi.json` deste repositório (v1.0.0) ainda não tem estas rotas.
   `X-Motorista-Token` continua aceite.
 - A chave `WEGEST_API_KEY` precisa das permissões novas `conta:read` e `conta:write`.
 
-Por ligar no site, à espera do formato das respostas (`openapi.json` atualizado):
-conta de cliente do Rent a Car no WeGest, reserva ligada à conta, e a área do
-cliente com `GET /conta`, reservas e faturas. Por confirmar com o WeGest: se
-`GET /conta` devolve a ficha e as candidaturas de um motorista.
+No site: registo de cliente, ficha em Dados pessoais (`GET /conta`) e faturas
+(`/conta/faturas`) ligados. A candidatura TVDE com conta usa só
+`/conta/candidatura` (PUT, documentos e POST).
 
 ## Antes de ligar `WEGEST_PEDIDOS_ONLINE=on`
 

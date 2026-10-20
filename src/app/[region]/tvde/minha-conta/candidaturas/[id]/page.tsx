@@ -13,7 +13,7 @@ import { PAYMENT_STATUS_LABEL } from "@/domain/payment";
 import { formatMoney } from "@/domain/pricing";
 import { REFUND_STATUS_LABEL } from "@/domain/refund";
 import { formatDateTime } from "@/lib/dates";
-import { requireSession } from "@/lib/guard";
+import { requireTvde } from "@/lib/guard";
 import { getOwnApplication } from "@/lib/ownership";
 import { reconcileApplication, withCatalogNames } from "@/services/tvde";
 import { DRIVER_AREA_URL } from "@/domain/drivers";
@@ -32,7 +32,7 @@ export default function ApplicationDetailPage({ params }: PageProps<"/[region]/t
 
 async function Detail({ params }: { params: Promise<{ id: string; region: string }> }) {
   const { id, region } = await params;
-  await requireSession(`/tvde/minha-conta/candidaturas/${id}`);
+  await requireTvde(`/tvde/minha-conta/candidaturas/${id}`);
   const own = await getOwnApplication(id);
   if (!own) notFound();
   // Estado do WeGest + pagamento/reembolso do fornecedor (independentes, doc §66)

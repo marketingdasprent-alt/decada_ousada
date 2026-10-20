@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { EmptyState, ErrorState } from "@/components/shared/states";
-import { AccountApplicationForm } from "@/components/tvde/account-application";
+import { AccountApplicationForm, DriverAccountNeeded } from "@/components/tvde/account-application";
 import { ButtonLink, Skeleton } from "@/components/shared/ui";
 import { ApplicationCard } from "@/components/tvde/application-card";
 import { attempt } from "@/lib/attempt";
-import { requireCustomer, requireSession } from "@/lib/guard";
+import { requireSession, requireTvde } from "@/lib/guard";
+import { getCustomerId, hasTvdeAccess } from "@/services/auth";
 import type { Region } from "@/domain/region";
 import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
@@ -15,7 +16,7 @@ import { listCustomerApplications, listVehicles } from "@/services/wegest";
 
 type SP = Record<string, string | string[] | undefined>;
 
-export const metadata: Metadata = { title: "Candidaturas" };
+export const metadata: Metadata = { title: "Candidatura TVDE" };
 
 export default async function ApplicationsPage({ params, searchParams }: PageProps<"/[region]/tvde/minha-conta/candidaturas">) {
   const region = await regionFromParams(params);
@@ -37,6 +38,8 @@ async function List({ region, searchParams }: { region: Region; searchParams: Pr
     const inicio = firstParam(sp.inicio);
     const here = viatura && inicio ? `/tvde/minha-conta/candidaturas?${new URLSearchParams({ viatura, inicio })}` : "/tvde/minha-conta/candidaturas";
     const session = await requireSession(here);
+    // Conta de cliente Rent a Car vinda de "Reservar esta viatura": explica e oferece a troca de conta
+    if (!hasTvdeAccess(session)) return <div className="mt-6"><DriverAccountNeeded /></div>;
     // Nomes dos modelos TVDE, para mostrar a viatura pretendida guardada no rascunho
     const vehicles = await attempt(() => listVehicles(region, "tvde"));
     const names = vehicles.ok ? Object.fromEntries(vehicles.data.map((v) => [v.id, v.name])) : {};
@@ -44,7 +47,7 @@ async function List({ region, searchParams }: { region: Region; searchParams: Pr
     const choice = viatura && names[viatura] && inicio && /^\d{4}-\d{2}-\d{2}$/.test(inicio) ? { id: viatura, name: names[viatura], startDate: inicio } : undefined;
     return <div className="mt-6"><AccountApplicationForm mock={accountApplicationMock()} email={session.user.email} choice={choice} vehicleNames={names} /></div>;
   }
-  const { customerId } = await requireCustomer("tvde", "/tvde/minha-conta/candidaturas");
+  const customerId = await getCustomerId(await requireTvde("/tvde/minha-conta/candidaturas"), "tvde");
   const res = customerId ? await attempt(() => listCustomerApplications(customerId)) : ({ ok: true, data: [] } as const);
   if (!res.ok) return <ErrorState className="mt-6" timeout={res.timeout} retryHref="/tvde/minha-conta/candidaturas" />;
   if (!res.data.length) return <EmptyState className="mt-6" title="Sem candidaturas" action={<ButtonLink href="/tvde/viaturas" size="sm">Ver viaturas TVDE</ButtonLink>} />;

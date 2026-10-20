@@ -10,16 +10,16 @@ const TYPES: Array<{ id: LoginType; title: string; text: string }> = [
 ];
 
 /**
- * Os dois logins de /entrar (pedido da equipa, 2026-10-14). São links (?tipo=…) e não botões:
- * a página escolhe o formulário no servidor e funciona sem JavaScript.
+ * Os dois tipos de conta em /entrar (pedido da equipa, 2026-10-14) e em /registar. São links
+ * (?tipo=…) e não botões: a página escolhe o formulário no servidor e funciona sem JavaScript.
  */
-export function LoginTypeSwitch({ current, next }: { current: LoginType; next?: string }) {
+export function LoginTypeSwitch({ current, next, path = "/entrar" }: { current: LoginType; next?: string; path?: "/entrar" | "/registar" }) {
   const href = (type: LoginType) => {
     const query = new URLSearchParams();
     if (type === "motorista") query.set("tipo", "motorista");
     if (next) query.set("next", next);
     const qs = query.toString();
-    return `/entrar${qs ? `?${qs}` : ""}`;
+    return `${path}${qs ? `?${qs}` : ""}`;
   };
   return (
     <nav aria-label="Tipo de conta" className="mb-8 grid grid-cols-2 gap-3">

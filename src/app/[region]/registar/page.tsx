@@ -5,6 +5,7 @@ import { RegisterForm } from "@/components/account/auth-forms";
 import { AuthShell } from "@/components/account/auth-shell";
 import { WeGestRegisterForm } from "@/components/account/wegest-register-form";
 import { RegistrationUnavailable } from "@/components/account/auth-captcha";
+import { LoginTypeSwitch } from "@/components/account/login-type-switch";
 import { Notice } from "@/components/shared/states";
 import { Skeleton } from "@/components/shared/ui";
 import type { Region } from "@/domain/region";
@@ -33,8 +34,12 @@ async function Register({ region, searchParams }: { region: Region; searchParams
   const query = await searchParams;
   const isDriver = firstParam(query.tipo) === "motorista";
   // Conta de motorista nova: a seguir vem o formulário de cadastro (não depende da viatura)
-  const next = firstParam(query.next) ?? (isDriver ? "/tvde/candidatura" : undefined);
+  const requestedNext = firstParam(query.next);
+  const next = requestedNext ?? (isDriver ? "/tvde/candidatura" : undefined);
   const fromApplication = next?.startsWith("/tvde/candidatura");
+  // Os separadores de tipo de conta só saem quando a pessoa não vem de "Candidatar-me"
+  const typeSwitch = (current: "rentacar" | "motorista") =>
+    !requestedNext?.startsWith("/tvde/candidatura") && <LoginTypeSwitch path="/registar" current={current} next={requestedNext} />;
   const viewingChoice = fromApplication && next?.includes("viatura=") && (
     <Notice className="mb-6" title="A sua escolha de viatura fica guardada">
       Depois de criar a conta, continua a candidatura na viatura e data que escolheu.
@@ -45,6 +50,7 @@ async function Register({ region, searchParams }: { region: Region; searchParams
   if (driverAuthEnabled() && (isDriver || fromApplication)) {
     return (
       <AuthShell region={region} title="Criar conta de motorista" description="Com esta conta candidata-se no site e entra no portal e na app do motorista do WeGest.">
+        {typeSwitch("motorista")}
         {viewingChoice}
         <WeGestRegisterForm next={next} kind="motorista" />
       </AuthShell>
@@ -53,6 +59,7 @@ async function Register({ region, searchParams }: { region: Region; searchParams
 
   return (
     <AuthShell region={region} title="Criar conta" description="A conta serve para entrar no site. Os seus dados de cliente ficam no nosso sistema de gestão.">
+      {driverAuthEnabled() && typeSwitch("rentacar")}
       {viewingChoice}
       {driverAuthEnabled() ? <WeGestRegisterForm next={next} /> : process.env.WEGEST_MODE === "http" ? <RegistrationUnavailable /> : <RegisterForm next={next} />}
     </AuthShell>

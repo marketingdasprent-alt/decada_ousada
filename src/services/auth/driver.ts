@@ -36,7 +36,11 @@ export async function verifyDriverToken(token: string): Promise<DriverAccount | 
   // O tipo vem da API da organização, nunca de metadados editáveis pelo utilizador.
   const account = await getAccount(token);
   if (!account.email_confirmado || !["cliente", "motorista"].includes(account.tipo) || account.email.toLowerCase() !== user.email.toLowerCase()) return null;
-  return { id: user.id, email: user.email.toLowerCase(), kind: account.tipo, name: account.cliente?.nome };
+  // O tipo é um só: uma conta de cliente Rent a Car que também é motorista TVDE vem com tipo
+  // "cliente" e o objeto motorista preenchido. Quem tem ficha de motorista entra como motorista;
+  // as reservas e faturas da ficha de cliente continuam a ser lidas pelo token, em /minha-conta.
+  const kind = account.tipo === "motorista" || account.motorista ? "motorista" : "cliente";
+  return { id: user.id, email: user.email.toLowerCase(), kind, name: account.cliente?.nome };
 }
 
 /** Lê o token de `Authorization: Bearer …`. */
