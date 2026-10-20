@@ -3,6 +3,28 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.21.2]: 2026-10-20
+
+### Changed
+
+- TVDE application (/tvde/minha-conta/candidaturas): the driving licence
+  section no longer asks for the licence categories. Saving the section
+  always sends `categorias: ["B"]`, the only category that counts for TVDE,
+  so WeGest still receives the field it requires.
+
+### Fixed
+
+- TVDE application fields are now validated in the browser and again on
+  the server (`src/lib/application-rules.ts`, used by the section forms and
+  by `draftSchema`): NIF check digit, IBAN mod 97, mobile number with
+  country code (Portuguese numbers 91/92/93/96), full name with a surname,
+  address, town, ID number by document type (citizen card check digit when
+  the full number is given), licence and TVDE certificate numbers. A
+  9-digit mobile without country code is saved as +351.
+- /sitemap.xml no longer fails the build when WeGest errors: it moves to
+  request time with `connection()` and, if WeGest is still down, lists only
+  the fixed pages.
+
 ## [0.21.1]: 2026-10-19
 
 ### Fixed
