@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { CountUp } from "@/components/drivers/count-up";
 import { applyLink, opensNewTab } from "@/components/drivers/apply-link";
@@ -10,6 +11,7 @@ import { HostedForms } from "@/components/drivers/hosted-forms";
 import { Marquee } from "@/components/drivers/marquee";
 import { CoverPhoto } from "@/components/shared/cover-photo";
 import { InstagramFeed } from "@/components/shared/instagram";
+import { PageSkeleton } from "@/components/shared/page-header";
 import { Testimonials } from "@/components/shared/testimonials";
 import { ButtonLink, buttonClass, Container, Section, SectionHeading } from "@/components/shared/ui";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
@@ -109,7 +111,16 @@ const FAQ = [
   { q: "Qual é a diferença entre Aluguer e Slot?", a: "No Aluguer, trabalha com uma viatura da nossa frota e paga o respetivo aluguer. No Slot, trabalha com a sua própria viatura através da nossa estrutura de operador TVDE. A equipa explica-lhe as condições de cada modalidade." },
 ];
 
-export default async function DriversPage({ params }: PageProps<"/[region]/motoristas">) {
+// Suspense: se o WeGest falhar no build, o conteúdo é gerado no pedido (ver catalog() em services/wegest)
+export default function DriversPage({ params }: PageProps<"/[region]/motoristas">) {
+  return (
+    <Suspense fallback={<PageSkeleton tone="dark" />}>
+      <DriversContent params={params} />
+    </Suspense>
+  );
+}
+
+async function DriversContent({ params }: { params: PageProps<"/[region]/motoristas">["params"] }) {
   const region = await regionFromParams(params);
   const vehicles = (await listVehicles(region, "tvde")).slice(0, 3);
 

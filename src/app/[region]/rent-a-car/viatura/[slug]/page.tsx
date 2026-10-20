@@ -19,12 +19,14 @@ import { attempt } from "@/lib/attempt";
 import { formatDateTime, rentalDays } from "@/lib/dates";
 import { parseRentalSearch, rentalSearchQuery, searchToFormValues } from "@/lib/search";
 import { checkVehicleAvailability, getVehicleBySlug, listLocations, listVehicles, onlineRequestsEnabled, quoteRentACar } from "@/services/wegest";
-import { atLeastOne } from "@/lib/static-params";
+import { wegestStaticParams } from "@/lib/static-params";
 
 export async function generateStaticParams({ params }: { params: { region: string } }) {
   const regions = isRegion(params?.region) ? [params.region] : REGIONS;
-  const all = await Promise.all(regions.map((r) => listVehicles(r, "rentacar")));
-  return atLeastOne(all.flat().map((v) => ({ slug: v.slug })), "slug");
+  return wegestStaticParams(async () => {
+    const all = await Promise.all(regions.map((r) => listVehicles(r, "rentacar")));
+    return all.flat().map((v) => ({ slug: v.slug }));
+  }, "slug");
 }
 
 export async function generateMetadata({ params }: PageProps<"/[region]/rent-a-car/viatura/[slug]">): Promise<Metadata> {
