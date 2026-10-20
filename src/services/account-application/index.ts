@@ -15,7 +15,7 @@ import {
 import { fail, fromError, fromZod, ok } from "@/lib/api";
 import { validateApplicationDraft } from "@/lib/application-rules";
 import { driverAuthEnabled } from "@/lib/driver-account";
-import { getSession, isDriverSession } from "@/services/auth";
+import { getSession, isWeGestSession } from "@/services/auth";
 import { bearerToken } from "@/services/auth/driver";
 import {
   confirmApplicationUpload,
@@ -76,8 +76,8 @@ export async function applicationBackend(request: Request): Promise<ApplicationB
   if (accountApplicationMock()) {
     const session = await getSession();
     if (!session) return null;
-    // Conta de demonstração (local) ou de motorista: pode candidatar-se. Conta WeGest de cliente: 403.
-    const driver = isDriverSession(session) || session.user.authProviderId.startsWith("local:");
+    // Conta de demonstração (local) ou conta WeGest, de motorista ou de cliente: pode preencher a ficha.
+    const driver = isWeGestSession(session) || session.user.authProviderId.startsWith("local:");
     return mockApplicationBackend({ id: session.user.id, email: session.user.email, driver });
   }
   const token = bearerToken(request);

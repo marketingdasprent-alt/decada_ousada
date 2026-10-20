@@ -7,7 +7,6 @@ import { driverAuth, rememberNext, takeNext } from "@/lib/driver-auth-client";
 import { registrationSchema } from "@/lib/registration";
 import { track } from "@/lib/analytics";
 import { Checkbox, Field, Input } from "../shared/form";
-import { Pending } from "../shared/pending";
 import { Notice } from "../shared/states";
 import { Button } from "../shared/ui";
 import { PasswordInput } from "./auth-forms";
@@ -115,7 +114,6 @@ export function WeGestRegisterForm({ next, kind = "cliente" }: { next?: string; 
         label={<>Aceito os <Link href="/termos" target="_blank" rel="noopener" className={linkClass}>termos e condições</Link> e a <Link href="/privacidade" target="_blank" rel="noopener" className={linkClass}>política de privacidade</Link>.</>} />
       {errors.termos && <p id={uid + "termos-error"} className="mt-1.5 text-body-small text-negative">{errors.termos}</p>}
     </div>
-    <Pending>Texto dos termos e condições pendente</Pending>
     {captcha.field}
     {error && <Notice tone="danger">{error}</Notice>}
     <Button type="submit" size="lg" className="w-full" loading={pending}>Criar conta</Button>

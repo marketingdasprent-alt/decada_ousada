@@ -416,7 +416,9 @@ partner; drivers' phone/WhatsApp +351 912 023 234 and
 motoristas.tvde@decadaousada.pt; call within 24 working hours; approval in
 24 to 48 working hours; support 7 days a week; all-risks insurance on 100%
 of vehicles; weekly payment; no minimum hours; Slot mode. Not confirmed and
-left out: "a empresa TVDE que mais cresce em Portugal".
+left out: "a empresa TVDE que mais cresce em Portugal". On 2026-10-20 the
+team asked to remove the "100% of vehicles with all-risks insurance" figure
+from the proof band.
 
 REASON:
 Team request. The hosted WeGest forms work today, while the site's own

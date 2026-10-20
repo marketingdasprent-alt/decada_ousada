@@ -215,7 +215,7 @@ export function RegistrationStep({
           errors={errors}
           onChange={change}
           onBlur={blur}
-          locked={driverAccount ? { email: "O email da sua conta de motorista." } : undefined}
+          locked={driverAccount ? { email: "O email da sua conta." } : undefined}
         />
       </Card>
       {last && captchaSiteKey && (
