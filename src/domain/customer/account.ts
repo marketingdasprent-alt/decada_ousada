@@ -2,8 +2,10 @@
 export interface WeGestAccount {
   email: string;
   email_confirmado: boolean;
-  tipo: "cliente" | "motorista";
+  tipo: "cliente" | "motorista" | "colaborador";
   cliente: { id: string; nome: string; nif: string | null; telefone: string | null } | null;
+  /** Só para contas de motorista TVDE desta organização; senão null. Uma conta pode ter as duas fichas. */
+  motorista: { candidatura: { id: string; estado: string | null } | null; ficha: boolean } | null;
 }
 
 export interface AccountInvoice {
@@ -15,6 +17,24 @@ export interface AccountInvoice {
   total: number | null;
   contrato_codigo: number | null;
   reserva_codigo: number | null;
+}
+
+/** Reserva de rent-a-car da conta (ReservaConta, GET /conta/reservas, openapi WeGest de 20/10/2026). */
+export interface AccountBooking {
+  codigo: number;
+  estado: "pendente" | "confirmada" | "em_curso" | "concluida" | "cancelada" | "expirada";
+  origem: string;
+  /** Levantamento, em UTC. */
+  inicio: string;
+  /** Devolução, em UTC; null numa reserva em aberto criada pela equipa. */
+  fim: string | null;
+  dias: number | null;
+  modelo: { marca: string; modelo: string } | null;
+  /** Só depois de a equipa confirmar. */
+  matricula: string | null;
+  estacoes: { entrega: string | null; recolha: string | null };
+  total: { sem_iva: number; com_iva: number; iva: number } | null;
+  pode_cancelar: boolean;
 }
 
 /** Candidatura TVDE da conta (GET/PUT/POST /conta/candidatura, openapi WeGest de 19/10/2026). */

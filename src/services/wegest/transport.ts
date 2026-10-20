@@ -83,6 +83,8 @@ export interface WeGestTransport {
     idempotencyKey: string;
     /** Total com IVA que o cliente viu; a API recusa (PRECO_ALTERADO) se já não for esse. */
     expectedTotal: number;
+    /** access_token da conta WeGest (X-Conta-Token): liga a reserva à ficha da conta. Só passa por este pedido. */
+    accountToken?: string;
   }): Promise<WgBooking>;
   getBooking(bookingId: string): Promise<WgBooking | null>;
   listCustomerBookings(customerId: string): Promise<WgBooking[]>;

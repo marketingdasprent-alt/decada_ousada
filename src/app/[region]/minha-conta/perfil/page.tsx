@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { ProfileForm } from "@/components/account/profile-form";
+import { WeGestProfile } from "@/components/account/wegest-profile";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { ButtonLink, Skeleton } from "@/components/shared/ui";
 import { attempt } from "@/lib/attempt";
 import { customerToForm } from "@/lib/customer-form";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { requireCustomer } from "@/lib/guard";
 import { getCustomerId } from "@/services/auth";
-import { getCustomer, integrationMode } from "@/services/wegest";
-import { accountCustomerFileReady } from "@/services/wegest/account";
+import { getCustomer } from "@/services/wegest";
 
 export const metadata: Metadata = { title: "Dados pessoais" };
 
@@ -29,19 +30,17 @@ export default function ProfilePage() {
 
 async function Profile() {
   const { session, customerId: racId } = await requireCustomer("rentacar", "/minha-conta/perfil");
+  // Conta WeGest: a ficha nasce do registo e lê-se em GET /conta (só leitura: a API não a altera)
+  if (driverAuthEnabled()) return <WeGestProfile />;
   // Sem ficha Rent a Car, mostra a ficha preenchida no cadastro (ficha pessoal), se existir
   const tvdeId = racId ? null : await getCustomerId(session, "tvde");
   const customerId = racId ?? tvdeId;
   if (!customerId) {
-    // O cliente Rent a Car preenche a ficha de cliente aqui (nunca a candidatura TVDE). Com a API
-    // real, só quando a rota da conta no WeGest estiver ligada; até lá a ficha nasce na 1.ª reserva.
-    if (integrationMode() === "mock" || accountCustomerFileReady()) {
-      return <ProfileForm create type="rentacar" initial={{ fullName: session.user.name ?? "", email: session.user.email }} />;
-    }
+    // Contas do próprio site (sem WeGest): a ficha cria-se no checkout, com os dados do condutor, antes da reserva
     return (
       <EmptyState
         title="Ainda não tem ficha pessoal"
-        description="Os seus dados ficam guardados na ficha de cliente quando fizer a primeira reserva."
+        description="A ficha é criada com os dados do condutor, no checkout, antes de a reserva ser confirmada."
         action={<ButtonLink href="/rent-a-car" size="sm">Pesquisar viaturas</ButtonLink>}
       />
     );

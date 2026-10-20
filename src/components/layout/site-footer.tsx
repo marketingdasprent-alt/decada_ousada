@@ -38,7 +38,7 @@ export function SiteFooter({ region }: { region: Region }) {
             <li><Link className="hover:text-on-dark max-md:tap-target" href="/tvde">Como funciona</Link></li>
             <li><Link className="hover:text-on-dark max-md:tap-target" href="/tvde/viaturas">Viaturas TVDE</Link></li>
             <li><Link className="hover:text-on-dark max-md:tap-target" href="/motoristas">Trabalhar como motorista</Link></li>
-            <li><Link className="hover:text-on-dark max-md:tap-target" href="/tvde/minha-conta">A minha candidatura</Link></li>
+            <li><Link className="hover:text-on-dark max-md:tap-target" href="/tvde/minha-conta/candidaturas">A minha candidatura</Link></li>
           </ul>
         </div>
         <div>

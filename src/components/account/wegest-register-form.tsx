@@ -57,7 +57,7 @@ export function WeGestRegisterForm({ next, kind = "cliente" }: { next?: string; 
       const metadata = kind === "motorista"
         ? { tipo_utilizador: kind, nome: fields.nome, telefone: fields.telefone, cargo_nome: "Motorista" }
         : Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== ""));
-      rememberNext(next ?? (kind === "cliente" ? "/minha-conta" : "/tvde/minha-conta"));
+      rememberNext(next ?? "/minha-conta");
       if (kind === "motorista") track("tvde_registration_started");
       const { data: result, error: authError } = await driverAuth().auth.signUp({ email, password, options: {
         captchaToken: captcha.token,

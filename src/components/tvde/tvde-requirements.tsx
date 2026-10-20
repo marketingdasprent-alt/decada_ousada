@@ -2,7 +2,6 @@ import { ExternalLink } from "lucide-react";
 
 import type { Region } from "@/domain/region";
 
-import { Pending } from "../shared/pending";
 import { ButtonLink, Container, Section, SectionHeading } from "../shared/ui";
 
 /** Fontes oficiais (ver docs/conteudo/pesquisa-tvde.md, consulta de 2026-10-09). */
@@ -29,7 +28,7 @@ function SourceLink({ href, children }: { href: string; children: string }) {
 
 /**
  * Requisitos TVDE em duas partes: o que a lei pede ao motorista (facto geral, com a fonte
- * oficial) e o que a DÉCADA OUSADA pede para alugar (pendente até a equipa responder).
+ * oficial) e onde ver o que a DÉCADA OUSADA pede para alugar (documentos de cada viatura).
  * Nos Açores aplica-se o regime regional, por isso não se mostram os requisitos do IMT.
  */
 export function TvdeRequirements({ region }: { region: Region }) {
@@ -45,7 +44,6 @@ export function TvdeRequirements({ region }: { region: Region }) {
                 <p className="mt-3 text-copy-secondary">
                   Nos Açores aplica-se o regime regional TVDE (Decreto Legislativo Regional n.º 10/2022/A), com certificado de motorista e formação próprios da região.
                 </p>
-                <p className="mt-3"><Pending>Requisitos regionais a confirmar</Pending></p>
                 <div className="mt-4 flex flex-1 items-end"><SourceLink href={AZORES_TVDE_URL}>Ver o diploma regional</SourceLink></div>
               </>
             ) : (
@@ -65,9 +63,7 @@ export function TvdeRequirements({ region }: { region: Region }) {
           </div>
           <div className="flex flex-col rounded-panel border border-line bg-panel p-6">
             <h3 className="text-h4 font-bold">Para alugar na DÉCADA OUSADA</h3>
-            <p className="mt-3 text-copy-secondary">Idade mínima, anos de carta e se aceitamos quem ainda aguarda o certificado de motorista:</p>
-            <p className="mt-3"><Pending>Requisitos a confirmar pela DÉCADA OUSADA</Pending></p>
-            <p className="mt-4 text-copy-secondary">Os documentos pedidos aparecem na página de cada viatura, antes de se candidatar.</p>
+            <p className="mt-3 text-copy-secondary">Os documentos pedidos aparecem na página de cada viatura, antes de se candidatar.</p>
             {/* Ao fundo do cartão: os dois cartões têm a mesma altura e este não fica com espaço vazio */}
             <div className="mt-6 flex flex-1 items-end">
               <ButtonLink href="/tvde/viaturas" variant="dark">Ver viaturas TVDE</ButtonLink>

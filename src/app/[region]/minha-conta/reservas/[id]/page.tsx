@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { CancelBooking } from "@/components/account/cancel-booking";
+import { WeGestBookingDetail } from "@/components/account/wegest-bookings";
 import { ReservationStatus } from "@/components/booking/booking-status";
 import { PendingPayment } from "@/components/payment/pending-payment";
 import { ContactValue } from "@/components/shared/pending";
@@ -14,8 +15,10 @@ import { PAYMENT_STATUS_LABEL } from "@/domain/payment";
 import { formatMoney } from "@/domain/pricing";
 import { REGION_CONFIG } from "@/domain/region";
 import { formatDateTime } from "@/lib/dates";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { requireSession } from "@/lib/guard";
 import { getOwnBooking } from "@/lib/ownership";
+import { regionFromParams } from "@/lib/region";
 import { pendingPaymentFor } from "@/services/payments";
 
 export const metadata: Metadata = { title: "Detalhe da reserva" };
@@ -28,9 +31,10 @@ export default function BookingDetailPage({ params }: PageProps<"/[region]/minha
   );
 }
 
-async function Detail({ params }: { params: Promise<{ id: string }> }) {
+async function Detail({ params }: { params: Promise<{ region: string; id: string }> }) {
   const { id } = await params;
   await requireSession(`/minha-conta/reservas/${id}`);
+  if (driverAuthEnabled()) return <WeGestBookingDetail region={await regionFromParams(params)} codigo={id} />;
   const own = await getOwnBooking(id);
   if (!own) notFound();
   const b = own.booking;

@@ -169,6 +169,18 @@ export async function startDriverSession(account: DriverAccount) {
 
 export const isDriverSession = (session: Session | null) => Boolean(session?.user.authProviderId.startsWith(DRIVER_PREFIX));
 
+/**
+ * Parte TVDE do painel da conta. Conta WeGest: só a de motorista (a de cliente Rent a Car não a vê).
+ * Contas do próprio site: com ficha TVDE ligada, ou sempre na demonstração (WEGEST_MODE=mock),
+ * onde qualquer conta local se pode candidatar.
+ */
+export function hasTvdeAccess(session: Session | null) {
+  if (!session) return false;
+  if (isDriverSession(session)) return true;
+  if (!session.user.authProviderId.startsWith("local:")) return false;
+  return process.env.WEGEST_MODE === "mock" || session.integrations.some((i) => i.customerType === "tvde");
+}
+
 /** Id da conta WeGest de uma sessão de motorista. */
 export const driverAccountId = (session: Session) => session.user.id.slice(DRIVER_PREFIX.length);
 

@@ -3,30 +3,35 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { ReservationStatus } from "@/components/booking/booking-status";
+import { WeGestBookingConfirmation } from "@/components/account/wegest-bookings";
 import { PendingPayment } from "@/components/payment/pending-payment";
 import { EmptyState } from "@/components/shared/states";
 import { TrackEvent } from "@/components/shared/track-event";
 import { ButtonLink, Card, Container, Section, Skeleton } from "@/components/shared/ui";
 import { formatMoney } from "@/domain/pricing";
 import { formatDateTime } from "@/lib/dates";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { getOwnBooking } from "@/lib/ownership";
+import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
 import { pendingPaymentFor } from "@/services/payments";
 
 export const metadata: Metadata = { title: "Reserva recebida", robots: { index: false } };
 
-export default function ConfirmacaoPage({ searchParams }: PageProps<"/[region]/rent-a-car/confirmacao">) {
+export default function ConfirmacaoPage({ params, searchParams }: PageProps<"/[region]/rent-a-car/confirmacao">) {
   return (
     <Section><Container variant="narrow">
       <Suspense fallback={<Skeleton className="h-120" />}>
-        <Confirmation searchParams={searchParams} />
+        <Confirmation params={params} searchParams={searchParams} />
       </Suspense>
     </Container></Section>
   );
 }
 
-async function Confirmation({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+async function Confirmation({ params, searchParams }: { params: Promise<{ region: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const id = firstParam((await searchParams).reserva);
+  // Contas WeGest: a reserva lê-se em GET /conta/reservas, que só devolve as da própria conta
+  if (driverAuthEnabled() && id) return <WeGestBookingConfirmation region={await regionFromParams(params)} codigo={id} />;
   const own = id ? await getOwnBooking(id) : null;
   if (!own) return <EmptyState title="Reserva não encontrada" description="Inicie sessão com a conta usada na reserva." action={<ButtonLink href="/minha-conta/reservas">As minhas reservas</ButtonLink>} />;
   const { booking } = own;

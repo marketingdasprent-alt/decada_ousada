@@ -453,6 +453,8 @@ export const httpTransport: WeGestTransport = {
       method: "POST",
       // A referencia_externa torna o pedido idempotente: repetir devolve a mesma reserva
       retry: true,
+      // Com o token, a reserva fica na ficha da conta e aparece em GET /conta/reservas
+      headers: input.accountToken ? { "X-Conta-Token": input.accountToken } : undefined,
       body: {
         modelo_id: input.vehicleId,
         inicio: input.pickupDatetime,

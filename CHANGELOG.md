@@ -3,6 +3,40 @@
 All notable changes to the DÉCADA OUSADA platform.
 Format: `MAJOR.MINOR.PATCH` (see `BLUEPRINT.md#versioning`).
 
+## [0.22.0]: 2026-10-20
+
+### Changed
+
+- One account panel, "A minha conta", for Rent a Car customers and TVDE
+  drivers. Drivers also see Candidatura TVDE and Suporte TVDE, and the
+  application summary on the overview; Rent a Car-only accounts see none of
+  it. /tvde/minha-conta and /tvde/minha-conta/perfil redirect into the panel,
+  and the header, footer, login and sign-up now lead to /minha-conta.
+- An account with a driver file signs in as a driver even when WeGest sends
+  `tipo: "cliente"`; its Rent a Car bookings and invoices stay in the panel.
+- /registar offers the same "Rent a Car / Motorista TVDE" switch as /entrar
+  (hidden when the person comes from "Candidatar-me").
+- "Terminar sessão" is an outline button with a waiting state.
+- Removed the "19 campos" line, the "Requisitos a confirmar" badges and the
+  "Conteúdo em validação" notice on the FAQ.
+
+### Fixed
+
+- Rent a Car bookings made with an account are created with the account
+  token (`X-Conta-Token`), and the overview, booking list, booking detail and
+  confirmation page read them from WeGest (`GET /conta/reservas`) instead of
+  server memory, which lost them between Vercel instances ("Reserva não
+  encontrada"). Pending bookings can be cancelled from the detail page
+  (`DELETE /conta/reservas/{codigo}`), and WeGest UTC times show in Lisbon or
+  Azores time.
+- The overview greeting no longer reads "Olá." with no name: a driver
+  account without a customer file uses the name saved in the application.
+- The Rent a Car checkout fills phone and NIF from the account's customer
+  file (`GET /conta`) when those fields are empty.
+- The TVDE application notice for a refused account no longer claims the
+  account is a customer account, and offers "Entrar com outra conta".
+- "Ainda faltam" agrees with the number of missing items.
+
 ## [0.21.2]: 2026-10-20
 
 ### Changed

@@ -39,7 +39,7 @@ async function Login({ region, searchParams }: { region: Region; searchParams: P
   const isDriverLogin = firstParam(query.tipo) === "motorista";
   const session = await getSession();
 
-  // Motorista com sessão: a conta dele é a área do motorista (/tvde/minha-conta)
+  // Motorista com sessão: vai para o painel da conta, onde vê a candidatura
   if (session && isDriverSession(session) && isDriverLogin && !next) redirect(DRIVER_ACCOUNT);
   // Cliente Rent a Car a candidatar-se: a candidatura pede a conta de motorista, por isso fica aqui
   const needsDriverAccount = driverAccounts && next?.startsWith("/tvde/candidatura") && !isDriverSession(session);

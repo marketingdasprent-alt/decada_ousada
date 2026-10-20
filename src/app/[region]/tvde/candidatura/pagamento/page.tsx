@@ -29,7 +29,7 @@ async function Payment({ region, searchParams }: { region: Region; searchParams:
   const id = firstParam((await searchParams).id) ?? "";
   await requireSession(`/tvde/candidatura/pagamento?id=${encodeURIComponent(id)}`);
   const own = id ? await getOwnApplication(id) : null;
-  if (!own) return <Section><Container><EmptyState title="Candidatura não encontrada" action={<ButtonLink href="/tvde/minha-conta">Área TVDE</ButtonLink>} /></Container></Section>;
+  if (!own) return <Section><Container><EmptyState title="Candidatura não encontrada" action={<ButtonLink href="/minha-conta">A minha conta</ButtonLink>} /></Container></Section>;
   const app = own.application;
   if (app.status !== "payment_pending" && app.status !== "draft") redirect(`/tvde/minha-conta/candidaturas/${app.id}`);
 

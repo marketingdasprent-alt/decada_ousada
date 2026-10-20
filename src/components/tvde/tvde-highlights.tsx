@@ -37,7 +37,7 @@ export function TvdeHighlights({ region }: { region: Region }) {
       icon: MonitorSmartphone,
       title: "Candidatura online",
       text: "Cadastro, envio de documentos e pagamento do sinal no site; acompanha o estado na sua área de cliente.",
-      link: { href: "/tvde/minha-conta", label: "A minha candidatura" },
+      link: { href: "/tvde/minha-conta/candidaturas", label: "A minha candidatura" },
     },
   ];
 

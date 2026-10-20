@@ -100,7 +100,6 @@ async function Registration({ region, searchParams }: { region: Region; searchPa
       <ApplicationChecklist
         form={form.data}
         reservationAmount={payments ? (offer.pricing.reservationAmount ?? offer.deposit) : undefined}
-        filled={form.data.fields.filter((f) => initial[f.field]).length}
         className="mb-6"
       />
       <RegistrationStep

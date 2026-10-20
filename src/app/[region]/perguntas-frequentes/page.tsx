@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { Pending } from "@/components/shared/pending";
-import { Notice } from "@/components/shared/states";
 import { Container, Section } from "@/components/shared/ui";
 import { AZORES_TVDE_URL, IMT_TVDE_URL } from "@/components/tvde/tvde-requirements";
 import { formatMoney, TVDE_RESERVATION_FEE } from "@/domain/pricing";
@@ -126,7 +125,6 @@ export default async function FaqPage({ params }: PageProps<"/[region]/perguntas
       <PageHeader title="Perguntas frequentes" crumbs={[{ label: "Perguntas frequentes" }]} />
       <Section>
         <Container className="max-w-3xl space-y-12">
-          <Notice title="Conteúdo em validação">As respostas marcadas como pendentes aguardam informação da DÉCADA OUSADA.</Notice>
           {faqFor(region).map((g) => (
             <section key={g.group}>
               <h2 className="display text-h2">{g.group}</h2>

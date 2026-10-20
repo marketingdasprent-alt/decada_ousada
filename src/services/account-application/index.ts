@@ -157,7 +157,8 @@ function applicationError(error: unknown, context: Context, draft?: AccountAppli
   if (!(error instanceof WeGestError)) return fromError(error);
   const code = error.apiCode;
   if (code === "SESSAO_INVALIDA" || error.status === 401) return fail("unauthorized", "A sessão terminou. Entre de novo.", 401, { reason: "session_expired" });
-  if (code === "CONTA_INVALIDA") return fail("unauthorized", "A candidatura TVDE é feita com uma conta de motorista. Esta conta não é de motorista.", 403);
+  // CONTA_INVALIDA nestas rotas: "a conta já não existe" (openapi). Não se afirma que é de cliente.
+  if (code === "CONTA_INVALIDA") return fail("unauthorized", "O WeGest não aceitou esta conta para a candidatura TVDE.", 403);
   if (code === "CANDIDATURA_NAO_EDITAVEL") return fail("conflict", "A candidatura já foi submetida e já não pode ser alterada.", 409);
   if (code === "CANDIDATURA_EXISTENTE") return fail("conflict", CODE_MESSAGE.CANDIDATURA_EXISTENTE, 409, { reason: "application_exists" });
   if (code === "CANDIDATURA_INCOMPLETA") return fail("validation", "Ainda falta preencher ou enviar alguma coisa. Veja a lista do que falta.", 422);

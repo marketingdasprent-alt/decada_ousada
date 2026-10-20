@@ -3,11 +3,14 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { BookingListItem } from "@/components/account/booking-list-item";
+import { WeGestBookings } from "@/components/account/wegest-bookings";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { ButtonLink, Skeleton } from "@/components/shared/ui";
 import { attempt } from "@/lib/attempt";
 import { cn } from "@/lib/cn";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { requireCustomer } from "@/lib/guard";
+import { regionFromParams } from "@/lib/region";
 import { firstParam } from "@/lib/search";
 import { listCustomerBookings } from "@/services/wegest";
 
@@ -19,20 +22,23 @@ const TABS = [
   { id: "canceladas", label: "Canceladas" },
 ] as const;
 
-export default function BookingsPage({ searchParams }: PageProps<"/[region]/minha-conta/reservas">) {
+export default function BookingsPage({ params, searchParams }: PageProps<"/[region]/minha-conta/reservas">) {
   return (
     <>
       <h2 className="text-h3 font-bold">As minhas reservas</h2>
       <Suspense fallback={<Skeleton className="mt-6 h-64" />}>
-        <List searchParams={searchParams} />
+        <List params={params} searchParams={searchParams} />
       </Suspense>
     </>
   );
 }
 
-async function List({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const tab = (firstParam((await searchParams).tab) ?? "proximas") as (typeof TABS)[number]["id"];
+async function List({ params, searchParams }: { params: Promise<{ region: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const requested = firstParam((await searchParams).tab);
+  const tab = TABS.find((t) => t.id === requested)?.id ?? "proximas";
   const { customerId } = await requireCustomer("rentacar", "/minha-conta/reservas");
+  // Contas WeGest: as reservas vêm de GET /conta/reservas, no browser, com o token da conta
+  if (driverAuthEnabled()) return <WeGestBookings region={await regionFromParams(params)} tab={tab} />;
   const res = customerId ? await attempt(() => listCustomerBookings(customerId)) : ({ ok: true, data: [] } as const);
   if (!res.ok) return <ErrorState className="mt-6" timeout={res.timeout} retryHref="/minha-conta/reservas" />;
 

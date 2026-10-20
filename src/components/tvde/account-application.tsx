@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import { ID_DOCUMENT_TYPES, type AccountApplication, type AccountApplicationDraft } from "@/domain/customer/account";
 import { applicationFetch } from "@/lib/application-fetch";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/dates";
+import { driverAuthEnabled } from "@/lib/driver-account";
+import { apiFetch } from "@/lib/fetcher";
 import { normalizePhone, validateApplicationDraft } from "@/lib/application-rules";
 import { formatFieldValue } from "@/lib/dynamic-form";
 
@@ -90,23 +93,65 @@ function useApplication(mock: boolean) {
   return { load, setApp: (app: AccountApplication) => setLoad({ state: "ready", app }), setLoad, reload };
 }
 
+/**
+ * Trocar de conta: com a sessão aberta, /entrar devolve a pessoa à mesma conta. Termina primeiro a
+ * sessão do site e a do WeGest só neste browser (scope local), e volta a esta página depois de entrar.
+ */
+function SwitchAccountButton() {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  async function switchAccount() {
+    setBusy(true);
+    if (driverAuthEnabled()) {
+      const { driverAuth } = await import("@/lib/driver-auth-client");
+      await driverAuth().auth.signOut({ scope: "local" }).catch(() => undefined);
+    }
+    // Sem a sessão do site terminada, /entrar devolvia a pessoa a esta mesma conta
+    if (!(await apiFetch("/api/driver-session", { method: "DELETE" })).ok) { setBusy(false); return; }
+    router.push("/entrar?tipo=motorista&next=" + encodeURIComponent(window.location.pathname + window.location.search));
+    // O cabeçalho fica no layout: sem refresh continuaria a mostrar o nome da conta anterior
+    router.refresh();
+  }
+  return <Button size="sm" loading={busy} onClick={() => void switchAccount()}>Entrar com outra conta</Button>;
+}
+
 function Blocked({ load, onRetry }: { load: Exclude<Load, { state: "ready" }>; onRetry: () => void }) {
   if (load.state === "loading") return <div role="status" aria-label="A carregar a candidatura"><Skeleton className="h-96" /></div>;
   if (load.state === "expired")
     return <Notice tone="warn" title="A sessão terminou">Entre de novo com a sua conta de motorista para continuar a candidatura.<div className="mt-3"><ButtonLink href={LOGIN} size="sm">Entrar</ButtonLink></div></Notice>;
   if (load.state === "forbidden")
     return (
-      <Notice tone="warn" title="É preciso uma conta de motorista">
-        A candidatura TVDE é feita com uma conta de motorista. A conta com que entrou é de cliente Rent a Car. Entre com a conta de motorista, ou crie uma no separador Motorista TVDE.
-        <div className="mt-3"><ButtonLink href="/entrar?tipo=motorista" size="sm">Entrar como motorista</ButtonLink></div>
+      <Notice tone="warn" title="Esta conta não foi aceite para a candidatura">
+        O WeGest não aceitou esta conta para a candidatura TVDE. Se entrou com a conta de cliente Rent a Car, termine a sessão e entre com a conta de motorista. Se esta já é a sua conta de motorista, contacte-nos.
+        <div className="mt-3 flex flex-wrap gap-3">
+          <SwitchAccountButton />
+          <ButtonLink href="/tvde/minha-conta/suporte" variant="outline" size="sm">Contactar o suporte</ButtonLink>
+        </div>
       </Notice>
     );
   return <Notice tone="danger">{load.message}<div className="mt-3"><Button variant="outline" size="sm" onClick={onRetry}>Tentar novamente</Button></div></Notice>;
 }
 
-/** Resumo para o dashboard da Área TVDE. */
-export function AccountApplicationSummary({ mock }: { mock: boolean }) {
+/** Conta de cliente Rent a Car na página da candidatura: a candidatura pede a conta de motorista. */
+export function DriverAccountNeeded() {
+  return (
+    <Notice tone="warn" title="A candidatura TVDE precisa de uma conta de motorista">
+      Entrou com a conta de cliente Rent a Car. Para se candidatar, entre com a sua conta de motorista ou crie uma nova no ecrã de entrada.
+      <div className="mt-3 flex flex-wrap gap-3">
+        <SwitchAccountButton />
+        <ButtonLink href="/minha-conta" variant="outline" size="sm">Voltar à conta</ButtonLink>
+      </div>
+    </Notice>
+  );
+}
+
+/** Resumo da candidatura na visão geral da conta. `onName`: nome da ficha, para a saudação. */
+export function AccountApplicationSummary({ mock, onName }: { mock: boolean; onName?: (name: string) => void }) {
   const { load, reload } = useApplication(mock);
+  const name = load.state === "ready" ? load.app?.dados.nome?.trim() : undefined;
+  useEffect(() => {
+    if (name) onName?.(name);
+  }, [name, onName]);
   if (load.state !== "ready") return <Blocked load={load} onRetry={() => void reload()} />;
   const app = load.app;
   if (!app)
@@ -132,7 +177,8 @@ function missingSentence(app: AccountApplication) {
   const docs = app.em_falta.length;
   if (!fields && !docs) return "Está tudo preenchido. Já pode submeter a candidatura.";
   const parts = [fields ? (fields === 1 ? "1 dado" : fields + " dados") : "", docs ? (docs === 1 ? "1 documento" : docs + " documentos") : ""].filter(Boolean);
-  return "Ainda falta " + parts.join(" e ") + ".";
+  // Concordância: "falta 1 dado", mas "faltam 2 dados" ou "faltam 1 dado e 1 documento"
+  return (fields + docs === 1 ? "Ainda falta " : "Ainda faltam ") + parts.join(" e ") + ".";
 }
 
 /** Viatura escolhida em "Reservar esta viatura": modelo TVDE e dia de início pretendido. */

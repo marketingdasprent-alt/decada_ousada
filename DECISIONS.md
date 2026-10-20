@@ -1196,23 +1196,28 @@ DATE:
 ```
 DECISION:
 A Rent a Car customer is a WeGest customer, never a TVDE applicant. The
-customer account is created with tipo_utilizador: "cliente". Before the first
-booking, the customer fills the customer file in /minha-conta/perfil
-(POST /api/customers/me), which goes to WeGest through the account
-(X-Conta-Token). The TVDE application (/tvde/candidatura, /conta/candidatura)
-stays for driver accounts only. Until WeGest publishes the account route for
-the customer file, the form only shows in mock mode; with the real API the
-page explains that the file is created with the first booking.
+customer account is created with tipo_utilizador: "cliente" and the personal
+data of the WeGest guide "Contas de cliente" (nome, telefone, data_nascimento,
+pais; nif, morada, codigo_postal, localidade optional). That sign-up IS the
+customer file: after the email is confirmed, WeGest links the account to an
+existing private file with the same email or creates one from the sign-up
+data, so the file exists before any booking. /minha-conta/perfil reads it
+from GET /conta (via GET /api/account) and shows it read-only: the API has no
+route to change it, so corrections go through the team. The NIF typed at
+sign-up stays null until the team confirms it. The TVDE application
+(/tvde/candidatura, /conta/candidatura) stays for driver accounts only.
 
 REASON:
 WeGest (João, 2026-10-20): a Rent a Car customer must land as a customer in
-WeGest, not as an application. Registering customers as drivers tagged
-cargo_nome "cliente" (tried the same day, PR #34) was reverted.
+WeGest, not as an application, and only a valid driver can book. Registering
+customers as drivers tagged cargo_nome "cliente" (tried the same day, PR #34)
+was reverted. A profile form that created the file through a separate route
+(PR #35) was removed: the WeGest docs (docs.wegest.pt, "Contas de cliente")
+create the file at sign-up and have no write route for it.
 
 SCOPE:
-src/app/[region]/minha-conta/perfil, src/app/api/customers/me (POST),
-src/components/account/profile-form.tsx (create), src/services/wegest/account.ts
-(saveAccountCustomerFile, accountCustomerFileReady).
+src/components/account/wegest-register-form.tsx, src/app/[region]/minha-conta/
+perfil, src/app/api/account (GET), src/components/account/wegest-profile.tsx.
 
 LEVEL:
 Project rule (WeGest accounts).
@@ -1247,6 +1252,43 @@ candidaturas and perfil, src/components/tvde/account-application.tsx
 
 LEVEL:
 Project rule (WeGest accounts).
+
+DATE:
+2026-10-20
+```
+
+---
+
+```
+DECISION:
+One account panel for everyone, under the title "A minha conta". The Rent a
+Car part (overview, bookings, personal data, invoices, security) shows to
+every account. The TVDE part (Candidatura TVDE, Suporte TVDE, and the
+application summary on the overview) shows only when hasTvdeAccess is true:
+a WeGest driver account, or a site account with a TVDE file or in demo mode.
+/tvde/minha-conta redirects to /minha-conta and /tvde/minha-conta/perfil to
+/minha-conta/perfil. TVDE pages send a Rent a Car-only account back to
+/minha-conta (requireTvde); the application page instead explains that a
+driver account is needed and offers to switch accounts, because "Reservar
+esta viatura" lands there. With no name on the session (driver account
+without a customer file), the overview greets with the first name saved in
+the application, or shows "Visão geral".
+
+REASON:
+Client (Luiz, 2026-10-20): the TVDE area was a second panel with its own
+menu, and drivers got lost between the two. A driver must reach the Rent a
+Car part; a Rent a Car customer must not see the TVDE part.
+
+SCOPE:
+src/components/account/account-shell.tsx and account-nav.tsx,
+src/app/[region]/minha-conta (layout, page), src/app/[region]/tvde/
+minha-conta/**, src/components/account/wegest-bookings.tsx
+(WeGestAccountHome), src/services/auth (hasTvdeAccess), src/lib/guard.ts
+(requireTvde), src/lib/driver-account.ts (DRIVER_ACCOUNT), site header and
+footer links.
+
+LEVEL:
+Project rule (account area).
 
 DATE:
 2026-10-20

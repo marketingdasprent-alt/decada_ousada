@@ -11,6 +11,7 @@ import type { Vehicle } from "@/domain/vehicle";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { rentalDays } from "@/lib/dates";
+import { driverAuthEnabled } from "@/lib/driver-account";
 import { apiFetch } from "@/lib/fetcher";
 import { checkoutDraftQuery } from "@/lib/search";
 import { customerSchema, type CustomerFormValues } from "@/lib/validation";
@@ -107,6 +108,21 @@ export function BookingWizard({
     idempotencyKey.current = crypto.randomUUID();
   }, []);
 
+  // Conta WeGest: telefone e NIF da ficha (GET /conta) preenchem só os campos vazios; a pessoa pode corrigi-los
+  useEffect(() => {
+    if (!loggedIn || !driverAuthEnabled()) return;
+    let active = true;
+    import("@/lib/account-fetch")
+      .then(({ accountFetch }) => accountFetch("/api/account"))
+      .then(async (response) => {
+        const ficha = response.ok ? ((await response.json().catch(() => null))?.data?.cliente as { telefone?: string | null; nif?: string | null } | null) : null;
+        if (!active || !ficha) return;
+        setForm((f) => ({ ...f, phone: f.phone || ficha.telefone || "", taxId: f.taxId || ficha.nif || "" }));
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [loggedIn]);
+
   // Foco no título do passo depois de mudar de passo (não no primeiro render)
   const stepMounted = useRef(false);
   useEffect(() => {
@@ -191,9 +207,12 @@ export function BookingWizard({
     setSubmitting(true);
     setSubmitError(null);
     if (payments) track("rentacar_payment_started", { method: payment.method, total: quote.total });
+    // Conta WeGest: o token vai só neste pedido, para a reserva ficar ligada à conta
+    const token = loggedIn && driverAuthEnabled() ? await import("@/lib/driver-auth-client").then((m) => m.currentDriverToken()).catch(() => null) : null;
     const res = await apiFetch<{ bookingId: string; paymentStatus: string }>("/api/rentacar/bookings", {
       method: "POST",
       timeoutMs: 45_000,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       body: JSON.stringify({
         vehicleId: vehicle.id,
         offerId,
