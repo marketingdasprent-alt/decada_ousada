@@ -13,6 +13,7 @@ import {
   type ApplicationUploadTicket,
 } from "@/domain/customer/account";
 import { fail, fromError, fromZod, ok } from "@/lib/api";
+import { validateApplicationDraft } from "@/lib/application-rules";
 import { driverAuthEnabled } from "@/lib/driver-account";
 import { getSession, isDriverSession } from "@/services/auth";
 import { bearerToken } from "@/services/auth/driver";
@@ -108,7 +109,11 @@ export const draftSchema = z
     consentimento: z.strictObject({ versao: text(50), aceite_em: z.iso.datetime({ offset: true }) }),
   })
   .partial()
-  .refine((draft) => Object.keys(draft).length > 0, "Não há nada para guardar.");
+  .refine((draft) => Object.keys(draft).length > 0, "Não há nada para guardar.")
+  // As mesmas regras do browser: nenhum valor sem formato ou controlo válido segue para o WeGest
+  .superRefine((draft, ctx) => {
+    for (const [key, message] of Object.entries(validateApplicationDraft(draft))) ctx.addIssue({ code: "custom", path: key.split("."), message });
+  });
 
 export const uploadSchema = z.strictObject({
   content_type: z.enum(APPLICATION_FILE_TYPES, "O ficheiro tem de ser PDF, JPEG ou PNG."),
