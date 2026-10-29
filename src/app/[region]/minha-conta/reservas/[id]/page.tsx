@@ -13,7 +13,7 @@ import { Notice } from "@/components/shared/states";
 import { Card, Skeleton } from "@/components/shared/ui";
 import { PAYMENT_STATUS_LABEL } from "@/domain/payment";
 import { formatMoney } from "@/domain/pricing";
-import { REGION_CONFIG } from "@/domain/region";
+import { RENTACAR_CONTACT } from "@/domain/rentacar/contact";
 import { formatDateTime } from "@/lib/dates";
 import { driverAuthEnabled } from "@/lib/driver-account";
 import { requireSession } from "@/lib/guard";
@@ -38,7 +38,7 @@ async function Detail({ params }: { params: Promise<{ region: string; id: string
   const own = await getOwnBooking(id);
   if (!own) notFound();
   const b = own.booking;
-  const contact = REGION_CONFIG[b.region].contact;
+  const contact = RENTACAR_CONTACT;
   // O estado do pagamento vem do fornecedor de pagamentos, não do WeGest
   const pending = await pendingPaymentFor(b.id);
 

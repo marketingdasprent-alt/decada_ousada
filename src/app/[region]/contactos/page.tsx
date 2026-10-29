@@ -7,6 +7,7 @@ import { ContactValue } from "@/components/shared/pending";
 import { PickupPoints } from "@/components/shared/pickup-points";
 import { Card, Container, Section } from "@/components/shared/ui";
 import { REGION_CONFIG } from "@/domain/region";
+import { RENTACAR_CONTACT } from "@/domain/rentacar/contact";
 import { regionFromParams } from "@/lib/region";
 import { listLocations } from "@/services/wegest";
 
@@ -30,8 +31,13 @@ async function ContactsContent({ params }: { params: PageProps<"/[region]/contac
     <>
       <PageHeader title="Contactos" description="Fale connosco para reservas, candidaturas TVDE ou apoio durante o aluguer." crumbs={[{ label: "Contactos" }]} />
       <Section><Container className="grid gap-4 md:grid-cols-2">
-        <Card className="p-6"><Phone className="size-6 text-brand" aria-hidden /><p className="mt-3 font-semibold">Telefone</p><ContactValue kind="phone" value={cfg.contact.phone} className="text-copy-secondary hover:text-copy" /></Card>
-        <Card className="p-6"><Mail className="size-6 text-brand" aria-hidden /><p className="mt-3 font-semibold">Email</p><ContactValue kind="email" value={cfg.contact.email} className="text-copy-secondary hover:text-copy" /></Card>
+        {[{ label: "Rent a Car", contact: RENTACAR_CONTACT }, { label: "TVDE", contact: cfg.contact }].map(({ label, contact }) => (
+          <Card key={label} className="p-6">
+            <h2 className="text-h3 font-bold">{label}</h2>
+            <div className="mt-3 flex items-center gap-2"><Phone className="size-5 shrink-0 text-brand" aria-hidden /><ContactValue kind="phone" value={contact.phone} className="text-copy-secondary hover:text-copy max-md:tap-target" /></div>
+            <div className="flex items-center gap-2"><Mail className="size-5 shrink-0 text-brand" aria-hidden /><ContactValue kind="email" value={contact.email} className="wrap-anywhere text-body-small text-copy-secondary hover:text-copy max-md:tap-target" /></div>
+          </Card>
+        ))}
       </Container></Section>
       <PickupPoints title="Balcões" locations={locations} showMap />
     </>

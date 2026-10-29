@@ -2,6 +2,7 @@ import { Mail, Phone } from "lucide-react";
 import Link from "next/link";
 
 import { REGION_CONFIG, type Region } from "@/domain/region";
+import { RENTACAR_CONTACT } from "@/domain/rentacar/contact";
 import { FACEBOOK, INSTAGRAM } from "@/domain/social";
 import { META_PIXEL_ID } from "@/lib/meta-pixel";
 import { regionSwitchHref } from "@/lib/region";
@@ -14,7 +15,6 @@ import { Container } from "../shared/ui";
 import { Logo } from "../shared/logo";
 
 export function SiteFooter({ region }: { region: Region }) {
-  const cfg = REGION_CONFIG[region];
   const other: Region = region === "azores" ? "mainland" : "azores";
   return (
     <footer className="mt-24 bg-panel-dark text-on-dark/70">
@@ -44,8 +44,13 @@ export function SiteFooter({ region }: { region: Region }) {
         <div>
           <h2 className="mb-3 text-body-small font-semibold uppercase tracking-wider text-on-dark">Contactos</h2>
           <ul className="space-y-2 text-body-small max-md:space-y-0">
-            <li className="flex items-center gap-2"><Phone className="size-4" aria-hidden /><ContactValue kind="phone" value={cfg.contact.phone} className="hover:text-on-dark max-md:tap-target" /></li>
-            <li className="flex items-center gap-2"><Mail className="size-4" aria-hidden /><ContactValue kind="email" value={cfg.contact.email} className="wrap-anywhere hover:text-on-dark max-md:tap-target" /></li>
+            {[{ label: "Rent a Car", contact: RENTACAR_CONTACT }, { label: "TVDE", contact: REGION_CONFIG[region].contact }].map(({ label, contact }) => (
+              <li key={label}>
+                <p className="font-semibold text-on-dark">{label}</p>
+                <div className="flex items-center gap-2"><Phone className="size-4 shrink-0" aria-hidden /><ContactValue kind="phone" value={contact.phone} className="hover:text-on-dark max-md:tap-target" /></div>
+                <div className="flex items-center gap-2"><Mail className="size-4 shrink-0" aria-hidden /><ContactValue kind="email" value={contact.email} className="wrap-anywhere hover:text-on-dark max-md:tap-target" /></div>
+              </li>
+            ))}
             <li className="flex items-center gap-2">
               <InstagramIcon />
               <a className="hover:text-on-dark max-md:tap-target" href={INSTAGRAM.url} target="_blank" rel="noopener noreferrer">
